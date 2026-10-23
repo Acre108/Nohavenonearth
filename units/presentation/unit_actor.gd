@@ -38,10 +38,10 @@ func setup(state: UnitState) -> void:
 	model = Node3D.new()
 	body.add_child(model)
 	model.rotation.y = -unit.facing
-	UnitModelFactory.build_model(model, unit.loadout.frame.movement_type, faction_color, unit.loadout.frame.id)
 	# Size class scales the model; captions, health bar and picking follow it.
 	var model_scale := unit.loadout.frame.model_scale()
 	model.scale = Vector3.ONE * model_scale
+	UnitModelFactory.build_model(model, unit.loadout.frame.movement_type, faction_color, unit.loadout.frame.id)
 	if not unit.loadout.workshop_parts.is_empty():
 		TeamsterParts.apply(model, unit.loadout.workshop_parts)
 	if unit.loadout.frame.id == "m9_teamster":

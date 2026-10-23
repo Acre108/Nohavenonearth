@@ -58,7 +58,8 @@ static func apply(root: Node, finish: Dictionary, selected: String = "", recover
 			var current := root.get_active_material(index) as ShaderMaterial
 			var texture: Texture2D = current.get_shader_parameter("albedo_texture") if current != null else null
 			var emission := float(current.get_shader_parameter("emission_strength")) if current != null else 0.0
-			root.set_surface_override_material(index, ArtPalette.unit_paint(colour, ArtPalette.FRIEND, texture, emission))
+			var trim: Vector4 = current.get_shader_parameter("trim_rect") if current != null else Vector4(0,0,1,1)
+			root.set_surface_override_material(index, ArtPalette.unit_paint(colour, ArtPalette.FRIEND, texture, emission, trim))
 	for child in root.get_children():
 		apply(child, finish, selected, recovery, part_finishes)
 

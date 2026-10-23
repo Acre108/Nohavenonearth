@@ -10,6 +10,7 @@ uniform int bands : hint_range(2, 3) = 3;
 uniform bool sensor_unit = false;
 uniform bool use_albedo_texture = false;
 uniform sampler2D albedo_texture : source_color, filter_nearest_mipmap;
+uniform vec4 trim_rect = vec4(0.0, 0.0, 1.0, 1.0);
 uniform float emission_strength = 0.0;
 uniform float local_threshold = 0.12;
 uniform float local_strength = 0.55;
@@ -20,7 +21,15 @@ varying vec3 cel_fill;
 
 void fragment() {
 	vec3 base = paint.rgb;
-	if (use_albedo_texture) { base *= texture(albedo_texture, UV).rgb; }
+	if (use_albedo_texture) {
+		vec3 texel = texture(albedo_texture, trim_rect.xy + fract(UV) * trim_rect.zw).rgb;
+		if (trim_rect.y > 0.25 && trim_rect.y < 0.5) {
+			// Stencil cards discard the light substrate, leaving only hard ink shapes.
+			if (dot(texel, vec3(0.33333)) > 0.4) { discard; }
+		} else if (trim_rect.y > 0.5 && trim_rect.y < 0.75) {
+			base = texel; // Safety tape keeps its yellow/black identity through repainting.
+		} else { base *= texel; }
+	}
 	// Preserve authored chips and crevices as hard shapes, without smooth AO grime.
 	vec3 wear = floor(clamp(COLOR.rgb, vec3(0.0), vec3(1.0)) * 3.0 + 0.5) / 3.0;
 	painted_color = base * mix(vec3(0.48), vec3(1.0), wear);

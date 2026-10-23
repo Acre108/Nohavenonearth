@@ -28,6 +28,7 @@ static func apply(root: Node3D, fit: Dictionary) -> void:
 		if not scenes.has(path): scenes[path] = load(path)
 		var assembly: Node3D = scenes[path].instantiate()
 		root.add_child(assembly)
+		ArtPalette.paint_model(assembly, ArtPalette.FRIEND)
 		for mount in assembly.find_children("Mount_*", "Node3D", true, false):
 			var kind := String(mount.name).trim_prefix("Mount_").to_lower()
 			mount.reparent(mount_parent(component, slot, kind), false)

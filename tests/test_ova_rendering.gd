@@ -24,6 +24,28 @@ func sample(image: Image, camera: Camera3D, at: Vector3) -> Color:
 
 func run() -> void:
 	root.size = Vector2i(960, 640)
+	var spans: Array[Vector2] = []
+	for extent in [0.2, 0.4]:
+		var box := BoxMesh.new()
+		box.size = Vector3.ONE * extent
+		var mesh := ArrayMesh.new()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, box.surface_get_arrays(0))
+		var paint := StandardMaterial3D.new()
+		paint.resource_name = "armour_primary"
+		mesh.surface_set_material(0, paint)
+		var panel := MeshInstance3D.new()
+		panel.mesh = mesh
+		root.add_child(panel)
+		ArmourTrims.apply(panel)
+		var uv: PackedVector2Array = panel.mesh.surface_get_arrays(0)[Mesh.ARRAY_TEX_UV]
+		var minimum := uv[0]
+		var maximum := uv[0]
+		for point in uv:
+			minimum = minimum.min(point)
+			maximum = maximum.max(point)
+		spans.append(maximum - minimum)
+		panel.free()
+	check(spans[1].is_equal_approx(spans[0] * 2.0), "Larger armour panels retain world-scale trim spacing")
 	RenderingServer.global_shader_parameter_set("sensor_mix", 0.0)
 	var world := Node3D.new()
 	root.add_child(world)
@@ -118,6 +140,10 @@ func run() -> void:
 	var model := Node3D.new()
 	world.add_child(model)
 	UnitModelFactory.build_model(model, "ground", ArtPalette.FRIEND, "m9_teamster")
+	var stencil := model.find_child("TrimStencil", true, false) as MeshInstance3D
+	var stencil_rect: Vector4 = stencil.material_override.get_shader_parameter("trim_rect")
+	WorkshopAppearance.apply(stencil, WorkshopAppearance.finish_by_id("winter"))
+	check(stencil.material_override.get_shader_parameter("trim_rect") == stencil_rect and stencil.material_override.get_shader_parameter("albedo_texture") == ArmourTrims.SHEET, "Stencil atlas and rectangle survive workshop recolouring")
 	var animator := TeamsterAnimator.new()
 	model.add_child(animator)
 	animator.setup(model)

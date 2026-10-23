@@ -70,6 +70,18 @@ func run() -> void:
 				separate.free()
 			check(components == 14, "Teamster region contract maps all fourteen workshop slots")
 		holder.free()
+	for frame_id in ["ob12_medved", "type09_tieshan"]:
+		var pact := Node3D.new()
+		root.add_child(pact)
+		UnitModelFactory.build_model(pact, "ground", ArtPalette.HOSTILE, frame_id)
+		var taped := 0
+		for mesh in pact.find_children("*", "MeshInstance3D", true, false):
+			for surface in mesh.mesh.get_surface_count():
+				var material := mesh.get_active_material(surface) as ShaderMaterial
+				if material != null and material.get_shader_parameter("trim_rect") == ArmourTrims.HAZARD_RECT: taped += 1
+		check(taped >= 1 and taped <= 2, frame_id + " has selective hazard tape")
+		check(pact.find_child("TrimStencil", true, false) != null, frame_id + " has a stencil card")
+		pact.free()
 	var original_ssr: bool = ProjectSettings.get_setting("rendering/ova/ssr", false)
 	ProjectSettings.set_setting("rendering/ova/ssr", true)
 	var lighting_probe := Node3D.new()

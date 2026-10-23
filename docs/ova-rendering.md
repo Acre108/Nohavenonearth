@@ -51,7 +51,9 @@ To rebuild, run the editor binary with `--headless --path . --script res://art/b
 
 `art/armour_trim.svg` is a reusable 1024×256 albedo atlas, rasterised by Godot on import. Four 64-pixel strips hold panel seams, stencils (US 01, 317, 02, 09), caution tape and chips, without PBR channels. Map panel UVs to a strip and pass the texture to `ArtPalette.unit_paint(color, faction, texture)`, or assign it to the source material before `paint_model()`.
 
-`ArmourTrims` now generates planar UVs for authored armour surfaces on the four mechs and workshop replacement parts, and applies the panel strip of the shared trim sheet before toon materials are assigned. The UV-mapped meshes are cached and reused; source GLBs, joints, animation tracks and vertex colours remain intact. Existing modelled stencils and quantised wear remain visible. Other atlas strips remain available for further art variation.
+`ArmourTrims` generates planar UVs in world units with a 0.5-unit tile size, incorporating the known model scale before building. Dominant-axis projection is retained, along with the `trim_projection: "top"` extra for cambered shells. The shader wraps UVs inside a half-texel-inset `trim_rect`; material caching includes that rectangle. Per-plate phase offsets and a seam-only panel tile replace the repeated dash motif. Replacement parts use the same mapping before workshop recolouring. Source GLBs, joints, animation tracks and vertex colours remain intact.
+
+Pact frames use the yellow/black hazard strip on one pauldron and the opposite knee plate. Small alpha-cutout stencil quads sit beside the existing main tactical number: US 01 for Blue, 317 for Pact. They align with the number's plane, use opaque discard rather than a Decal, and preserve their atlas rectangle through workshop finish changes. Atlas glyphs and tape use explicit vector paths, avoiding SVG font/pattern support differences. The chip strip remains available for later paint variation.
 
 ## Tuning
 
@@ -64,6 +66,7 @@ To rebuild, run the editor binary with `--headless --path . --script res://art/b
 | Fog density / transition | 0.03 / 0.5 s | `BattleAtmosphere`; perspective only |
 | Rain count / alpha / lifetime | 1500 / 0.18 / 1.2 s | `BattleAtmosphere` and `rain.gdshader` |
 | SSR steps | 48 | Forward+ perspective only |
+| Armour trim tile | 0.5 world units | `ArmourTrims.TRIM_TILE_SIZE` |
 | Hull width | 1.5 render pixels | `outline.gdshader` |
 | Interior ink / background paint | 0.65 / 0.45 | `cel_composite.gdshader` |
 | Glow HDR threshold | 1.3 | `OvaRendering.environment()` |
@@ -85,6 +88,7 @@ Measured on the dev RTX 3060 Ti at 1440×900, Forward+, native 3D scale, 2× MSA
 | task3 | 5.100 / 3.616 | 3.814 / 2.730 | 5.035 / 2.281 |
 | task4 | 5.219 / 3.824 | 5.706 / 2.773 | 5.078 / 2.208 |
 | task5 | 5.071 / 3.943 | 3.849 / 3.165 | 4.090 / 2.125 |
+| task6 | 5.257 / 3.385 | 3.412 / 2.673 | 4.091 / 2.100 |
 
 Before images and timings are stored under `artifacts/lighting-pass/before-*`; each task records the equivalent `taskN-*` evidence. These ignored files are local verification evidence, not shipped assets.
 

@@ -13,6 +13,7 @@ static func build_model(parent: Node3D, kind: String, color: Color, frame_id: St
 		var frame_model: Node3D = MODEL_SCENES[frame_id].instantiate()
 		parent.add_child(frame_model)
 		ArtPalette.paint_model(frame_model, color)
+		ArmourTrims.add_stencils(frame_model, color)
 		return
 	# Paint never uses the saturated information palette. Shape carries frame identity.
 	var friendly := color.b > color.r
