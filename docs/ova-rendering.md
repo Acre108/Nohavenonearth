@@ -57,7 +57,17 @@ To rebuild, run the editor binary with `--headless --path . --script res://art/b
 | Aberration / grain / vignette | 0.45 / 0.012 / 0.18 | `ova_finish.gdshader` |
 | LaserDisc | Off; 0.75 when on | `OvaRendering.set_laserdisc()` or custom setting `rendering/ova/laserdisc` |
 
-`OvaRendering.make_grade()` generates and shares the LUT. Supply another texture via `grade_lut` to replace it. Kuwahara's radius is fixed at two render pixels. The 60 fps target still needs a representative hardware benchmark; visual checks alone do not establish a performance budget.
+`OvaRendering.make_grade()` generates and shares the LUT. Supply another texture via `grade_lut` to replace it. Kuwahara's radius is fixed at two render pixels.
+
+## Performance
+
+Measured on the dev RTX 3060 Ti at 1440×900, Forward+, native 3D scale, 2× MSAA. `artifacts/perf_probe.gd` warms each view, caps presentation at 60 fps, then averages 120 rendered frames using RenderingServer viewport GPU and CPU timers. CPU figures cover rendering operations, not game logic. Cinematic samples stay in the cinematic mode by restaging the attack when necessary. The pass budget is **8 ms GPU per view**.
+
+| Checkpoint | Overview GPU / CPU ms | Close GPU / CPU ms | Cinematic GPU / CPU ms |
+| --- | --- | --- | --- |
+| Task 0 baseline | 5.001 / 3.952 | 3.141 / 2.662 | 2.959 / 2.130 |
+
+Before images and timings are stored under `artifacts/lighting-pass/before-*`; each task records the equivalent `taskN-*` evidence. These ignored files are local verification evidence, not shipped assets.
 
 ## Verification and references
 
