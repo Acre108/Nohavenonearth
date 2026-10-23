@@ -5,9 +5,12 @@ static func build(parent: Node3D, bounds: Rect2) -> WorldEnvironment:
 	var environment := build_lighting(parent)
 	build_lamp_masts(parent, bounds)
 	if bounds == Rect2(-18, -13, 36, 26) and ResourceLoader.exists("res://art/dock/StaticDock.tscn"):
-		parent.add_child(load("res://art/dock/StaticDock.tscn").instantiate())
+		var dock := load("res://art/dock/StaticDock.tscn").instantiate() as Node3D
+		parent.add_child(dock)
+		configure_reflections(dock, bounds)
 		return environment
 	build_procedural(parent, bounds)
+	configure_reflections(parent, bounds)
 	return environment
 
 static func build_lighting(parent: Node3D) -> WorldEnvironment:
@@ -75,6 +78,15 @@ static func mast_positions(bounds: Rect2) -> PackedVector3Array:
 	var b := bounds.end
 	var c := bounds.get_center()
 	return PackedVector3Array([Vector3(a.x - 0.15, 4.0, c.y), Vector3(b.x + 0.15, 4.0, c.y), Vector3(a.x + 0.5, 4.0, a.y - 0.2), Vector3(b.x - 0.5, 4.0, b.y + 0.2)])
+
+static func configure_reflections(parent: Node3D, bounds: Rect2) -> void:
+	for mesh in parent.find_children("*", "MeshInstance3D", true, false):
+		var material := mesh.material_override as ShaderMaterial
+		if material == null or material.shader != ArtPalette.ENVIRONMENT_SHADER or not material.get_shader_parameter("wet_ground"): continue
+		material = material.duplicate()
+		material.set_shader_parameter("lamp_positions", mast_positions(bounds))
+		material.set_shader_parameter("lamp_count", 4)
+		mesh.material_override = material
 
 static func build_lamp_masts(parent: Node3D, bounds: Rect2) -> void:
 	var index := 0

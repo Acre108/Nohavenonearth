@@ -34,3 +34,4 @@ if ($WithUI) {
     Invoke-GodotCheck 'art-tests' '--path . --script res://tests/test_art.gd'
     Invoke-GodotCheck 'ova-rendering' '--path . --script res://tests/test_ova_rendering.gd'
 }
+    Invoke-GodotCheck 'wet-lighting' '--path . --script res://tests/test_wet_lighting.gd'

@@ -5,6 +5,10 @@ global uniform float sensor_mix;
 uniform vec4 paint : source_color = vec4(0.3, 0.34, 0.39, 1.0);
 uniform bool wet_ground = false;
 uniform float emission_strength = 0.0;
+uniform vec3 lamp_positions[4];
+uniform int lamp_count = 0;
+uniform vec4 lamp_color : source_color = vec4(1.0, 0.8, 0.545, 1.0);
+uniform float reflection_strength = 0.18;
 varying vec3 world_position;
 
 float wash(vec2 p) {
@@ -26,5 +30,23 @@ void fragment() {
 	ROUGHNESS = mix(mix(0.88, 0.18, puddle), 0.88, sensor_mix);
 	SPECULAR = mix(0.0, 0.65, puddle) * (1.0 - sensor_mix);
 	METALLIC = 0.0;
-	EMISSION = mix(background * emission_strength, sensor, sensor_mix);
+	vec3 reflected = vec3(0.0);
+	vec2 camera_forward = INV_VIEW_MATRIX[2].xz;
+	vec2 along = camera_forward / max(length(camera_forward), 0.001);
+	vec2 across = vec2(-along.y, along.x);
+	for (int i = 0; i < lamp_count; i++) {
+		vec2 offset = world_position.xz - lamp_positions[i].xz;
+		float distance_along = dot(offset, along);
+		float distance_across = abs(dot(offset, across));
+		float shape = (1.0 - smoothstep(0.1, 0.35, distance_across)) *
+			(1.0 - smoothstep(0.0, 3.8, distance_along)) * step(0.0, distance_along);
+		float steps = 0.5 * step(0.2, shape) + 0.5 * step(0.68, shape);
+		reflected += lamp_color.rgb * steps * reflection_strength * puddle;
+	}
+	EMISSION = mix(background * emission_strength + reflected, sensor, sensor_mix);
+}
+
+void light() {
+	// Keep puddle roughness/specular for SSR, without the orthographic key flare.
+	DIFFUSE_LIGHT += max(dot(NORMAL, LIGHT), 0.0) * ATTENUATION * LIGHT_COLOR / PI;
 }

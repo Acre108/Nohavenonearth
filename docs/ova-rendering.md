@@ -27,6 +27,8 @@ This is a buffer mask, rather than native stencil. Godot's stencil is experiment
 
 ## Wet dock and lighting
 
+The environment's custom `light()` writes Lambert diffuse only, eliminating the view-dependent orthographic specular flare. Puddles retain specular 0.65 and roughness 0.18 for screen-space reflection eligibility. Four mast positions drive painted reflections in the wet material: two hard emission steps, 0.35 units across and 3.8 units toward the camera, with peak strength 0.18. Their orientation follows the camera's horizontal view direction. Both puddles and streaks fade with Sensor View. `test_wet_lighting.gd` compares wet/dry rendered luminance at azimuths 0, 1.1, 2.2 and 3.3, requiring fewer than 0.1% of pixels to rise by more than 0.35. Task 3 measured **zero** such pixels at every angle; the GPU averages remained below 8 ms.
+
 `art/environment.gdshader` supplies broad stepped brush washes without normal maps or outlines. A world-space puddle mask adds violet wet patches and varies dock roughness from 0.88 to 0.18. Four 4-unit sodium masts sit outside the playable envelope without collision. Their warm `ffcc8b` spots use energy 0.85, angle 32°, distance attenuation 0.25 and angle attenuation 0.7; shadows and baking are disabled. The same masts serve prebuilt and procedural maps. Small edge housings remain emissive, but the old baked-only OmniLights and fixed streak boxes are removed.
 
 **SSR is off by default.** Enable custom Project Setting `rendering/ova/ssr` to experiment; painted lamp streaks are the cheaper default for the tactical orthographic view. Lighting uses one shadowed directional key, coloured ambient fill and emissive fixtures. The live WorldEnvironment and runtime key are always created by `BattlefieldBuilder.build_lighting()`, including on the prebuilt dock. `BattleController.world_environment` exposes those settings to presentation. The saved dock contains no WorldEnvironment, and its key copy is editor-only for baking indirect light.
@@ -51,6 +53,7 @@ To rebuild, run the editor binary with `--headless --path . --script res://art/b
 | --- | --- | --- |
 | Cel bands / rim | 3 / 0.16 | `paint.gdshader` |
 | Local threshold / strength | 0.12 / 0.55 | `paint.gdshader`; additive warm cel band |
+| Lamp streak strength / length / width | 0.18 / 3.8 / 0.35 | `environment.gdshader` |
 | Hull width | 1.5 render pixels | `outline.gdshader` |
 | Interior ink / background paint | 0.65 / 0.45 | `cel_composite.gdshader` |
 | Glow HDR threshold | 1.3 | `OvaRendering.environment()` |
@@ -69,6 +72,7 @@ Measured on the dev RTX 3060 Ti at 1440×900, Forward+, native 3D scale, 2× MSA
 | Task 0 baseline | 5.001 / 3.952 | 3.141 / 2.662 | 2.959 / 2.130 |
 | task1 | 4.649 / 3.843 | 3.622 / 2.735 | 5.164 / 2.275 |
 | task2 | 5.332 / 4.165 | 4.308 / 3.031 | 4.139 / 1.895 |
+| task3 | 5.100 / 3.616 | 3.814 / 2.730 | 5.035 / 2.281 |
 
 Before images and timings are stored under `artifacts/lighting-pass/before-*`; each task records the equivalent `taskN-*` evidence. These ignored files are local verification evidence, not shipped assets.
 
