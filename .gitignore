@@ -1,0 +1,9 @@
+.godot/
+build/
+artifacts/
+*.tmp
+*.log
+*.exe
+*.pck
+output/
+__pycache__/

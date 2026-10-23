@@ -1,0 +1,81 @@
+{
+  "_about": "Points costs. Tune these (not individual mechs) when a design wins more than its cost says it should. See docs/points-system.md.",
+  "generation_budget": {
+    "1": 75,
+    "2": 100,
+    "3": 130
+  },
+  "tier_multiplier": {
+    "vehicle": 0.45,
+    "mass": 0.8,
+    "line": 1.0,
+    "elite": 1.3
+  },
+  "frame": {
+    "structure_per_point": 0.25,
+    "armour_per_point": 4.0,
+    "armour_type": 2.0,
+    "move_per_unit": 4.0,
+    "energy_capacity_per_point": 1.0,
+    "energy_recharge_per_point": 3.0,
+    "flight": 8.0,
+    "aircraft": 4.0,
+    "manoeuvre": 1.0,
+    "size": {
+      "small": 5.0,
+      "medium": 0.0,
+      "large": -5.0,
+      "super_heavy": -10.0
+    },
+    "stat_bonus_per_point": {
+      "gunnery": 5.0,
+      "melee": 3.0,
+      "precision": 3.0,
+      "reflex": 5.0,
+      "guard": 2.0,
+      "systems": 1.0,
+      "countermeasures": 1.0,
+      "spirit": 2.0
+    }
+  },
+  "weapon": {
+    "points_per_damage": 2.0,
+    "reference_target": {
+      "reflex": 1,
+      "armour": 2,
+      "size": "medium"
+    },
+    "reference_attacker": {
+      "attack": 1,
+      "precision": 1
+    },
+    "range_base": 0.6,
+    "range_per_unit": 0.1,
+    "minimum_range_per_unit": 0.05,
+    "melee_range_factor": 0.8,
+    "arc_factor": {
+      "90": 1.0,
+      "120": 1.05,
+      "180": 1.1,
+      "360": 1.2
+    },
+    "energy_per_point": 1.0
+  },
+  "pilot": {
+    "stat_per_point": {
+      "gunnery": 3.0,
+      "melee": 2.0,
+      "precision": 2.0,
+      "reflex": 3.0,
+      "guard": 1.0,
+      "systems": 0.5,
+      "countermeasures": 0.5,
+      "spirit": 1.0
+    },
+    "ability": {
+      "push": 0.0,
+      "newtype": 4.0,
+      "see_it": 4.0
+    }
+  }
+}

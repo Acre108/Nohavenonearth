@@ -1,0 +1,18 @@
+{
+  "tool": "Built-in image_gen.imagegen",
+  "purpose": "Three original anime pilot portraits for the workshop pilot selector",
+  "prompts": [
+    {
+      "id": "anchor",
+      "prompt": "Use case: stylized-concept. Create ONE original anime mecha pilot portrait for a tactical game's pilot selector. Square 1024x1024 illustration, adult character head and shoulders, entire hair and head visible, face large and readable at 64px thumbnail. Polished hand-drawn Japanese science-fiction anime, confident precise ink lines, restrained cel shading, subtle painted texture. Muted olive and charcoal flight suit with cream collar and small amber harness details. Dark desaturated blue-teal hangar background with soft geometry and warm rim light. No text, lettering, logos, watermark, borders or UI. Grounded military mecha mood, expressive eyes, natural anatomy. Adult male pilot in his early thirties, medium tan skin, short tousled dark brown hair with a grey streak at the temple, hazel eyes, slight stubble, steady calm expression. Reliable close-quarters veteran, looking slightly toward camera left."
+    },
+    {
+      "id": "kestrel",
+      "prompt": "Use case: stylized-concept. Create ONE original anime mecha pilot portrait for a tactical game's pilot selector. Square 1024x1024 illustration, adult character head and shoulders, entire hair and head visible, face large and readable at 64px thumbnail. Polished hand-drawn Japanese science-fiction anime, confident precise ink lines, restrained cel shading, subtle painted texture. Muted olive and charcoal flight suit with cream collar and small amber harness details. Dark desaturated blue-teal hangar background with soft geometry and warm rim light. No text, lettering, logos, watermark, borders or UI. Grounded military mecha mood, expressive eyes, natural anatomy. Adult female pilot in her late twenties, warm brown skin, short asymmetrical copper-red bob tucked behind one ear, amber-brown eyes, a small communications earpiece, focused confident expression. Precision rifle specialist, looking slightly toward camera right."
+    },
+    {
+      "id": "rook",
+      "prompt": "Use case: stylized-concept. Create ONE original anime mecha pilot portrait for a tactical game's pilot selector. Square 1024x1024 illustration, adult character head and shoulders, entire hair and head visible, face large and readable at 64px thumbnail. Polished hand-drawn Japanese science-fiction anime, confident precise ink lines, restrained cel shading, subtle painted texture. Muted olive and charcoal flight suit with cream collar and small amber harness details. Dark desaturated blue-teal hangar background with soft geometry and warm rim light. No text, lettering, logos, watermark, borders or UI. Grounded military mecha mood, expressive eyes, natural anatomy. Adult androgynous pilot in their early thirties, fair cool skin, short silver-white hair swept to one side with a dark undercut, blue-grey eyes, an understated diagonal eyebrow scar, composed alert expression. Agile defensive specialist, looking slightly toward camera left."
+    }
+  ]
+}

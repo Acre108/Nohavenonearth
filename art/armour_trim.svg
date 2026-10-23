@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="256" viewBox="0 0 1024 256">
+<!-- Four 64px horizontal trims: panels / stencils / hazard tape / chips.
+     White substrate multiplies the material's paint colour. No PBR channels. -->
+<rect width="1024" height="256" fill="#eee9d9"/>
+<g stroke="#41414d" stroke-width="3" fill="none"><path d="M0 4H1024M0 60H1024M8 4V60M248 4V60M264 4V60M504 4V60M520 4V60M760 4V60M776 4V60M1016 4V60"/><path d="M20 15H85M20 23H65M280 44H350M536 15H600M790 44H855"/></g>
+<g fill="#494550" font-family="monospace" font-weight="bold" font-size="42"><text x="30" y="112">US 01</text><text x="290" y="112">317</text><text x="548" y="112">02</text><text x="794" y="112">09</text></g>
+<rect y="128" width="1024" height="64" fill="#c6a460"/>
+<defs><pattern id="hazard" width="64" height="64" patternUnits="userSpaceOnUse"><path d="M-32 0H0L64 64H32ZM32 0H64L128 64H96Z" fill="#373643"/></pattern></defs>
+<rect y="132" width="1024" height="56" fill="url(#hazard)"/>
+<g fill="#66616a"><path d="M0 201H75L84 206 65 210H0ZM234 198H280L271 203 247 206 238 203ZM490 250H564L550 244 525 247 510 240ZM760 199H814L802 205 780 208ZM973 245H1024V256H961L970 250Z"/><path d="m110 227 17-4 10 3-6 6-19 2Zm235-10 22-3-5 8-19 1Zm283 13 16-3 9 6-24 3Zm222 3 19-6 4 6-16 5Z"/></g>
+</svg>

@@ -1,0 +1,31 @@
+{
+  "pilots": [
+    {
+      "id": "anchor",
+      "display_name": "Sol / ANCHOR",
+      "callsign": "ANCHOR",
+      "role": "Brawler",
+      "portrait": "res://art/portraits/anchor.png",
+      "stats": {"gunnery": 1, "melee": 1, "precision": 0, "reflex": 0, "guard": 1, "systems": 0, "countermeasures": 0, "spirit": 2},
+      "abilities": ["push"]
+    },
+    {
+      "id": "kestrel",
+      "display_name": "Mara / KESTREL",
+      "callsign": "KESTREL",
+      "role": "Marksman",
+      "portrait": "res://art/portraits/kestrel.png",
+      "stats": {"gunnery": 1.5, "melee": 0, "precision": 1, "reflex": 0, "guard": 0.5, "systems": 0, "countermeasures": 0, "spirit": 2},
+      "abilities": ["push"]
+    },
+    {
+      "id": "rook",
+      "display_name": "Vale / ROOK",
+      "callsign": "ROOK",
+      "role": "Skirmisher",
+      "portrait": "res://art/portraits/rook.png",
+      "stats": {"gunnery": 0.5, "melee": 0.5, "precision": 0, "reflex": 1, "guard": 1, "systems": 0, "countermeasures": 0, "spirit": 2},
+      "abilities": ["push"]
+    }
+  ]
+}

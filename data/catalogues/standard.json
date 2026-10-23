@@ -1,0 +1,846 @@
+{
+    "weapons":  [
+                    {
+                        "id":  "lr3_rifle",
+                        "display_name":  "LR-3 Linear Rifle",
+                        "shots":  2,
+                        "damage":  8,
+                        "armour_piercing":  2,
+                        "aim_bonus":  10,
+                        "damage_type":  "ballistic",
+                        "size":  "medium",
+                        "heavy":  true,
+                        "range_min":  2,
+                        "range_max":  4,
+                        "arc":  90,
+                        "energy_cost":  1
+                    },
+                    {
+                        "id":  "agm_stores",
+                        "display_name":  "AGM-M Wing Stores",
+                        "shots":  4,
+                        "damage":  4,
+                        "armour_piercing":  0,
+                        "aim_bonus":  0,
+                        "damage_type":  "explosive",
+                        "size":  "medium",
+                        "range_min":  2,
+                        "range_max":  6,
+                        "arc":  120,
+                        "energy_cost":  1
+                    },
+                    {
+                        "id":  "vb2_knife",
+                        "display_name":  "VB-2 Vibro Knife",
+                        "shots":  3,
+                        "damage":  8,
+                        "armour_piercing":  1,
+                        "aim_bonus":  0,
+                        "damage_type":  "energy",
+                        "size":  "small",
+                        "melee":  true,
+                        "range_min":  0,
+                        "range_max":  0.5,
+                        "arc":  90,
+                        "energy_cost":  1
+                    },
+                    {
+                        "id":  "ar40_rifle",
+                        "display_name":  "AR-40 Longhorn Rifle",
+                        "shots":  3,
+                        "damage":  6,
+                        "armour_piercing":  0,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "medium",
+                        "range_min":  1,
+                        "range_max":  6,
+                        "arc":  180,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "hornet_pod",
+                        "display_name":  "Hornet Missile Pod",
+                        "shots":  4,
+                        "damage":  4,
+                        "armour_piercing":  0,
+                        "aim_bonus":  0,
+                        "damage_type":  "explosive",
+                        "size":  "medium",
+                        "range_min":  2,
+                        "range_max":  6,
+                        "arc":  120,
+                        "energy_cost":  1
+                    },
+                    {
+                        "id":  "pb4_stake",
+                        "display_name":  "PB-4 Stake Driver",
+                        "shots":  1,
+                        "damage":  18,
+                        "armour_piercing":  3,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "medium",
+                        "heavy":  true,
+                        "melee":  true,
+                        "range_min":  0,
+                        "range_max":  0.5,
+                        "arc":  90,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "grad_m",
+                        "display_name":  "Grad-M Rocket Battery",
+                        "shots":  5,
+                        "damage":  4,
+                        "armour_piercing":  0,
+                        "aim_bonus":  0,
+                        "damage_type":  "explosive",
+                        "size":  "large",
+                        "range_min":  2,
+                        "range_max":  6,
+                        "arc":  120,
+                        "energy_cost":  2
+                    },
+                    {
+                        "id":  "gsh6m_rotary",
+                        "display_name":  "GSh-6M Rotary Cannon",
+                        "shots":  8,
+                        "damage":  3,
+                        "armour_piercing":  0,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "medium",
+                        "range_min":  0,
+                        "range_max":  3,
+                        "arc":  90,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "molot_ram",
+                        "display_name":  "Molot Hydraulic Ram",
+                        "shots":  2,
+                        "damage":  10,
+                        "armour_piercing":  2,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "large",
+                        "heavy":  true,
+                        "melee":  true,
+                        "range_min":  0,
+                        "range_max":  0.5,
+                        "arc":  90,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "type11_dao",
+                        "display_name":  "Type-11 Dao Blade",
+                        "shots":  3,
+                        "damage":  6,
+                        "armour_piercing":  1,
+                        "aim_bonus":  0,
+                        "damage_type":  "energy",
+                        "size":  "medium",
+                        "melee":  true,
+                        "range_min":  0,
+                        "range_max":  0.5,
+                        "arc":  90,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "type09_cannon",
+                        "display_name":  "Type-09 Long Cannon",
+                        "shots":  1,
+                        "damage":  13,
+                        "armour_piercing":  2,
+                        "aim_bonus":  10,
+                        "damage_type":  "ballistic",
+                        "size":  "large",
+                        "heavy":  true,
+                        "range_min":  2,
+                        "range_max":  7,
+                        "arc":  90,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "type07_rifle",
+                        "display_name":  "Type-07 Drum Rifle",
+                        "shots":  4,
+                        "damage":  4,
+                        "armour_piercing":  0,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "medium",
+                        "range_min":  0.5,
+                        "range_max":  4.5,
+                        "arc":  120,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "type99_gun",
+                        "display_name":  "125mm Tank Gun",
+                        "shots":  1,
+                        "damage":  15,
+                        "armour_piercing":  3,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "large",
+                        "heavy":  true,
+                        "range_min":  1,
+                        "range_max":  6,
+                        "arc":  360,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "type99_mg",
+                        "display_name":  "Coaxial Machine Gun",
+                        "shots":  8,
+                        "damage":  2,
+                        "armour_piercing":  0,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "small",
+                        "range_min":  0,
+                        "range_max":  3.5,
+                        "arc":  360,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "autocannon",
+                        "display_name":  "Nose Autocannon",
+                        "shots":  5,
+                        "damage":  3,
+                        "armour_piercing":  1,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "small",
+                        "range_min":  0,
+                        "range_max":  5,
+                        "arc":  90,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "missiles",
+                        "display_name":  "Guided Missiles",
+                        "shots":  2,
+                        "damage":  6,
+                        "armour_piercing":  0,
+                        "aim_bonus":  10,
+                        "damage_type":  "explosive",
+                        "size":  "small",
+                        "range_min":  2,
+                        "range_max":  6,
+                        "arc":  120,
+                        "energy_cost":  1
+                    },
+                    {
+                        "id":  "hands_small",
+                        "display_name":  "Hands",
+                        "shots":  2,
+                        "damage":  3,
+                        "armour_piercing":  0,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "small",
+                        "melee":  true,
+                        "range_min":  0,
+                        "range_max":  0.5,
+                        "arc":  90,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "hands_medium",
+                        "display_name":  "Hands",
+                        "shots":  2,
+                        "damage":  4,
+                        "armour_piercing":  0,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "medium",
+                        "melee":  true,
+                        "range_min":  0,
+                        "range_max":  0.5,
+                        "arc":  90,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "hands_large",
+                        "display_name":  "Hands",
+                        "shots":  2,
+                        "damage":  5,
+                        "armour_piercing":  0,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "large",
+                        "melee":  true,
+                        "range_min":  0,
+                        "range_max":  0.5,
+                        "arc":  90,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "hands_super_heavy",
+                        "display_name":  "Hands",
+                        "shots":  2,
+                        "damage":  7,
+                        "armour_piercing":  0,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "super_heavy",
+                        "melee":  true,
+                        "range_min":  0,
+                        "range_max":  0.5,
+                        "arc":  90,
+                        "energy_cost":  0
+                    },
+                    {
+                        "id":  "br90_rifle",
+                        "display_name":  "BR-90 Two-Handed Marksman Rifle",
+                        "shots":  2,
+                        "damage":  11,
+                        "armour_piercing":  2,
+                        "aim_bonus":  10,
+                        "damage_type":  "ballistic",
+                        "size":  "medium",
+                        "heavy":  true,
+                        "range_min":  2,
+                        "range_max":  8,
+                        "arc":  90,
+                        "energy_cost":  1
+                    },
+                    {
+                        "id":  "ac30_cannon",
+                        "display_name":  "AC-30 Rotary Cannon",
+                        "shots":  6,
+                        "damage":  4,
+                        "armour_piercing":  0,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "medium",
+                        "heavy":  false,
+                        "range_min":  0,
+                        "range_max":  4.5,
+                        "arc":  120,
+                        "energy_cost":  1
+                    },
+                    {
+                        "id":  "sg12_breacher",
+                        "display_name":  "SG-12 Breaching Shotgun",
+                        "shots":  5,
+                        "damage":  4,
+                        "armour_piercing":  1,
+                        "aim_bonus":  0,
+                        "damage_type":  "ballistic",
+                        "size":  "medium",
+                        "heavy":  false,
+                        "range_min":  0,
+                        "range_max":  2.5,
+                        "arc":  120,
+                        "energy_cost":  0
+                    }
+                ],
+    "manoeuvres":  [
+                       {
+                           "id":  "ground",
+                           "display_name":  "Ground Move",
+                           "kind":  "ground",
+                           "minimum_move":  0,
+                           "turn_degrees":  180
+                       },
+                       {
+                           "id":  "charge",
+                           "display_name":  "Charge",
+                           "kind":  "charge",
+                           "minimum_move":  0,
+                           "move_modifier":  1,
+                           "turn_degrees":  60,
+                           "energy_cost":  1
+                       },
+                       {
+                           "id":  "cruise",
+                           "display_name":  "Cruise",
+                           "kind":  "vector",
+                           "minimum_move":  1,
+                           "turn_degrees":  45
+                       },
+                       {
+                           "id":  "combat_turn",
+                           "display_name":  "Combat Turn",
+                           "kind":  "vector",
+                           "minimum_move":  1,
+                           "move_modifier":  -1,
+                           "turn_degrees":  90
+                       },
+                       {
+                           "id":  "brake",
+                           "display_name":  "Brake",
+                           "kind":  "vector",
+                           "minimum_move":  1,
+                           "distance":  1,
+                           "turn_degrees":  90
+                       },
+                       {
+                           "id":  "lateral",
+                           "display_name":  "Lateral Thrust",
+                           "kind":  "lateral",
+                           "minimum_move":  1,
+                           "distance":  2,
+                           "turn_degrees":  0,
+                           "energy_cost":  1
+                       },
+                       {
+                           "id":  "reverse",
+                           "display_name":  "Reverse Vector",
+                           "kind":  "reverse",
+                           "minimum_move":  1,
+                           "distance":  2,
+                           "turn_degrees":  90,
+                           "energy_cost":  2
+                       },
+                       {
+                           "id":  "straight4",
+                           "display_name":  "Straight 4",
+                           "kind":  "aircraft",
+                           "distance":  4,
+                           "turn_degrees":  0
+                       },
+                       {
+                           "id":  "straight5",
+                           "display_name":  "Straight 5",
+                           "kind":  "aircraft",
+                           "distance":  5,
+                           "turn_degrees":  0
+                       },
+                       {
+                           "id":  "bank_l",
+                           "display_name":  "Bank Left 4",
+                           "kind":  "aircraft",
+                           "distance":  4,
+                           "turn_degrees":  -45
+                       },
+                       {
+                           "id":  "bank_r",
+                           "display_name":  "Bank Right 4",
+                           "kind":  "aircraft",
+                           "distance":  4,
+                           "turn_degrees":  45
+                       },
+                       {
+                           "id":  "hard_l",
+                           "display_name":  "Hard Left 3",
+                           "kind":  "aircraft",
+                           "distance":  3,
+                           "turn_degrees":  -90
+                       },
+                       {
+                           "id":  "hard_r",
+                           "display_name":  "Hard Right 3",
+                           "kind":  "aircraft",
+                           "distance":  3,
+                           "turn_degrees":  90
+                       },
+                       {
+                           "id":  "highg_l",
+                           "display_name":  "High-G Left 2",
+                           "kind":  "aircraft",
+                           "distance":  2,
+                           "turn_degrees":  -135,
+                           "energy_cost":  1
+                       },
+                       {
+                           "id":  "highg_r",
+                           "display_name":  "High-G Right 2",
+                           "kind":  "aircraft",
+                           "distance":  2,
+                           "turn_degrees":  135,
+                           "energy_cost":  1
+                       }
+                   ],
+    "abilities":  [
+                      {
+                          "id":  "push",
+                          "display_name":  "Push",
+                          "event":  "before_attack",
+                          "effect":  "accuracy",
+                          "amount":  20,
+                          "will_cost":  1,
+                          "description":  "Arm before firing: +20% to hit for this attack. 1 Will."
+                      },
+                      {
+                          "id":  "newtype",
+                          "display_name":  "Newtype Reflexes",
+                          "event":  "after_movement",
+                          "effect":  "rotate",
+                          "amount":  45,
+                          "will_cost":  1,
+                          "description":  "After moving, rotate up to 45 degrees extra. 1 Will per use."
+                      },
+                      {
+                          "id":  "see_it",
+                          "display_name":  "I Can See It",
+                          "event":  "after_attack_roll",
+                          "effect":  "reroll",
+                          "amount":  2,
+                          "will_cost":  1,
+                          "description":  "Reroll up to two misses in this attack. Costs 1 Will only if a miss can be rerolled."
+                      }
+                  ],
+    "pilots":  [
+                   {
+                       "id":  "ace",
+                       "display_name":  "Ari / ACE",
+                       "stats":  {
+                                     "gunnery":  2,
+                                     "melee":  2,
+                                     "precision":  2,
+                                     "reflex":  1,
+                                     "guard":  1,
+                                     "systems":  1,
+                                     "countermeasures":  1,
+                                     "spirit":  4
+                                 },
+                       "abilities":  [
+                                         "push",
+                                         "newtype",
+                                         "see_it"
+                                     ]
+                   },
+                   {
+                       "id":  "anchor",
+                       "display_name":  "Sol / ANCHOR",
+                       "stats":  {
+                                     "gunnery":  1,
+                                     "melee":  1,
+                                     "precision":  0,
+                                     "reflex":  0,
+                                     "guard":  1,
+                                     "systems":  0,
+                                     "countermeasures":  0,
+                                     "spirit":  2
+                                 },
+                       "abilities":  [
+                                         "push"
+                                     ]
+                   },
+                   {
+                       "id":  "kite",
+                       "display_name":  "Ren / KITE",
+                       "stats":  {
+                                     "gunnery":  1,
+                                     "melee":  0,
+                                     "precision":  1,
+                                     "reflex":  1,
+                                     "guard":  0,
+                                     "systems":  1,
+                                     "countermeasures":  0,
+                                     "spirit":  2
+                                 },
+                       "abilities":  [
+                                         "push"
+                                     ]
+                   },
+                   {
+                       "id":  "bulwark",
+                       "display_name":  "Voss / BULWARK",
+                       "stats":  {
+                                     "gunnery":  1,
+                                     "melee":  0,
+                                     "precision":  1,
+                                     "reflex":  0,
+                                     "guard":  2,
+                                     "systems":  0,
+                                     "countermeasures":  1,
+                                     "spirit":  2
+                                 },
+                       "abilities":  [
+                                         "push"
+                                     ]
+                   },
+                   {
+                       "id":  "wraith",
+                       "display_name":  "Iris / WRAITH",
+                       "stats":  {
+                                     "gunnery":  1,
+                                     "melee":  1,
+                                     "precision":  2,
+                                     "reflex":  0,
+                                     "guard":  1,
+                                     "systems":  2,
+                                     "countermeasures":  1,
+                                     "spirit":  3
+                                 },
+                       "abilities":  [
+                                         "push"
+                                     ]
+                   },
+                   {
+                       "id":  "razor",
+                       "display_name":  "Kel / RAZOR",
+                       "stats":  {
+                                     "gunnery":  0,
+                                     "melee":  0,
+                                     "precision":  1,
+                                     "reflex":  1,
+                                     "guard":  0,
+                                     "systems":  0,
+                                     "countermeasures":  1,
+                                     "spirit":  2
+                                 },
+                       "abilities":  [
+                                         "push"
+                                     ]
+                   },
+                   {
+                       "id":  "anvil",
+                       "display_name":  "Borin / ANVIL",
+                       "stats":  {
+                                     "gunnery":  1,
+                                     "melee":  0,
+                                     "precision":  0,
+                                     "reflex":  0,
+                                     "guard":  0,
+                                     "systems":  0,
+                                     "countermeasures":  0,
+                                     "spirit":  2
+                                 },
+                       "abilities":  [
+                                         "push"
+                                     ]
+                   }
+               ],
+    "frames":  [
+                   {
+                       "id":  "type99_tank",
+                       "display_name":  "Type-99 Main Battle Tank",
+                       "movement_type":  "ground",
+                       "size_class":  "large",
+                       "structure":  20,
+                       "armour":  3,
+                       "armour_type":  "ballistic",
+                       "base_move":  3,
+                       "energy_capacity":  2,
+                       "energy_recharge":  1,
+                       "stat_bonuses":  {
+
+                                        },
+                       "stat_max":  {
+                                        "gunnery":  3,
+                                        "melee":  0,
+                                        "precision":  2,
+                                        "reflex":  1,
+                                        "guard":  0,
+                                        "systems":  2,
+                                        "countermeasures":  2,
+                                        "spirit":  6
+                                    },
+                       "altitude_access":  [
+                                               0
+                                           ],
+                       "manoeuvres":  [
+                                          "ground"
+                                      ],
+                       "generation":  2,
+                       "tier":  "vehicle",
+                       "tonnage":  55
+                   },
+                   {
+                       "id":  "hx7_kestrel",
+                       "manufacturer":  "halcyon",
+                       "display_name":  "HX-7 Kestrel",
+                       "movement_type":  "flying",
+                       "size_class":  "medium",
+                       "structure":  60,
+                       "armour":  1,
+                       "armour_type":  "energy",
+                       "base_move":  4,
+                       "energy_capacity":  5,
+                       "energy_recharge":  2,
+                       "stat_bonuses":  {
+                                            "reflex":  2,
+                                            "systems":  1,
+                                            "countermeasures":  1
+                                        },
+                       "stat_max":  {
+                                        "gunnery":  4,
+                                        "melee":  4,
+                                        "precision":  4,
+                                        "reflex":  4,
+                                        "guard":  3,
+                                        "systems":  3,
+                                        "countermeasures":  3,
+                                        "spirit":  6
+                                    },
+                       "default_melee":  "hands_medium",
+                       "altitude_access":  [
+                                               0,
+                                               1
+                                           ],
+                       "manoeuvres":  [
+                                          "ground",
+                                          "charge",
+                                          "cruise",
+                                          "combat_turn",
+                                          "brake",
+                                          "lateral",
+                                          "reverse"
+                                      ],
+                       "generation":  2,
+                       "tier":  "elite",
+                       "tonnage":  36
+                   },
+                   {
+                       "id":  "m9_teamster",
+                       "manufacturer":  "brannock_hale",
+                       "display_name":  "M9 Teamster",
+                       "movement_type":  "ground",
+                       "size_class":  "medium",
+                       "structure":  72,
+                       "armour":  2,
+                       "armour_type":  "explosive",
+                       "base_move":  3,
+                       "energy_capacity":  3,
+                       "energy_recharge":  1,
+                       "stat_bonuses":  {
+                                            "reflex":  1
+                                        },
+                       "stat_max":  {
+                                        "gunnery":  3,
+                                        "melee":  3,
+                                        "precision":  3,
+                                        "reflex":  2,
+                                        "guard":  3,
+                                        "systems":  2,
+                                        "countermeasures":  2,
+                                        "spirit":  6
+                                    },
+                       "default_melee":  "hands_medium",
+                       "altitude_access":  [
+                                               0
+                                           ],
+                       "manoeuvres":  [
+                                          "ground",
+                                          "charge"
+                                      ],
+                       "generation":  2,
+                       "tier":  "line",
+                       "tonnage":  63
+                   },
+                   {
+                       "id":  "fighter",
+                       "display_name":  "F-12 Peregrine",
+                       "movement_type":  "aircraft",
+                       "size_class":  "small",
+                       "structure":  14,
+                       "armour":  0,
+                       "armour_type":  "none",
+                       "base_move":  5,
+                       "energy_capacity":  3,
+                       "energy_recharge":  1,
+                       "stat_bonuses":  {
+                                            "reflex":  2
+                                        },
+                       "stat_max":  {
+                                        "gunnery":  3,
+                                        "melee":  0,
+                                        "precision":  3,
+                                        "reflex":  4,
+                                        "guard":  0,
+                                        "systems":  3,
+                                        "countermeasures":  3,
+                                        "spirit":  6
+                                    },
+                       "altitude_access":  [
+                                               1,
+                                               2
+                                           ],
+                       "manoeuvres":  [
+                                          "straight4",
+                                          "straight5",
+                                          "bank_l",
+                                          "bank_r",
+                                          "hard_l",
+                                          "hard_r",
+                                          "highg_l",
+                                          "highg_r"
+                                      ],
+                       "generation":  2,
+                       "tier":  "vehicle",
+                       "tonnage":  20
+                   },
+                   {
+                       "id":  "ob12_medved",
+                       "manufacturer":  "kirov_mikoyan",
+                       "display_name":  "OB-12 Medved",
+                       "movement_type":  "ground",
+                       "size_class":  "large",
+                       "structure":  90,
+                       "armour":  3,
+                       "armour_type":  "ballistic",
+                       "base_move":  2.5,
+                       "energy_capacity":  4,
+                       "energy_recharge":  2,
+                       "stat_bonuses":  {
+
+                                        },
+                       "stat_max":  {
+                                        "gunnery":  3,
+                                        "melee":  3,
+                                        "precision":  3,
+                                        "reflex":  1,
+                                        "guard":  4,
+                                        "systems":  2,
+                                        "countermeasures":  3,
+                                        "spirit":  6
+                                    },
+                       "default_melee":  "hands_large",
+                       "altitude_access":  [
+                                               0
+                                           ],
+                       "manoeuvres":  [
+                                          "ground",
+                                          "charge"
+                                      ],
+                       "generation":  2,
+                       "tier":  "line",
+                       "tonnage":  96
+                   },
+                   {
+                       "id":  "type09_tieshan",
+                       "manufacturer":  "tianlong",
+                       "display_name":  "Type-09 Tieshan",
+                       "movement_type":  "ground",
+                       "size_class":  "large",
+                       "structure":  72,
+                       "armour":  2,
+                       "armour_type":  "explosive",
+                       "base_move":  2.5,
+                       "energy_capacity":  3,
+                       "energy_recharge":  1,
+                       "stat_bonuses":  {
+                                            "reflex":  1,
+                                            "systems":  1
+                                        },
+                       "stat_max":  {
+                                        "gunnery":  4,
+                                        "melee":  3,
+                                        "precision":  4,
+                                        "reflex":  2,
+                                        "guard":  3,
+                                        "systems":  3,
+                                        "countermeasures":  2,
+                                        "spirit":  6
+                                    },
+                       "default_melee":  "hands_large",
+                       "altitude_access":  [
+                                               0
+                                           ],
+                       "manoeuvres":  [
+                                          "ground",
+                                          "charge"
+                                      ],
+                       "generation":  2,
+                       "tier":  "mass",
+                       "tonnage":  68
+                   }
+               ]
+}

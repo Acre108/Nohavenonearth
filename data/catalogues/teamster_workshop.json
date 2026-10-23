@@ -1,0 +1,655 @@
+﻿{
+    "frame_id":  "m9_teamster",
+    "regions":  [
+                    {
+                        "id":  "head",
+                        "name":  "Head",
+                        "slots":  [
+                                      {
+                                          "id":  "head.sensor",
+                                          "name":  "Sensor assembly",
+                                          "family":  "m9_sensor",
+                                          "standard":  "sensor_standard"
+                                      }
+                                  ]
+                    },
+                    {
+                        "id":  "torso",
+                        "name":  "Torso",
+                        "slots":  [
+                                      {
+                                          "id":  "torso.structure",
+                                          "name":  "Cockpit \u0026 structure",
+                                          "family":  "m9_structure",
+                                          "standard":  "structure_standard"
+                                      },
+                                      {
+                                          "id":  "torso.armour",
+                                          "name":  "Armour package",
+                                          "family":  "m9_torso_armour",
+                                          "standard":  "torso_standard"
+                                      }
+                                  ]
+                    },
+                    {
+                        "id":  "left_arm",
+                        "name":  "Left arm",
+                        "slots":  [
+                                      {
+                                          "id":  "left_arm.actuator",
+                                          "name":  "Actuator assembly",
+                                          "family":  "m9_arm_drive",
+                                          "standard":  "arm_standard"
+                                      },
+                                      {
+                                          "id":  "left_arm.armour",
+                                          "name":  "Armour shell",
+                                          "family":  "m9_arm_armour",
+                                          "standard":  "arm_shell"
+                                      }
+                                  ]
+                    },
+                    {
+                        "id":  "right_arm",
+                        "name":  "Right arm",
+                        "slots":  [
+                                      {
+                                          "id":  "right_arm.actuator",
+                                          "name":  "Actuator assembly",
+                                          "family":  "m9_arm_drive",
+                                          "standard":  "arm_standard"
+                                      },
+                                      {
+                                          "id":  "right_arm.armour",
+                                          "name":  "Armour shell",
+                                          "family":  "m9_arm_armour",
+                                          "standard":  "arm_shell"
+                                      }
+                                  ]
+                    },
+                    {
+                        "id":  "left_leg",
+                        "name":  "Left leg",
+                        "slots":  [
+                                      {
+                                          "id":  "left_leg.drive",
+                                          "name":  "Drive assembly",
+                                          "family":  "m9_leg_drive",
+                                          "standard":  "leg_standard"
+                                      },
+                                      {
+                                          "id":  "left_leg.armour",
+                                          "name":  "Armour shell",
+                                          "family":  "m9_leg_armour",
+                                          "standard":  "leg_shell"
+                                      }
+                                  ]
+                    },
+                    {
+                        "id":  "right_leg",
+                        "name":  "Right leg",
+                        "slots":  [
+                                      {
+                                          "id":  "right_leg.drive",
+                                          "name":  "Drive assembly",
+                                          "family":  "m9_leg_drive",
+                                          "standard":  "leg_standard"
+                                      },
+                                      {
+                                          "id":  "right_leg.armour",
+                                          "name":  "Armour shell",
+                                          "family":  "m9_leg_armour",
+                                          "standard":  "leg_shell"
+                                      }
+                                  ]
+                    },
+                    {
+                        "id":  "power",
+                        "name":  "Power",
+                        "slots":  [
+                                      {
+                                          "id":  "power.plant",
+                                          "name":  "Turbine-capacitor plant",
+                                          "family":  "m9_power",
+                                          "standard":  "power_standard"
+                                      }
+                                  ]
+                    },
+                    {
+                        "id":  "backpack",
+                        "name":  "Backpack",
+                        "slots":  [
+                                      {
+                                          "id":  "backpack.service",
+                                          "name":  "Service assembly",
+                                          "family":  "m9_service",
+                                          "standard":  "service_standard"
+                                      },
+                                      {
+                                          "id":  "backpack.module",
+                                          "name":  "Mission module",
+                                          "family":  "m9_module",
+                                          "standard":  "module_standard"
+                                      }
+                                  ]
+                    }
+                ],
+    "parts":  [
+                  {
+                      "id":  "sensor_standard",
+                      "name":  "SC-9 Cupola Optics",
+                      "family":  "m9_sensor",
+                      "description":  "Twin cameras and a protected periscope. The standard Teamster sensor fit.",
+                      "bonuses":  {
+
+                                  },
+                      "wear":  {
+                                   "gunnery":  -0.25
+                               },
+                      "repair_rate":  2,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "standard"
+                  },
+                  {
+                      "id":  "sensor_precision",
+                      "name":  "SC-9P Rangefinder",
+                      "family":  "m9_sensor",
+                      "description":  "Survey-grade optics improve fire control at the expense of peripheral awareness.",
+                      "bonuses":  {
+                                      "gunnery":  0.25,
+                                      "precision":  0.25,
+                                      "reflex":  -0.25
+                                  },
+                      "wear":  {
+                                   "gunnery":  -0.25
+                               },
+                      "repair_rate":  3,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0.5,
+                      "rarity":  "rare"
+                  },
+                  {
+                      "id":  "structure_standard",
+                      "name":  "BH-9 Crew Cell",
+                      "family":  "m9_structure",
+                      "description":  "Braced cockpit, hip coupling and a serviceable load-bearing cage.",
+                      "bonuses":  {
+
+                                  },
+                      "wear":  {
+                                   "structure":  -4
+                               },
+                      "repair_rate":  3,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "standard"
+                  },
+                  {
+                      "id":  "structure_braced",
+                      "name":  "BH-9R Recovery Cage",
+                      "family":  "m9_structure",
+                      "description":  "Extra bracing buys survivability but adds weight to the chassis.",
+                      "bonuses":  {
+                                      "structure":  6,
+                                      "base_move":  -0.25
+                                  },
+                      "wear":  {
+                                   "structure":  -4
+                               },
+                      "repair_rate":  3,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "uncommon"
+                  },
+                  {
+                      "id":  "torso_standard",
+                      "name":  "AP-9 Glacis Kit",
+                      "family":  "m9_torso_armour",
+                      "description":  "The standard bolted armour package, with spare track links over the chest.",
+                      "bonuses":  {
+
+                                  },
+                      "wear":  {
+                                   "structure":  -3
+                               },
+                      "repair_rate":  2,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "standard"
+                  },
+                  {
+                      "id":  "torso_heavy",
+                      "name":  "AP-9H Assault Plates",
+                      "family":  "m9_torso_armour",
+                      "description":  "Thicker plates stop small-calibre fire. The extra weight reduces mobility.",
+                      "bonuses":  {
+                                      "armour":  1,
+                                      "base_move":  -0.5
+                                  },
+                      "wear":  {
+                                   "structure":  -3
+                               },
+                      "repair_rate":  3,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "uncommon"
+                  },
+                  {
+                      "id":  "arm_standard",
+                      "name":  "HA-9 Hydraulic Actuator",
+                      "family":  "m9_arm_drive",
+                      "description":  "A rugged industrial actuator, equally at home handling a rifle or driving a stake.",
+                      "bonuses":  {
+
+                                  },
+                      "wear":  {
+                                   "melee":  -0.25
+                               },
+                      "repair_rate":  2,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "standard"
+                  },
+                  {
+                      "id":  "arm_precision",
+                      "name":  "HA-9F Fine-Control Servo",
+                      "family":  "m9_arm_drive",
+                      "description":  "Smoother weapon handling trades some close-combat force for precision.",
+                      "bonuses":  {
+                                      "gunnery":  0.25,
+                                      "melee":  -0.25
+                                  },
+                      "wear":  {
+                                   "gunnery":  -0.25
+                               },
+                      "repair_rate":  3,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0.5,
+                      "rarity":  "uncommon"
+                  },
+                  {
+                      "id":  "arm_shell",
+                      "name":  "AS-9 Arm Shell",
+                      "family":  "m9_arm_armour",
+                      "description":  "Replaceable shoulder and forearm plates on standard Brannock fittings.",
+                      "bonuses":  {
+
+                                  },
+                      "wear":  {
+                                   "structure":  -2
+                               },
+                      "repair_rate":  1,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "standard"
+                  },
+                  {
+                      "id":  "arm_reinforced",
+                      "name":  "AS-9R Reinforced Shell",
+                      "family":  "m9_arm_armour",
+                      "description":  "Reinforced forearm plating protects the drive and improves close defence.",
+                      "bonuses":  {
+                                      "structure":  3,
+                                      "guard":  0.25,
+                                      "reflex":  -0.25
+                                  },
+                      "wear":  {
+                                   "structure":  -2
+                               },
+                      "repair_rate":  2,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "uncommon"
+                  },
+                  {
+                      "id":  "leg_standard",
+                      "name":  "LD-9 Walking Drive",
+                      "family":  "m9_leg_drive",
+                      "description":  "High-torque hydraulics built from the Teamster\u0027s construction machinery ancestry.",
+                      "bonuses":  {
+
+                                  },
+                      "wear":  {
+                                   "base_move":  -0.25
+                               },
+                      "repair_rate":  2,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "standard"
+                  },
+                  {
+                      "id":  "leg_fast",
+                      "name":  "LD-9M March Drive",
+                      "family":  "m9_leg_drive",
+                      "description":  "Revised gearing improves travel speed, with less structural reinforcement.",
+                      "bonuses":  {
+                                      "base_move":  0.25,
+                                      "structure":  -2
+                                  },
+                      "wear":  {
+                                   "base_move":  -0.25
+                               },
+                      "repair_rate":  3,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0.75,
+                      "rarity":  "uncommon"
+                  },
+                  {
+                      "id":  "leg_shell",
+                      "name":  "LS-9 Leg Shell",
+                      "family":  "m9_leg_armour",
+                      "description":  "Bolted shin plates, sealed knee guards and broad industrial feet.",
+                      "bonuses":  {
+
+                                  },
+                      "wear":  {
+                                   "structure":  -2
+                               },
+                      "repair_rate":  1,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "standard"
+                  },
+                  {
+                      "id":  "leg_braced",
+                      "name":  "LS-9B Bracing Kit",
+                      "family":  "m9_leg_armour",
+                      "description":  "Heavier lower-leg protection improves survival but slows the frame.",
+                      "bonuses":  {
+                                      "structure":  4,
+                                      "base_move":  -0.25
+                                  },
+                      "wear":  {
+                                   "structure":  -2
+                               },
+                      "repair_rate":  2,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "uncommon"
+                  },
+                  {
+                      "id":  "power_standard",
+                      "name":  "HT-12 Turbine Plant",
+                      "family":  "m9_power",
+                      "description":  "The standard turbine-capacitor installation: three Energy, one recharge per round.",
+                      "bonuses":  {
+
+                                  },
+                      "wear":  {
+                                   "energy_capacity":  -1
+                               },
+                      "repair_rate":  3,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "standard"
+                  },
+                  {
+                      "id":  "power_buffered",
+                      "name":  "HT-12B Buffered Plant",
+                      "family":  "m9_power",
+                      "description":  "A larger capacitor reserve supports burst work at the cost of protective casing.",
+                      "bonuses":  {
+                                      "energy_capacity":  2,
+                                      "structure":  -3
+                                  },
+                      "wear":  {
+                                   "energy_capacity":  -1
+                               },
+                      "repair_rate":  3,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "rare"
+                  },
+                  {
+                      "id":  "service_standard",
+                      "name":  "CS-9 Cooling Pack",
+                      "family":  "m9_service",
+                      "description":  "Louvred heat exchanger and field-service connections.",
+                      "bonuses":  {
+
+                                  },
+                      "wear":  {
+                                   "structure":  -2
+                               },
+                      "repair_rate":  1,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "standard"
+                  },
+                  {
+                      "id":  "service_upgraded",
+                      "name":  "CS-9X High-Flow Pack",
+                      "family":  "m9_service",
+                      "description":  "Additional cooling supports faster recharge, with a heavier support assembly.",
+                      "bonuses":  {
+                                      "energy_recharge":  1,
+                                      "base_move":  -0.25
+                                  },
+                      "wear":  {
+                                   "energy_recharge":  -1
+                               },
+                      "repair_rate":  2,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0.75,
+                      "rarity":  "uncommon"
+                  },
+                  {
+                      "id":  "module_standard",
+                      "name":  "MP-9 Hornet Carrier",
+                      "family":  "m9_module",
+                      "description":  "Support rack and ammunition feed for the standard Hornet missile pod.",
+                      "bonuses":  {
+
+                                  },
+                      "wear":  {
+                                   "precision":  -0.25
+                               },
+                      "repair_rate":  1,
+                      "weapon":  "hornet_pod",
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "standard"
+                  },
+                  {
+                      "id":  "module_recovery",
+                      "name":  "MP-9 Recovery Rig",
+                      "family":  "m9_module",
+                      "description":  "A bracing and recovery package replaces the Hornet carrier. Missile pod is stowed.",
+                      "bonuses":  {
+                                      "structure":  5,
+                                      "guard":  0.25
+                                  },
+                      "wear":  {
+                                   "structure":  -2
+                               },
+                      "repair_rate":  2,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "uncommon"
+                  },
+                  {
+                      "id":  "foreign_sensor",
+                      "name":  "SC-H Aviation Array",
+                      "family":  "m9_sensor",
+                      "description":  "Halcyon aviation hardware. Its mounting interface does not fit the Teamster.",
+                      "bonuses":  {
+                                      "precision":  0.5
+                                  },
+                      "wear":  {
+
+                               },
+                      "repair_rate":  3,
+                      "manufacturer":  "halcyon",
+                      "size_class":  "medium",
+                      "energy_reservation":  0,
+                      "rarity":  "uncommon"
+                  },
+                  {
+                      "id":  "oversize_arm",
+                      "name":  "HA-14 Heavy Actuator",
+                      "family":  "m9_arm_drive",
+                      "description":  "A large-class Brannock-Hale actuator. Its size prevents installation on the medium Teamster.",
+                      "bonuses":  {
+                                      "melee":  0.5
+                                  },
+                      "wear":  {
+                                   "melee":  -0.25
+                               },
+                      "repair_rate":  3,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "large",
+                      "energy_reservation":  0.75,
+                      "rarity":  "uncommon"
+                  },
+                  {
+                      "id":  "arm_marksman",
+                      "name":  "HA-9M Marksman Arm / BR-90",
+                      "family":  "m9_arm_drive",
+                      "description":  "Extended right-arm weapon handling with the BR-90 two-handed rifle. Requires the HA-9S support assembly in the left actuator slot.",
+                      "bonuses":  {
+                                      "precision":  0.25
+                                  },
+                      "wear":  {
+                                   "gunnery":  -0.25
+                               },
+                      "repair_rate":  3,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0.5,
+                      "weapon":  "br90_rifle",
+                      "allowed_slots":  [
+                                            "right_arm.actuator"
+                                        ],
+                      "requires":  {
+                                       "left_arm.actuator":  "arm_support"
+                                   },
+                      "rarity":  "rare"
+                  },
+                  {
+                      "id":  "arm_support",
+                      "name":  "HA-9S Extended Support Arm",
+                      "family":  "m9_arm_drive",
+                      "description":  "A telescoping support actuator with a stabilising grip. Stows the stake driver so the left hand can support a two-handed weapon.",
+                      "bonuses":  {
+                                      "melee":  -0.25,
+                                      "guard":  0.25
+                                  },
+                      "wear":  {
+                                   "precision":  -0.25
+                               },
+                      "repair_rate":  2,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0.25,
+                      "weapon":  "",
+                      "allowed_slots":  [
+                                            "left_arm.actuator"
+                                        ],
+                      "rarity":  "uncommon"
+                  },
+                  {
+                      "id":  "arm_cannon",
+                      "name":  "HA-9C Rotary Cannon Arm",
+                      "family":  "m9_arm_drive",
+                      "description":  "AC-30 rotary cannon with a five-barrel cluster and a side ammunition box. Replaces the Longhorn rifle.",
+                      "bonuses":  {
+                                      "base_move":  -0.25
+                                  },
+                      "wear":  {
+                                   "gunnery":  -0.25
+                               },
+                      "repair_rate":  3,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0.75,
+                      "weapon":  "ac30_cannon",
+                      "allowed_slots":  [
+                                            "right_arm.actuator"
+                                        ],
+                      "rarity":  "rare"
+                  },
+                  {
+                      "id":  "arm_breacher",
+                      "name":  "HA-9B Breaching Shotgun Arm",
+                      "family":  "m9_arm_drive",
+                      "description":  "A twin-barrel SG-12 breacher with a drum feed and a powered cycling slide. Replaces the stake driver.",
+                      "bonuses":  {
+                                      "guard":  0.25
+                                  },
+                      "wear":  {
+                                   "gunnery":  -0.25
+                               },
+                      "repair_rate":  2,
+                      "manufacturer":  "brannock_hale",
+                      "size_class":  "medium",
+                      "energy_reservation":  0.25,
+                      "weapon":  "sg12_breacher",
+                      "allowed_slots":  [
+                                            "left_arm.actuator"
+                                        ],
+                      "rarity":  "uncommon"
+                  }
+              ],
+    "finishes":  [
+                     {
+                         "id":  "depot",
+                         "name":  "Depot olive",
+                         "primary":  "656a4a",
+                         "secondary":  "3e4939",
+                         "marking":  "c2bda4"
+                     },
+                     {
+                         "id":  "winter",
+                         "name":  "Winter service",
+                         "primary":  "b6beb8",
+                         "secondary":  "566867",
+                         "marking":  "e5c88d"
+                     },
+                     {
+                         "id":  "desert",
+                         "name":  "Desert recovery",
+                         "primary":  "ac9870",
+                         "secondary":  "6b604c",
+                         "marking":  "ded1a5"
+                     },
+                     {
+                         "id":  "naval",
+                         "name":  "Coastal grey",
+                         "primary":  "6d8290",
+                         "secondary":  "3b505c",
+                         "marking":  "c9ba87"
+                     }
+                 ],
+    "manufacturers":  {
+                          "brannock_hale":  "Brannock-Hale Heavy Industries",
+                          "halcyon":  "Halcyon Aeronautics",
+                          "vek":  "Vauclair-Ehrlich Konsortium",
+                          "castellani":  "Atelier Castellani",
+                          "tianlong":  "Tianlong State Machinery",
+                          "kirov_mikoyan":  "Kirov-Mikoyan OKB-7",
+                          "mitsurugi":  "Mitsurugi Heavy Industries",
+                          "meridian":  "Pan-African League workshops",
+                          "ascension":  "Ascension Orbital Works"
+                      }
+}

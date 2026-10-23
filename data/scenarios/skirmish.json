@@ -1,0 +1,300 @@
+{
+  "catalogue": "res://data/catalogues/standard.json",
+  "battlefield": {
+    "origin": [
+      -18,
+      -13
+    ],
+    "size": [
+      36,
+      26
+    ]
+  },
+  "units": [
+    {
+      "id": "blue_kestrel",
+      "callsign": "01 / ACE",
+      "faction": 0,
+      "pilot": "ace",
+      "frame": "hx7_kestrel",
+      "weapons": [
+        "lr3_rifle",
+        "agm_stores",
+        "vb2_knife"
+      ],
+      "start_position": [
+        -11,
+        -4.5
+      ],
+      "start_facing": 90,
+      "start_altitude": 1
+    },
+    {
+      "id": "blue_teamster",
+      "callsign": "02 / ANCHOR",
+      "faction": 0,
+      "pilot": "anchor",
+      "frame": "m9_teamster",
+      "weapons": [
+        "ar40_rifle",
+        "hornet_pod",
+        "pb4_stake"
+      ],
+      "start_position": [
+        -11,
+        0
+      ],
+      "start_facing": 90,
+      "start_altitude": 0
+    },
+    {
+      "id": "blue_fighter",
+      "callsign": "03 / KITE",
+      "faction": 0,
+      "pilot": "kite",
+      "frame": "fighter",
+      "weapons": [
+        "autocannon",
+        "missiles"
+      ],
+      "start_position": [
+        -12,
+        6
+      ],
+      "start_facing": 90,
+      "start_altitude": 1
+    },
+    {
+      "id": "red_medved",
+      "callsign": "04 / BULWARK",
+      "faction": 1,
+      "pilot": "bulwark",
+      "frame": "ob12_medved",
+      "weapons": [
+        "grad_m",
+        "gsh6m_rotary",
+        "molot_ram"
+      ],
+      "start_position": [
+        11,
+        -4.5
+      ],
+      "start_facing": -90,
+      "start_altitude": 0
+    },
+    {
+      "id": "red_tieshan",
+      "callsign": "05 / WRAITH",
+      "faction": 1,
+      "pilot": "wraith",
+      "frame": "type09_tieshan",
+      "weapons": [
+        "type09_cannon",
+        "type07_rifle",
+        "type11_dao"
+      ],
+      "start_position": [
+        11,
+        0
+      ],
+      "start_facing": -90,
+      "start_altitude": 0
+    },
+    {
+      "id": "red_fighter",
+      "callsign": "06 / RAZOR",
+      "faction": 1,
+      "pilot": "razor",
+      "frame": "fighter",
+      "weapons": [
+        "autocannon",
+        "missiles"
+      ],
+      "start_position": [
+        12,
+        6
+      ],
+      "start_facing": -90,
+      "start_altitude": 2
+    },
+    {
+      "id": "red_tank",
+      "callsign": "07 / ANVIL",
+      "faction": 1,
+      "pilot": "anvil",
+      "frame": "type99_tank",
+      "weapons": [
+        "type99_gun",
+        "type99_mg"
+      ],
+      "start_position": [
+        11,
+        -9
+      ],
+      "start_facing": -90,
+      "start_altitude": 0
+    }
+  ],
+  "terrain": [
+    {
+      "id": "comms",
+      "name": "COMMS / BLOCKING",
+      "position": [
+        -0.8,
+        -4.5
+      ],
+      "half_size": [
+        0.75,
+        1.1
+      ],
+      "height": 3.0,
+      "cover": 2,
+      "blocks_move": true,
+      "blocks_los": true
+    },
+    {
+      "id": "depot",
+      "name": "DEPOT / BLOCKING",
+      "position": [
+        0.9,
+        3.5
+      ],
+      "half_size": [
+        0.8,
+        1.1
+      ],
+      "height": 2.6,
+      "cover": 2,
+      "blocks_move": true,
+      "blocks_los": true
+    },
+    {
+      "id": "ruins",
+      "name": "RUINS / +2 COVER",
+      "position": [
+        0,
+        0
+      ],
+      "half_size": [
+        0.75,
+        0.6
+      ],
+      "height": 1.2,
+      "cover": 2,
+      "blocks_move": false,
+      "blocks_los": false
+    },
+    {
+      "id": "barrier_w",
+      "name": "BARRIER / +1 COVER",
+      "position": [
+        -2.8,
+        1.8
+      ],
+      "half_size": [
+        0.8,
+        0.16
+      ],
+      "height": 0.65,
+      "cover": 1,
+      "blocks_move": false,
+      "blocks_los": false
+    },
+    {
+      "id": "barrier_e",
+      "name": "BARRIER / +1 COVER",
+      "position": [
+        3,
+        -1.3
+      ],
+      "half_size": [
+        0.8,
+        0.16
+      ],
+      "height": 0.65,
+      "cover": 1,
+      "blocks_move": false,
+      "blocks_los": false
+    },
+    {
+      "id": "tower",
+      "name": "TALL RUIN / +2 COVER",
+      "position": [
+        -3.5,
+        -5.8
+      ],
+      "half_size": [
+        0.5,
+        0.5
+      ],
+      "height": 2.8,
+      "cover": 2,
+      "blocks_move": false,
+      "blocks_los": false
+    },
+    {
+      "id": "ruin_nw",
+      "name": "LOW RUIN / FLYOVER",
+      "position": [
+        -6,
+        -4.5
+      ],
+      "half_size": [
+        0.35,
+        1.4
+      ],
+      "height": 1.3,
+      "cover": 2,
+      "blocks_move": true,
+      "blocks_los": true
+    },
+    {
+      "id": "ruin_sw",
+      "name": "LOW RUIN / FLYOVER",
+      "position": [
+        -6,
+        4.5
+      ],
+      "half_size": [
+        0.35,
+        1.4
+      ],
+      "height": 1.3,
+      "cover": 2,
+      "blocks_move": true,
+      "blocks_los": true
+    },
+    {
+      "id": "ruin_ne",
+      "name": "LOW RUIN / FLYOVER",
+      "position": [
+        6,
+        -4.5
+      ],
+      "half_size": [
+        0.35,
+        1.4
+      ],
+      "height": 1.3,
+      "cover": 2,
+      "blocks_move": true,
+      "blocks_los": true
+    },
+    {
+      "id": "ruin_se",
+      "name": "LOW RUIN / FLYOVER",
+      "position": [
+        6,
+        4.5
+      ],
+      "half_size": [
+        0.35,
+        1.4
+      ],
+      "height": 1.3,
+      "cover": 2,
+      "blocks_move": true,
+      "blocks_los": true
+    }
+  ]
+}

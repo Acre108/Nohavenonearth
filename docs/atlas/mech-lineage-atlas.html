@@ -1,0 +1,915 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>No Haven on Earth Atlas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: ordnance-ledger page — header + tree tabs, turning points, legend, then one wide lineage chart
+   (5 era columns × family bands) with connectors drawn behind tag-style cards. */
+:root{
+  --paper:#ECEFEA; --card:#FAFBF8; --ink:#1B211F; --ink-2:#56605B; --rule:#C6CCC6;
+  --line:#8A938E; --xfer:#B5471B; --focus:#2E5DA6; --chip-fg:#FFFFFF; --band:#E3E7E1;
+  --sea:#D9E1DF; --land:#F4F5F1;
+  --m-PRE:#6F7773; --m-HAL:#2E5DA6; --m-BHH:#6A6E22; --m-VEK:#2A7D7A; --m-CAS:#B3263A;
+  --m-TSM:#A3561C; --m-OKB:#694B92; --m-MHI:#AE3A7D; --m-QAC:#86663A; --m-ASC:#9C7A00;
+  --m-BOR:#3C7F4C; --m-NSK:#1B7AA6; --m-UNO:#4B5FC4;
+  --display:"Chakra Petch","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#131715; --card:#1B201E; --ink:#E2E7E3; --ink-2:#9BA49F; --rule:#323A36;
+  --line:#5F6964; --xfer:#F0834E; --focus:#7FA8EE; --chip-fg:#111412; --band:#181D1B;
+  --sea:#0D1110; --land:#262C2A;
+  --m-PRE:#9BA49F; --m-HAL:#76A0EA; --m-BHH:#AEB25A; --m-VEK:#5FC0BA; --m-CAS:#EF6879;
+  --m-TSM:#E38E4E; --m-OKB:#AA8CD8; --m-MHI:#E67DB9; --m-QAC:#CBA571; --m-ASC:#E3BD30;
+  --m-BOR:#7CC48C; --m-NSK:#5CB6E0; --m-UNO:#9AA6F2;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#131715; --card:#1B201E; --ink:#E2E7E3; --ink-2:#9BA49F; --rule:#323A36;
+  --line:#5F6964; --xfer:#F0834E; --focus:#7FA8EE; --chip-fg:#111412; --band:#181D1B;
+  --sea:#0D1110; --land:#262C2A;
+  --m-PRE:#9BA49F; --m-HAL:#76A0EA; --m-BHH:#AEB25A; --m-VEK:#5FC0BA; --m-CAS:#EF6879;
+  --m-TSM:#E38E4E; --m-OKB:#AA8CD8; --m-MHI:#E67DB9; --m-QAC:#CBA571; --m-ASC:#E3BD30;
+  --m-BOR:#7CC48C; --m-NSK:#5CB6E0; --m-UNO:#9AA6F2;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:15px/1.55 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 48px}
+body.has-sheet{padding-bottom:340px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:32px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+header{display:flex;flex-direction:column;gap:10px}
+h1{font-size:clamp(32px,5vw,52px);line-height:1;font-weight:700;letter-spacing:-.01em}
+header p{margin:0;color:var(--ink-2)}
+
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--ink);margin-top:10px;flex-wrap:wrap}
+.tab{background:none;border:1px solid transparent;border-bottom:0;border-radius:3px 3px 0 0;padding:9px 9px 8px;font:600 15px var(--display);color:var(--ink-2);cursor:pointer;margin-bottom:-2px}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--paper);background:var(--ink);border-color:var(--ink)}
+.tab small{font:500 11px var(--mono);letter-spacing:.06em;margin-left:4px;opacity:.75}
+
+.turns{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.turn{background:var(--paper);padding:16px 18px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.turn .era{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--xfer)}
+.turn h3{font-size:18px;font-weight:600;line-height:1.2}
+.turn p{margin:0;font-size:14px;color:var(--ink-2)}
+.intro{margin:0}
+
+.legend{display:flex;flex-direction:column;gap:14px}
+.legend-row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+.legend-label{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);min-width:90px}
+.lt{display:flex;align-items:center;gap:8px;font-size:13px}
+.lt svg{flex:none}
+.mk{display:flex;align-items:center;gap:7px;background:none;border:1px solid transparent;border-radius:3px;padding:4px 8px 4px 4px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer}
+.mk:hover{border-color:var(--rule)}
+.mk[aria-pressed="true"]{border-color:var(--ink);background:var(--card)}
+.mk small{color:var(--ink-2);font-size:12px}
+.hint{font-size:13px;color:var(--ink-2);margin:0}
+
+.scroller{overflow-x:auto;border-top:2px solid var(--ink);-webkit-overflow-scrolling:touch}
+.scroll-note{display:none;font:12px var(--mono);color:var(--ink-2);margin:0 0 6px}
+@media (max-width:1100px){.scroll-note{display:block}}
+.scroll-note.wide{display:block}
+.chart{position:relative;min-width:var(--minw,1080px);padding-bottom:8px}
+.chart svg{position:absolute;left:0;top:0;pointer-events:none;z-index:0;overflow:visible}
+.cols,.grid{display:grid;grid-template-columns:repeat(var(--ncol,5),minmax(0,1fr));column-gap:var(--gap,44px)}
+.card.proj{border-style:dashed;border-color:var(--ink-2)}
+.cols{padding:12px 0 10px;border-bottom:1px solid var(--rule)}
+.cols div{display:flex;flex-direction:column;gap:1px}
+.cols b{font:600 15px var(--display)}
+.cols span{font:12px var(--mono);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.band{padding:18px 0 22px;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:12px}
+.band-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;position:relative;z-index:1}
+.band-h h2{font-size:20px;font-weight:600}
+.band-h p{margin:0;font-size:13px;color:var(--ink-2)}
+.grid{row-gap:12px}
+
+.card{position:relative;z-index:1;background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:8px 10px 9px;
+  text-align:left;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;gap:3px;min-width:0;transition:opacity .15s,border-color .15s}
+.card:hover{border-color:var(--ink-2)}
+.card:focus-visible,.mk:focus-visible,.lk:focus-visible,.x:focus-visible,.tab:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.card.pre{background:var(--band);border-style:dashed}
+.card.dim{opacity:.25}
+.card.sel{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.top{display:flex;align-items:center;gap:7px;min-width:0}
+.chip{flex:none;font:500 10px/1 var(--mono);letter-spacing:.06em;padding:3px 5px;border-radius:2px;background:var(--mc);color:var(--chip-fg)}
+.desig{font:500 12px var(--mono);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.name{font:600 14.5px/1.2 var(--display)}
+.tag{font-size:12px;line-height:1.35;color:var(--ink-2)}
+.xtag{font:11px/1.3 var(--mono);color:var(--xfer)}
+.spec{margin-left:auto;font:11px var(--mono);color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.kit{font:11px/1.35 var(--mono);color:var(--ink)}
+.kit b{font-weight:500;color:var(--ink-2);letter-spacing:.06em;margin-right:2px}
+.card.end{border-right:3.5px solid var(--line)}
+.fate{font:11px/1.35 var(--mono);color:var(--ink-2);border-top:1px dashed var(--rule);padding-top:4px;margin-top:2px}
+.fate b{font-weight:500;color:var(--ink);letter-spacing:.06em;margin-right:2px}
+
+.edge{fill:none;stroke:var(--line);stroke-width:1.4;transition:opacity .15s}
+.edge.L{stroke-dasharray:5 4}
+.edge.X{stroke:var(--xfer);stroke-dasharray:1.5 4;stroke-linecap:round;stroke-width:1.8}
+.edge.cross:not(.show){display:none}
+.edge.hot{stroke-width:2.4;stroke:var(--ink)}
+.edge.X.hot{stroke:var(--xfer);stroke-width:2.6}
+.edge.dim{opacity:.12}
+.edge.gone{display:none}
+.ah{fill:var(--line)} .ax{fill:var(--xfer)}
+
+.sheet{position:fixed;z-index:20;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  width:min(440px,calc(100% - 32px));max-height:min(60vh,520px);overflow:auto;background:var(--card);border:1px solid var(--ink);border-radius:4px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px}
+.sheet-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.sheet h3{font-size:22px;line-height:1.1;font-weight:700}
+.meta{font:12px var(--mono);color:var(--ink-2)}
+.sheet p{margin:0;font-size:14px}
+.sheet h4{margin:4px 0 0;font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.sheet ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.sheet li{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.lk{background:none;border:0;padding:2px 0;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:7px;text-align:left}
+.lk:hover span.nm{text-decoration:underline}
+.rt{font:11px var(--mono);color:var(--ink-2)}
+.rt.X{color:var(--xfer)}
+.x{flex:none;background:none;border:1px solid var(--rule);border-radius:3px;color:var(--ink);font:500 12px var(--mono);padding:4px 8px;cursor:pointer}
+.none{font-size:13px;color:var(--ink-2)}
+
+/* Concept art: thumbnail on frame cards, scene + technical pair in the detail sheet, full-size viewer */
+.thumb{display:block;width:calc(100% + 20px);margin:-8px -10px 4px;aspect-ratio:16/9;object-fit:cover;background:var(--band);border-bottom:1px solid var(--rule);border-radius:2px 2px 0 0}
+.art{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.art button{background:var(--band);border:1px solid var(--rule);border-radius:3px;padding:0;cursor:zoom-in;display:flex;flex-direction:column;overflow:hidden;color:var(--ink-2);font:500 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;text-align:left}
+.art button:hover{border-color:var(--ink-2)}
+.art button:focus-visible,.lb-x:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.art img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.art span{padding:4px 6px}
+.lb{border:0;padding:0;background:transparent;max-width:min(1600px,calc(100vw - 32px));max-height:calc(100vh - 32px);color:#E2E7E3}
+.lb::backdrop{background:rgba(10,12,11,.88)}
+.lb figure{margin:0;display:flex;flex-direction:column;gap:8px}
+.lb img{display:block;max-width:100%;max-height:calc(100vh - 90px);object-fit:contain;border-radius:3px}
+.lb figcaption{display:flex;justify-content:space-between;align-items:center;gap:12px;font:13px var(--mono)}
+.lb-x{background:none;border:1px solid #5F6964;border-radius:3px;color:#E2E7E3;font:500 12px var(--mono);padding:4px 10px;cursor:pointer}
+/* World map view: era stepper, bloc-coloured map with numbered conflict pins, then the era's conflict list */
+.view{display:flex;flex-direction:column;gap:32px}
+.eras{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+@media (max-width:620px){.eras{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.era-b{background:var(--paper);border:0;padding:10px 12px 11px;text-align:left;cursor:pointer;font:inherit;color:var(--ink-2);display:flex;flex-direction:column;gap:2px;min-width:0}
+.era-b b{font:600 16px/1.15 var(--display);color:var(--ink)}
+.era-b span{font:12px var(--mono);font-variant-numeric:tabular-nums}
+.era-b:hover b{text-decoration:underline}
+.era-b[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.era-b[aria-pressed="true"] b{color:var(--paper)}
+.era-b:focus-visible,.seg button:focus-visible,.citem button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+@media (max-width:620px){.era-b{padding:8px 6px}.era-b b{font-size:13.5px}.era-b span{display:none}}
+.era-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 32px;align-items:end}
+@media (max-width:760px){.era-head{grid-template-columns:minmax(0,1fr)}}
+.era-head h2{font-size:26px;font-weight:700;line-height:1.1}
+.era-head p{margin:6px 0 0}
+.era-head .era{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--xfer)}
+.map-tools{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.seg{display:flex;border:1px solid var(--ink);border-radius:3px;overflow:hidden}
+.seg button{background:none;border:0;padding:6px 11px;font:500 12px var(--mono);color:var(--ink);cursor:pointer}
+.seg button+button{border-left:1px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.chk{display:flex;gap:7px;align-items:center;font-size:13px;color:var(--ink);cursor:pointer}
+.chk input{accent-color:var(--ink);margin:0}
+.map-fig{margin:0;border-top:2px solid var(--ink);display:flex;flex-direction:column;gap:14px;padding-top:14px}
+.map-box{position:relative;background:var(--sea);border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.map-box svg{display:block;width:100%;height:auto}
+.map-msg{margin:0;padding:48px 16px;text-align:center;color:var(--ink-2);font:13px var(--mono)}
+.ctry{stroke:var(--sea);stroke-width:.6;stroke-linejoin:round}
+.grat{fill:none;stroke:var(--rule);stroke-width:.5;opacity:.7}
+.pin{cursor:pointer;outline:none}
+.pin .pm{stroke:var(--card)}
+.num.dia{width:17px;height:17px;border-radius:2px;transform:rotate(45deg);margin:2px 3px}
+.num.dia i{font-style:normal;transform:rotate(-45deg);font-size:9px;letter-spacing:-.04em}
+.pin text{font:600 11px var(--mono);fill:var(--chip-fg);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.pin:hover .pm,.pin:focus-visible .pm{stroke:var(--focus)}
+.pin.sel .pm{stroke:var(--ink)}
+.map-legend{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:13px}
+.lg{display:flex;align-items:center;gap:7px}
+.sw{flex:none;width:20px;height:13px;border-radius:2px;border:1px solid var(--rule)}
+.sw.war{background:repeating-linear-gradient(45deg,var(--ink-2) 0 1.4px,transparent 1.4px 5px),var(--land)}
+.map-lists{display:flex;flex-direction:column;gap:28px}
+.map-lists .clist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));column-gap:32px;border-top:0}
+.map-lists .citem{border-top:1px solid var(--rule)}
+.map-lists .citem button{border-bottom:0}
+.pin text.olbl{font-family:var(--display);font-weight:600;fill:var(--ink);text-anchor:start}
+.oband{font-family:var(--mono);fill:var(--ink-2);letter-spacing:.1em}
+.map-lists h3{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px}
+.clist{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.citem button{width:100%;display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:10px 4px;border:0;border-bottom:1px solid var(--rule);background:none;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.citem button:hover .cn{text-decoration:underline}
+.citem button[aria-pressed="true"]{background:var(--card)}
+.num{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--mc);color:var(--chip-fg);font:600 11px var(--mono)}
+.num.off{background:none;border:1.5px solid var(--mc);width:12px;height:12px;margin:5px}
+.cn{font:600 15px/1.25 var(--display);display:block}
+.cp{font-size:13px;color:var(--ink-2);display:block}
+.cy{font:12px var(--mono);color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.go{align-self:flex-start;background:none;border:1px solid var(--ink);border-radius:3px;color:var(--ink);font:500 12px var(--mono);padding:5px 10px;cursor:pointer}
+.go:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+/* Successor powers: each bloc's heir, and the five No Peace Past Luna axes as five-position scales */
+.heirs{display:flex;flex-direction:column;gap:16px;border-top:2px solid var(--ink);padding-top:16px}
+.heirs h2{font-size:24px;font-weight:700;line-height:1.1}
+.heirs>p{margin:0;color:var(--ink-2);font-size:14px}
+.hmap{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));column-gap:32px}
+.hmap li{display:flex;flex-direction:column;gap:3px;padding:10px 0;border-top:1px solid var(--rule)}
+.hmap .hb{font:600 15px/1.25 var(--display)}
+.hmap .hb i{font-style:normal;font-weight:500;color:var(--ink-2);margin:0 6px}
+.hmap .hn{font-size:13px;color:var(--ink-2)}
+.powers{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
+.pcard{background:var(--card);border:1px solid var(--rule);border-top:4px solid var(--pc);border-radius:3px;padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.pcard h3{font-size:19px;font-weight:600;line-height:1.15}
+.pcard p{margin:0;font-size:13.5px}
+.axes{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
+.axes li{display:grid;grid-template-columns:88px auto minmax(0,1fr);gap:8px;align-items:center;font-size:12.5px}
+.axes .an{font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.dots{display:flex;gap:3px}
+.dots i{width:9px;height:9px;border-radius:50%;border:1.3px solid var(--line)}
+.dots i.on{background:var(--pc);border-color:var(--pc)}
+.pcard .seed{font-size:12.5px;color:var(--ink-2);border-top:1px dashed var(--rule);padding-top:6px}
+.seeds{display:flex;flex-direction:column;gap:4px}
+.seeds h4{margin:0;font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.seeds ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.seeds li{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.seeds .lk{font-size:13px}
+/* Factions timeline: one lane per faction across the map's eras, ending in its 2327 successor */
+.tl{min-width:1100px}
+.tl-cols,.tl-row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));column-gap:16px}
+.tl-cols{padding:12px 0 10px;border-bottom:1px solid var(--rule)}
+.tl-cols div{display:flex;flex-direction:column;gap:1px}
+.tl-cols b{font:600 15px var(--display)}
+.tl-cols span{font:12px var(--mono);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.tl-lane{padding:16px 0 18px;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:10px}
+.tl-h{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;position:sticky;left:0;max-width:min(100%,calc(100vw - 32px))}
+.tl-h h2{font-size:19px;font-weight:600;display:flex;align-items:center;gap:8px}
+.tl-h h2::before{content:"";flex:none;width:12px;height:12px;border-radius:2px;background:var(--mc)}
+.tl-h p{margin:0;font-size:13px;color:var(--ink-2)}
+.tl-cell{display:flex;flex-direction:column;gap:7px;min-width:0}
+.tl-ev{display:block;text-align:left;background:none;border:0;border-left:2px solid var(--mc);padding:1px 0 1px 8px;font:13px/1.4 var(--body);color:var(--ink)}
+.tl-ev span{display:block;font:11px var(--mono);color:var(--ink-2);font-variant-numeric:tabular-nums}
+button.tl-ev{cursor:pointer}
+button.tl-ev:hover{text-decoration:underline}
+button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.tl-proj .tl-ev{border-left-style:dashed}
+.tl-end{background:color-mix(in srgb,var(--mc) 14%,var(--card));border:1px solid var(--rule);border-radius:3px;padding:8px 10px}
+.tl-end b{display:block;font:600 14px/1.25 var(--display);margin-bottom:3px}
+.tl-end p{margin:0;font-size:13px}
+.tl-none{margin:0;color:var(--ink-2);font-size:13px}
+/* Aces: era sections of pilot cards, filtered by faction and by how their signature frame was built */
+.ace-tools{display:flex;flex-direction:column;gap:12px}
+.af{display:flex;align-items:center;gap:7px;background:none;border:1px solid transparent;border-radius:3px;padding:4px 8px 4px 6px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer}
+.af:hover{border-color:var(--rule)}
+.af[aria-pressed="true"]{border-color:var(--ink);background:var(--card)}
+.af:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.af i{flex:none;width:12px;height:12px;border-radius:2px;background:var(--mc)}
+.af small{color:var(--ink-2);font:11px var(--mono)}
+.ace-era{display:flex;flex-direction:column;gap:14px;border-top:2px solid var(--ink);padding-top:14px}
+.ace-era-h{display:flex;align-items:baseline;gap:4px 14px;flex-wrap:wrap}
+.ace-era-h h2{font-size:24px;font-weight:700;line-height:1.1}
+.ace-era-h span{font:12px var(--mono);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.ace-era-h p{margin:0;flex-basis:100%;font-size:14px;color:var(--ink-2)}
+.pcard.ace h3 i{font-style:normal;font-weight:500;color:var(--ink-2)}
+.pcard.ace .sv{font-size:12.5px;color:var(--ink-2);margin-top:-4px}
+.afr{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.afr li{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+.ace-list{display:flex;flex-direction:column;gap:32px}
+.afr .lk{font:600 15px/1.25 var(--display)}
+.afr.also .lk{font:500 13px/1.3 var(--body)}
+.afr .fn{font-size:12.5px;line-height:1.4;color:var(--ink-2)}
+.bd{flex:none;font:500 10px/1 var(--mono);letter-spacing:.06em;padding:3px 5px;border-radius:2px;border:1px solid var(--ink-2);color:var(--ink)}
+.bd.V{border-style:dashed}
+.bd.C{background:var(--xfer);border-color:var(--xfer);color:var(--chip-fg)}
+.rec{font:12px/1.4 var(--mono);color:var(--ink)}
+.rec b,.ace .now b{font-weight:500;color:var(--ink-2);letter-spacing:.06em;margin-right:4px}
+.ace-count{font:12px var(--mono);color:var(--ink-2);margin:0}
+.afr .vn{display:flex;align-items:center;gap:7px;font:600 15px/1.25 var(--display)}
+.afr.also .vn{font:600 13px/1.3 var(--body)}
+.afr .lk.base{font:11px var(--mono);color:var(--ink-2);padding:0}
+.afr .lk.base b{font-weight:500;letter-spacing:.06em;margin-right:2px}
+/* Versions on a frame's detail sheet: each named variant, what changed, and who flew it */
+.sheet ul.vers{gap:10px}
+.sheet ul.vers li{flex-direction:column;align-items:flex-start;gap:3px}
+.vers .vn{display:flex;align-items:center;gap:7px;font:600 15px/1.25 var(--display)}
+.vers .fn{font-size:13px;line-height:1.45;color:var(--ink)}
+.who{font:12px var(--mono);color:var(--ink-2)}
+.pl{background:none;border:0;padding:0;font:inherit;font-size:12.5px;color:var(--ink-2);cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.pl:hover{color:var(--ink)}
+.pl:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.pcard.ace.hit{box-shadow:0 0 0 2px var(--focus)}
+/* Variant art: a scene + technical pair under each version on the detail sheet, and the signature frame's scene atop each ace card */
+.sheet ul.vers .art{width:100%;margin-top:3px}
+.athumb{display:block;margin:-12px -14px 0;width:calc(100% + 28px);padding:0;border:0;border-bottom:1px solid var(--rule);background:var(--band);cursor:zoom-in}
+.athumb img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.athumb:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+/* Scene plates: one standalone illustration below a tree's intro, banner-wide like the header art */
+.lede{display:flex;flex-direction:column;gap:20px}
+.plate{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+.plate>button{width:100%;padding:0;border:1px solid var(--rule);border-radius:3px;background:var(--band);cursor:zoom-in;overflow:hidden;display:block}
+.plate>button:hover{border-color:var(--ink-2)}
+.plate>button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.plate img{display:block;width:100%;aspect-ratio:16/5;object-fit:cover;object-position:50% 40%}
+@media (max-width:620px){.plate img{aspect-ratio:16/8}}
+.plate figcaption{display:flex;flex-direction:column;gap:4px}
+.plate .era{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--xfer)}
+.plate h2{font-size:18px;font-weight:600;line-height:1.2}
+.plate p{margin:0;font-size:13.5px;color:var(--ink-2)}
+.plate .seeds ul{flex-direction:row;flex-wrap:wrap;gap:2px 16px}
+/* Key art: one standalone scene on an entry's sheet or card, and the setting headline in the header */
+.scene{margin:0;display:flex;flex-direction:column;gap:4px;min-width:0}
+.scene>button,.hero>button,.tl-art{padding:0;border:1px solid var(--rule);border-radius:3px;background:var(--band);cursor:zoom-in;overflow:hidden;display:block}
+.scene>button:hover,.hero>button:hover,.tl-art:hover{border-color:var(--ink-2)}
+.scene>button:focus-visible,.hero>button:focus-visible,.tl-art:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.scene img,.tl-art img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.scene figcaption{display:flex;flex-direction:column;gap:2px}
+.scene .era{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--xfer)}
+.scene b{font:600 15px var(--display);line-height:1.2}
+.sheet .scene p,.pcard .scene p,.scene p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.hero{margin:6px 0 0}
+.hero>button{width:100%}
+.hero img{display:block;width:100%;aspect-ratio:16/5;object-fit:cover;object-position:50% 45%}
+@media (max-width:620px){.hero img{aspect-ratio:16/8}}
+.tl-art{width:120px;align-self:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Lineage atlas · Two generations · 2161–2186</span>
+    <h1>No Haven on Earth Atlas</h1>
+    <p>Family trees for the setting's mech frames, weapons, power plants and doctrine, plus the tanks and aircraft that fight alongside them, the carriers that move them, the space fleets that come after them, and the organisations behind them all: where each came from, and where every manufacturer and power bloc branched off with its own version. Select any entry to trace its lineage. Frames link to the power, weapons and doctrine they were built around. The world map shows where the blocs stood, and where they fought, in each era. The atlas covers the decades up to 2186 that build toward the Third World War, the war in which No Haven on Earth is set. Its last map era looks past the war to the five Earth powers of No Peace Past Luna and the United Nations of Earth and Luna that ends it. The Aces tab lists the pilots who made the frames famous. The Factions tab follows each faction through the whole period, and the Successors tab shows what each one becomes by 2327.</p>
+    <figure class="hero" id="hero" hidden></figure>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </header>
+
+  <section class="view" id="mapView" hidden aria-label="World map">
+    <p class="intro">Where the power blocs stand and where they have fought, era by era. Pick an era to redraw the map with that era's conflicts, numbered in the order they happened. Events in orbit and on Mars sit in the band above the map. Select a pin or a list entry for the full account, then follow it into the Conflicts tree. The last era is projected: where the war's fronts are expected to run, and the powers that come out of it. The Successors tab describes those powers in full.</p>
+    <div class="eras" id="eras" role="group" aria-label="Era"></div>
+    <div class="era-head">
+      <div><span class="era" id="era-k"></span><h2 id="era-h"></h2><p id="era-p"></p></div>
+      <div class="map-tools">
+        <div class="seg" role="group" aria-label="Map extent"><button type="button" id="v-world" aria-pressed="true">World</button><button type="button" id="v-reg" aria-pressed="false">Middle East &amp; Central Asia</button></div>
+      </div>
+    </div>
+    <figure class="map-fig">
+      <div class="map-box" id="map-box"><p class="map-msg">Loading the map…</p></div>
+      <figcaption class="map-legend" id="map-legend"></figcaption>
+    </figure>
+    <div class="map-lists">
+      <div><h3 id="list-h">Conflicts this era</h3><ol class="clist" id="clist"></ol></div>
+      <div><h3 id="mlist-h">Smaller incidents</h3><ol class="clist" id="mlist"></ol></div>
+    </div>
+  </section>
+
+  <section class="view" id="sucView" hidden aria-label="Successors">
+    <p class="intro">What the atlas's blocs and programs have become by 2327, in No Peace Past Luna: the Earth powers that come out of the war, and the space factions whose arguments start in this era.</p>
+    <section class="heirs" aria-labelledby="heirs-h">
+      <h2 id="heirs-h">Where the blocs are heading</h2>
+      <p>None of the atlas's blocs comes through the war intact. These are the five Earth powers of No Peace Past Luna (2327) and the blocs each one grows from, followed by the institution that ends the war between them. Each scale runs from the first pole on the left to the second on the right. Values still undecided are marked TBD.</p>
+      <ul class="hmap" id="hmap"></ul>
+      <div class="powers" id="powers"></div>
+    </section>
+    <section class="heirs" aria-labelledby="space-h">
+      <h2 id="space-h">Where the space factions begin</h2>
+      <p>Most of No Peace Past Luna's colonial and outer-system factions start here as arguments about what a person may become: what one bloc did to its pilots, and what someone else learned from watching. Some start somewhere colder, or worse. Space doesn't carry Earth's politics outward unchanged; it mutates them, and each colony keeps its sponsor's argument while changing what it means. The Constitutionalists don't appear: they are built later, to replace Colony One. The top colour shows the Earth power each faction descends from; grey means none. Select a seed to open it in its tree.</p>
+      <div class="powers" id="space"></div>
+    </section>
+  </section>
+
+  <div class="view" id="treeView">
+  <div class="lede"><p class="intro" id="intro"></p><figure class="plate" id="plate" hidden></figure></div>
+  <section class="turns" aria-label="Turning points" id="turns"></section>
+
+  <section class="legend" aria-label="Legend">
+    <div class="legend-row" id="lines"></div>
+    <div class="legend-row" id="makers"></div>
+    <p class="hint" id="hint"></p>
+  </section>
+
+  <div>
+    <p class="scroll-note">Scroll sideways to see all generations →</p>
+    <div class="scroller"><div class="chart" id="chart"></div></div>
+  </div>
+  </div>
+
+  <section class="view" id="tlView" hidden aria-label="Factions timeline">
+    <p class="intro">What happens to each faction from before the first mechs through the war, and what it has become by 2327. The Eurasian Pact gets two lanes, Beijing and Moscow with Delhi, because that is where it ends. Dashed entries are projected. Select an entry to open it in its tree.</p>
+    <div>
+      <p class="scroll-note">Scroll sideways to see every era →</p>
+      <div class="scroller"><div class="tl" id="tl"></div></div>
+    </div>
+  </section>
+
+  <section class="view" id="aceView" hidden aria-label="Aces">
+    <p class="intro">Famous pilots from the first mech combat to 2186, and the frames they made their names in. Each frame is marked <b>Standard</b> if it was flown as its maker built it, <b>Variant</b> if it was an official sub-model or a unit's field modification, and <b>Custom</b> if it was built or rebuilt for that one pilot. Variants and custom frames are named here; the Frames tree lists every version on its base frame's card, with what changed. Records are as each pilot's own side credits them. Select a frame, conflict or entry to open it in its tree.</p>
+    <div class="ace-tools">
+      <div class="legend-row" id="ace-fac" role="group" aria-label="Faction"></div>
+      <div class="legend-row"><span class="legend-label">Signature frame</span><div class="seg" id="ace-bld" role="group" aria-label="Signature frame build"></div></div>
+      <p class="ace-count" id="ace-count"></p>
+    </div>
+    <div class="ace-list" id="ace-list"></div>
+  </section>
+</div>
+
+<aside class="sheet" id="sheet" hidden aria-live="polite"></aside>
+<dialog class="lb" id="lb" aria-label="Concept art"><figure><img id="lb-img" alt=""><figcaption><span id="lb-cap"></span><button type="button" class="lb-x" id="lb-x">Close</button></figcaption></figure></dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script>
+fetch("atlas-data.json").then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(init,()=>{
+  document.getElementById("intro").textContent="The atlas data couldn't load. Reload the page to try again."});
+// Everything below runs once atlas-data.json has loaded
+function init({GROUPS,COLS,ART,VART,PLATES,SCENES,DATA,BLOC,MEMB,US_ALLIES,LEAGUE,ASSOC,OVR,FUTURE,FUTURE_SPHERE,FUTURE_FRONT,FUTURE_FIGHTING,CANADA_SPLIT,LOC,MINOR,ORBIT,ERA_NOTE,AXES,POWERS,HEIRS,UNEL,SPACE,TIMELINE,ACE_FACTIONS,ACE_ERAS,ACES}){
+const FUT=new Set(Object.keys(FUTURE));
+const SVGNS="http://www.w3.org/2000/svg";
+const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const chart=document.getElementById("chart");
+const sheet=document.getElementById("sheet");
+let ds,byId,EDGES,cards,bands,svg,state={sel:null,maker:null},current=null;
+const col=code=>`var(--m-${GROUPS[code][2]})`;
+const chipText=code=>code==="PRE"?"PRE-MECH":code;
+const label=n=>n.d&&!/^(Now|War|\d{4})$/.test(n.d)?`${n.d} ${n.n}`:n.n;
+const short=n=>ds.desig&&n.d&&!/^(Now|War|\d{4})$/.test(n.d)?n.d:n.n;
+
+// cross-tree index
+const ORDER=["frames","supers","conflicts","weapons","power","doctrine","vehicles","carriers","fleets","orgs"];
+const SRC={frames:"Frames using it",supers:"Super programs using it",conflicts:"Seen in conflicts",vehicles:"Vehicle lines linked",carriers:"Carriers linked",fleets:"Space fleets linked",orgs:"Organisations linked"};
+const IDX={},KEYOF={},USED={};
+ORDER.forEach(k=>DATA[k].nodes.forEach(n=>{IDX[n.id]=n;KEYOF[n.id]=k}));
+["frames","supers","conflicts","vehicles","carriers","fleets","orgs"].forEach(k=>DATA[k].nodes.forEach(f=>[...(f.ln||[]),...(f.fr||[]),...(f.mx||[]),...(f.pw||[]),...(f.wp||[]),...(f.dc||[])].forEach(id=>{const u=USED[id]=USED[id]||{};(u[k]=u[k]||[]).push(f.id)})));
+const ref=id=>{const n=IDX[id];return n.d||n.n};
+function remember(k){try{history.replaceState(null,"","#"+k)}catch(e){}try{localStorage.setItem("atlas-tab",k)}catch(e){}}
+function goTo(id){const k=KEYOF[id];if(k!==current){build(k);remember(k)}select(id);requestAnimationFrame(()=>cards[id].scrollIntoView({block:"center",inline:"center",behavior:reduced?"auto":"smooth"}))}
+
+// tabs
+const tabs=document.getElementById("tabs");
+ORDER.forEach(k=>{
+  const v=DATA[k];
+  const b=document.createElement("button");b.type="button";b.className="tab";b.role="tab";b.id="tab-"+k;b.dataset.k=k;
+  b.innerHTML=`${v.label}<small>${v.nodes.length}</small>`;
+  b.addEventListener("click",()=>{build(k);remember(k)});
+  tabs.append(b);
+  if(k==="frames"){
+    const a=document.createElement("button");a.type="button";a.className="tab";a.role="tab";a.id="tab-aces";a.dataset.k="aces";
+    a.innerHTML=`Aces<small>${ACES.length}</small>`;
+    a.addEventListener("click",()=>{build("aces");remember("aces")});
+    tabs.append(a);
+  }
+  if(k==="conflicts"){
+    const m=document.createElement("button");m.type="button";m.className="tab";m.role="tab";m.id="tab-map";m.dataset.k="map";
+    m.textContent="Map";
+    m.addEventListener("click",()=>{build("map");remember("map")});
+    tabs.append(m);
+    const f=document.createElement("button");f.type="button";f.className="tab";f.role="tab";f.id="tab-timeline";f.dataset.k="timeline";
+    f.textContent="Factions";
+    f.addEventListener("click",()=>{build("timeline");remember("timeline")});
+    tabs.append(f);
+    const s=document.createElement("button");s.type="button";s.className="tab";s.role="tab";s.id="tab-successors";s.dataset.k="successors";
+    s.textContent="Successors";
+    s.addEventListener("click",()=>{build("successors");remember("successors")});
+    tabs.append(s);
+  }
+});
+const treeView=document.getElementById("treeView"),mapView=document.getElementById("mapView"),tlView=document.getElementById("tlView"),sucView=document.getElementById("sucView"),aceView=document.getElementById("aceView");
+// Views that aren't lineage trees, by tab key
+const VIEWS={map:mapView,timeline:tlView,successors:sucView,aces:aceView};
+
+function build(key){
+  if(current===key)return;
+  if(VIEWS[key]){
+    current=key;state={sel:null,maker:null};M.sel=null;
+    document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.k===key)));
+    treeView.hidden=true;Object.entries(VIEWS).forEach(([k,v])=>v.hidden=k!==key);sheet.hidden=true;document.body.classList.remove("has-sheet");
+    if(key==="map")showMap();
+    return;
+  }
+  treeView.hidden=false;Object.values(VIEWS).forEach(v=>v.hidden=true);M.sel=null;
+  current=key;ds=DATA[key];state={sel:null,maker:null};
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.k===key)));
+  document.getElementById("intro").textContent=ds.intro;
+  renderPlate(PLATES[key]);
+  document.getElementById("turns").innerHTML=ds.turns.map(([e,h,p])=>`<div class="turn"><span class="era">${e}</span><h3>${h}</h3><p>${p}</p></div>`).join("");
+  const R=ds.rel;
+  document.getElementById("lines").innerHTML=`<span class="legend-label">Lines</span>
+    <span class="lt"><svg width="38" height="10"><path d="M2 5H36" stroke="var(--line)" stroke-width="1.6"/></svg>${R.D}</span>
+    <span class="lt"><svg width="38" height="10"><path d="M2 5H36" stroke="var(--line)" stroke-width="1.6" stroke-dasharray="5 4"/></svg>${R.L}</span>
+    <span class="lt"><svg width="38" height="10"><path d="M2 5H36" stroke="var(--xfer)" stroke-width="2" stroke-dasharray="1.5 4" stroke-linecap="round"/></svg>${R.X}</span>${ds.nodes.some(n=>n.z)?`
+    <span class="lt"><svg width="38" height="14"><rect x="1.5" y="1.5" width="34" height="11" rx="2" fill="var(--card)" stroke="var(--rule)"/><rect x="33" y="1.5" width="3.5" height="11" fill="var(--line)"/></svg>Line ends here</span>`:""}${ds.projCol!=null?`
+    <span class="lt"><svg width="38" height="14"><rect x="1.5" y="1.5" width="35" height="11" rx="2" fill="var(--card)" stroke="var(--ink-2)" stroke-dasharray="3 2"/></svg>Projected</span>`:""}`;
+  const unit=ds.unit||(ds.groupLabel==="Forces"?"force":"maker");
+  document.getElementById("hint").textContent=`Select ${/^[aeiou]/i.test(unit)?"an":"a"} ${unit} to show only its entries. Links between families appear as “${ds.xword}” notes and are drawn when you select an entry.`;
+
+  byId={};ds.nodes.forEach(n=>{n.p=n.p||[];n.k=[];byId[n.id]=n});
+  ds.nodes.forEach(n=>n.p.forEach(([pid,t])=>byId[pid].k.push([n.id,t])));
+  EDGES=[];ds.nodes.forEach(n=>n.p.forEach(([pid,t])=>EDGES.push({a:pid,b:n.id,t,cross:byId[pid].f!==n.f})));
+  cards={};bands={};
+
+  // makers legend
+  const mk=document.getElementById("makers");
+  mk.innerHTML=`<span class="legend-label">${ds.groupLabel}</span>`;
+  const used=[...new Set(ds.nodes.map(n=>n.m))];
+  Object.keys(GROUPS).filter(c=>used.includes(c)).forEach(code=>{
+    const [nm,sub]=GROUPS[code];
+    const b=document.createElement("button");b.type="button";b.className="mk";b.dataset.m=code;b.setAttribute("aria-pressed","false");
+    b.innerHTML=`<span class="chip" style="--mc:${col(code)}">${chipText(code)}</span>${nm} <small>${sub}</small>`;
+    b.addEventListener("click",()=>{state.maker=state.maker===code?null:code;state.sel=null;apply()});
+    mk.append(b);
+  });
+
+  chart.innerHTML="";
+  const NC=(ds.cols||COLS).length;
+  chart.style.setProperty("--ncol",NC);
+  // Six columns still fit the page width with a tighter gap; seven need sideways scrolling
+  chart.style.setProperty("--gap",NC>5?"28px":"44px");
+  chart.style.setProperty("--minw",NC>5?`${NC*165+(NC-1)*28}px`:"1080px");
+  document.querySelector(".scroll-note").classList.toggle("wide",NC>6);
+  svg=document.createElementNS(SVGNS,"svg");
+  svg.innerHTML=`<defs>
+<marker id="ad" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L8 4L0 8z"/></marker>
+<marker id="ax" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="ax" d="M0 0L8 4L0 8z"/></marker></defs>`;
+  const g=document.createElementNS(SVGNS,"g");svg.append(g);chart.append(svg);
+  EDGES.forEach(e=>{const p=document.createElementNS(SVGNS,"path");p.setAttribute("class",`edge ${e.t}${e.cross?" cross":""}`);p.setAttribute("marker-end",e.t==="X"?"url(#ax)":"url(#ad)");g.append(p);e.path=p});
+
+  const cols=document.createElement("div");cols.className="cols";
+  cols.innerHTML=(ds.cols||COLS).map(([k,y])=>`<div><b>${k}</b><span>${y}</span></div>`).join("");
+  chart.append(cols);
+
+  ds.fams.forEach(([fid,name,blurb])=>{
+    const sec=document.createElement("section");sec.className="band";
+    sec.innerHTML=`<div class="band-h"><h2>${name}</h2><p>${blurb}</p></div>`;
+    const grid=document.createElement("div");grid.className="grid";
+    ds.nodes.filter(n=>n.f===fid).forEach(n=>{
+      const b=document.createElement("button");
+      b.type="button";b.className="card"+(n.m==="PRE"||(ds.preCol&&n.c===0)?" pre":"")+(n.z?" end":"")+(ds.projCol!=null&&n.c>=ds.projCol?" proj":"");
+      b.style.gridColumn=n.c+1;b.style.gridRow=n.r+1;
+      b.style.setProperty("--mc",col(n.m));
+      const cross=n.p.filter(([pid])=>byId[pid].f!==n.f).map(([pid])=>short(byId[pid]));
+      const kit=(lbl,ids)=>ids&&ids.length?`<span class="kit"><b>${lbl}</b> ${ids.map(ref).join(" · ")}</span>`:"";
+      b.innerHTML=`${ART[n.id]?`<img class="thumb" src="thumb/${ART[n.id]}-scene.jpg" alt="" loading="lazy" decoding="async">`:""}<span class="top"><span class="chip">${chipText(n.m)}</span>${n.d?`<span class="desig">${n.d}</span>`:""}${n.s?`<span class="spec">${n.s}</span>`:""}</span>
+        <span class="name">${n.n}</span><span class="tag">${n.t}</span>${kit("BASE",n.fr)}${key==="frames"&&VERS[n.id]?`<span class="kit"><b>VERSIONS</b> ${VERS[n.id].map(v=>v.vn).join(" · ")}</span>`:""}${kit("MECHS",n.mx)}${kit("PWR",n.pw)}${kit("ARM",n.wp)}${cross.length?`<span class="xtag">${ds.xword} ${cross.join(", ")}</span>`:""}${n.z?`<span class="fate"><b>END</b> ${n.z}</span>`:""}`;
+      b.addEventListener("click",()=>select(state.sel===n.id?null:n.id));
+      cards[n.id]=b;grid.append(b);
+    });
+    sec.append(grid);chart.append(sec);bands[fid]=sec;
+  });
+  draw();apply();
+}
+
+function draw(){
+  if(!svg)return;
+  const W=chart.scrollWidth,H=chart.scrollHeight;
+  svg.setAttribute("width",W);svg.setAttribute("height",H);svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const o=chart.getBoundingClientRect();
+  EDGES.forEach(e=>{
+    const A=cards[e.a].getBoundingClientRect(),B=cards[e.b].getBoundingClientRect();
+    const x1=A.right-o.left,y1=A.top-o.top+A.height/2,x2=B.left-o.left-2,y2=B.top-o.top+B.height/2;
+    if(x2>x1+12){const dx=Math.max(26,(x2-x1)/2);e.path.setAttribute("d",`M${x1} ${y1}C${x1+dx} ${y1} ${x2-dx} ${y2} ${x2} ${y2}`)}
+    else{const xa=A.left-o.left,bend=Math.min(xa,x2)-26;e.path.setAttribute("d",`M${xa} ${y1}C${bend} ${y1} ${bend} ${y2} ${x2} ${y2}`)}
+  });
+}
+function walk(id,key,set){byId[id][key].forEach(([o])=>{if(!set.has(o)){set.add(o);walk(o,key,set)}})}
+function lineage(id){const s=new Set([id]);walk(id,"p",s);walk(id,"k",s);return s}
+
+function apply(){
+  // A selected maker filters the tree down to its own entries; a selected entry dims everything outside its lineage
+  const only=state.maker?new Set(ds.nodes.filter(n=>n.m===state.maker).map(n=>n.id)):null;
+  const lit=state.sel?lineage(state.sel):null;
+  ds.nodes.forEach(n=>{const c=cards[n.id];c.hidden=!!only&&!only.has(n.id);c.classList.toggle("dim",!!lit&&!lit.has(n.id));c.classList.toggle("sel",state.sel===n.id);c.setAttribute("aria-pressed",String(state.sel===n.id))});
+  // Hide empty families and close up the rows left by hidden entries
+  ds.fams.forEach(([fid])=>{
+    const vis=ds.nodes.filter(n=>n.f===fid&&(!only||only.has(n.id))),rows=[...new Set(vis.map(n=>n.r))].sort((a,b)=>a-b);
+    bands[fid].hidden=!vis.length;
+    ds.nodes.filter(n=>n.f===fid).forEach(n=>cards[n.id].style.gridRow=(only?Math.max(rows.indexOf(n.r),0):n.r)+1);
+  });
+  EDGES.forEach(e=>{
+    const gone=!!only&&!(only.has(e.a)&&only.has(e.b)),on=!gone&&!!lit&&lit.has(e.a)&&lit.has(e.b);
+    e.path.classList.toggle("gone",gone);
+    e.path.classList.toggle("hot",on);
+    e.path.classList.toggle("dim",!!lit&&!on);
+    e.path.classList.toggle("show",on);
+  });
+  document.querySelectorAll(".mk").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.m===state.maker)));
+  draw();
+  renderSheet();
+}
+function relList(list){
+  if(!list.length)return `<p class="none">Nothing yet.</p>`;
+  return `<ul>${list.map(([o,t])=>{const n=byId[o];return `<li><button type="button" class="lk" data-id="${o}"><span class="chip" style="--mc:${col(n.m)}">${n.m==="PRE"?"PRE":n.m}</span><span class="nm">${label(n)}</span></button><span class="rt ${t}">${ds.rel[t].toLowerCase()}</span></li>`}).join("")}</ul>`;
+}
+function goList(ids){
+  if(!ids||!ids.length)return `<p class="none">None.</p>`;
+  return `<ul>${ids.map(id=>{const n=IDX[id];return `<li><button type="button" class="lk" data-go="${id}"><span class="chip" style="--mc:${col(n.m)}">${n.m==="PRE"?"PRE":n.m}</span><span class="nm">${label(n)}</span></button><span class="rt">${DATA[KEYOF[id]].label.toLowerCase()} tree →</span></li>`}).join("")}</ul>`;
+}
+// Concept art pair for one entry or named version: scene and technical drawing, each opening full size
+const artPair=(stem,lbl)=>`<div class="art">${[["scene","Scene"],["tech","Technical drawing"]].map(([k,l])=>`<button type="button" data-art="art/${stem}-${k}.jpg" data-cap="${lbl} · ${l}"><img src="art/${stem}-${k}.jpg" alt="${lbl}, ${l.toLowerCase()}" loading="lazy"><span>${l}</span></button>`).join("")}</div>`;
+// Key art: one standalone scene for an entry, ace, faction or the setting itself (SCENES), opening full size
+const scene=(id,name)=>{const s=SCENES[id];return s?`<figure class="scene"><button type="button" data-art="art/${s.f}.jpg" data-cap="${name} · ${s.h}"><img src="art/${s.f}.jpg" alt="${name}: ${s.h.toLowerCase()}" loading="lazy" decoding="async"></button><figcaption><span class="era">Key art</span><b>${s.h}</b><p>${s.c}</p></figcaption></figure>`:""};
+const bindArt=el=>el.querySelectorAll("[data-art]").forEach(b=>b.addEventListener("click",()=>openArt(b.dataset.art,b.dataset.cap)));
+if(SCENES.headline){const s=SCENES.headline,hero=document.getElementById("hero");hero.hidden=false;
+  hero.innerHTML=`<button type="button" data-art="art/${s.f}.jpg" data-cap="${s.h} · ${s.c}"><img src="art/${s.f}.jpg" alt="${s.c}" decoding="async"></button>`;bindArt(hero)}
+// A tree's scene plate sits below its intro; trees without one show the intro alone
+function renderPlate(p){
+  const el=document.getElementById("plate");el.hidden=!p;if(!p){el.innerHTML="";return}
+  const names=p.go.map(id=>label(IDX[id])).join(" · ");
+  el.innerHTML=`<button type="button" data-art="art/${p.f}.jpg" data-cap="${names} · ${p.h}"><img src="art/${p.f}.jpg" alt="${names}: ${p.h.toLowerCase()}" loading="lazy" decoding="async"></button>
+    <figcaption><span class="era">Scene · ${names}</span><h2>${p.h}</h2><p>${p.c}</p><div class="seeds">${goList(p.go)}</div></figcaption>`;
+  el.querySelector("[data-art]").addEventListener("click",e=>openArt(e.currentTarget.dataset.art,e.currentTarget.dataset.cap));
+  el.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
+}
+function renderSheet(){
+  const n=state.sel&&byId[state.sel];
+  if(!n){sheet.hidden=true;document.body.classList.remove("has-sheet");return}
+  const [mn,sub]=GROUPS[n.m];
+  let links="";
+  if(current==="conflicts")links=`<h4>Machines involved</h4>${goList(n.mx)}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`;
+  else if(current==="frames"||(current==="supers"&&(n.fr||n.pw||n.wp)))links=`${n.fr?`<h4>Built on</h4>${goList(n.fr)}`:""}<h4>Power plant</h4>${goList(n.pw)}<h4>Armament</h4>${goList(n.wp)}<h4>Doctrine</h4>${goList(n.dc)}`;
+  else if(current==="vehicles"||current==="carriers"||current==="fleets")links=`${n.ln?`<h4>In the atlas</h4>${goList(n.ln)}`:""}${n.mx?`<h4>Mechs involved</h4>${goList(n.mx)}`:""}${n.pw?`<h4>Power plant</h4>${goList(n.pw)}`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine</h4>${goList(n.dc)}`:""}`;
+  else if(current==="orgs")links=n.ln?`<h4>In the atlas</h4>${goList(n.ln)}`:"";
+  else links=`${n.pw?`<h4>Power plant</h4>${goList(n.pw)}`:""}${n.dc?`<h4>Doctrine</h4>${goList(n.dc)}`:""}`;
+  if(USED[n.id])links+=Object.entries(USED[n.id]).map(([k,ids])=>`<h4>${SRC[k]}</h4>${goList(ids)}`).join("");
+  if(current==="frames"&&(VERS[n.id]||ACED[n.id]))links=`${VERS[n.id]?`<h4>Other versions</h4><ul class="vers">${VERS[n.id].map(v=>`<li><span class="vn"><span class="bd ${v.b}">${BUILD[v.b].toUpperCase()}</span>${v.vn}</span>${VART[v.vn]?artPair(VART[v.vn],v.vn):""}<span class="fn">${v.note}</span><span class="who">Flown by ${pilots(v.who)}</span></li>`).join("")}</ul>`:""}${ACED[n.id]?`<h4>Aces who flew it as built</h4><p class="who">${pilots(ACED[n.id])}</p>`:""}`+links;
+  sheet.innerHTML=`<div class="sheet-h"><div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+      <span class="top"><span class="chip" style="--mc:${col(n.m)}">${chipText(n.m)}</span>${n.d?`<span class="desig">${n.d}</span>`:""}</span>
+      <h3>${n.n}</h3><span class="meta">${mn} · ${sub} · ${(ds.cols||COLS)[n.c][0]} (${(ds.cols||COLS)[n.c][1]})${n.s&&n.s!=="varies"?` · ${n.s}`:""}</span></div>
+      <button type="button" class="x" id="close">Close</button></div>
+    ${ART[n.id]?artPair(ART[n.id],label(n)):""}
+    ${scene(n.id,label(n))}
+    <p>${n.x}</p>
+    ${n.z?`<p class="meta">Line ended ${n.z}</p>`:""}
+    <h4>Came from</h4>${relList(n.p)}
+    <h4>Led to</h4>${relList(n.k)}
+    ${links}`;
+  sheet.hidden=false;document.body.classList.add("has-sheet");
+  sheet.querySelector("#close").addEventListener("click",()=>select(null));
+  sheet.querySelectorAll("[data-art]").forEach(b=>b.addEventListener("click",()=>openArt(b.dataset.art,b.dataset.cap)));
+  sheet.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>goTo(b.dataset.go)));
+  sheet.querySelectorAll("[data-ace]").forEach(b=>b.addEventListener("click",()=>showAce(b.dataset.ace)));
+  sheet.querySelectorAll(".lk[data-id]").forEach(b=>b.addEventListener("click",()=>{select(b.dataset.id);cards[b.dataset.id].scrollIntoView({block:"center",inline:"center",behavior:reduced?"auto":"smooth"})}));
+}
+// Selecting keeps a maker filter unless the entry lies outside it
+function select(id){state.sel=id;if(id&&state.maker&&byId[id].m!==state.maker)state.maker=null;apply()}
+const lb=document.getElementById("lb");
+function openArt(src,cap){document.getElementById("lb-img").src=src;document.getElementById("lb-img").alt=cap;document.getElementById("lb-cap").textContent=cap;
+  if(lb.showModal)lb.showModal();else window.open(src,"_blank")}
+document.getElementById("lb-x").addEventListener("click",()=>lb.close());
+lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});
+document.addEventListener("keydown",e=>{if(lb.open)return;if(e.key!=="Escape")return;
+  if(current==="map"){if(M.sel)mapSelect(null);return}
+  if(state.sel||state.maker){state.sel=null;state.maker=null;apply()}});
+
+// ---- World map ----
+function future(){
+  const s={};
+  Object.entries(FUTURE).forEach(([b,ns])=>ns.forEach(n=>s[n]={b,l:"m"}));
+  Object.entries(FUTURE_SPHERE).forEach(([b,ns])=>ns.forEach(n=>s[n]={b,l:"s"}));
+  Object.entries(FUTURE_FRONT).forEach(([b,ns])=>ns.forEach(n=>s[n]=b?{b,l:"c",w:1}:{l:"c",w:1}));
+  FUTURE_FIGHTING.forEach(n=>s[n]={...s[n],w:1});
+  s.Canada={split:CANADA_SPLIT,w:1};
+  return s;
+}
+function politics(e){
+  if(e===5)return future();
+  const s={};
+  Object.entries(MEMB).forEach(([b,ns])=>ns.forEach(n=>s[n]={b,l:"m"}));
+  US_ALLIES.forEach(n=>s[n]={b:"ATL",l:"a"});
+  if(e===4)s.Mexico={b:"ATL",l:"a"};
+  LEAGUE.forEach(n=>s[n]={b:"MER",l:e<2?"n":"m"});
+  ASSOC.forEach(n=>s[n]={b:"MER",l:e<2?"n":"a"});
+  Object.assign(s,OVR[e]);
+  MINOR.filter(n=>n.c===e&&FIGHT.has(n.m)).forEach(n=>(n.cty||[]).forEach(c=>s[c]={...(s[c]||{}),w:1}));
+  return s;
+}
+const MINORX=Object.fromEntries(MINOR.map(n=>[n.id,n]));
+const FIGHT=new Set(["WAR","CLH","PRX","IRR"]);
+const placeOf=id=>LOC[id]?LOC[id][2]:ORBIT[id]||MINORX[id].at[2];
+const pos=(v,[,l,r])=>v===0?"Neutral":`${Math.abs(v)===2?"Strongly":"Weakly"} ${v<0?l:r}`;
+const pcard=(p,colour,extra="")=>`<article class="pcard" style="--pc:var(${colour})"><h3>${p.n}</h3><span class="meta">${p.home} · Faith: ${p.faith}</span><p>${p.id}</p>
+    <ul class="axes">${AXES.map((a,i)=>{const v=p.ax[i];return `<li title="${a[1]} ↔ ${a[2]}"><span class="an">${a[0]}</span><span class="dots" aria-hidden="true">${[-2,-1,0,1,2].map(x=>`<i${x===v?' class="on"':""}></i>`).join("")}</span><span>${v==null?"TBD":pos(v,a)}</span></li>`}).join("")}</ul>
+    <p class="seed">${p.seed}</p>${extra}</article>`;
+function renderHeirs(){
+  document.getElementById("hmap").innerHTML=HEIRS.map(([from,to,note])=>`<li><span class="hb">${from}<i aria-label="becomes">→</i>${to.map(t=>BLOC[t]?BLOC[t][0]:t).join(" and ")}</span><span class="hn">${note}</span></li>`).join("");
+  const powers=document.getElementById("powers");
+  powers.innerHTML=POWERS.map(p=>pcard(p,BLOC[p.b][1])).join("")+pcard(UNEL,"--m-ASC",`${scene("UNEL",UNEL.n)}<div class="seeds"><h4>Starts in this atlas</h4>${goList(UNEL.from)}</div>`);
+  powers.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
+  bindArt(powers);
+  const space=document.getElementById("space");
+  space.innerHTML=SPACE.map(p=>pcard(p,`--m-${GROUPS[p.b][2]}`,`<div class="seeds"><h4>Starts in this atlas</h4>${goList(p.from)}</div>`)).join("");
+  space.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
+}
+renderHeirs();
+const REGION={type:"MultiPoint",coordinates:[[17,10],[92,52]]};
+const M={era:4,view:"world",past:true,sel:null,world:null,failed:false,num:{}};
+const yearOf=n=>n.d==="Now"?2186:(parseInt(n.d,10)||9999);
+const fillFor=s=>{if(!s||!s.b)return "var(--land)";const pct=s.l==="m"?60:s.l==="n"?30:s.l==="c"?20:26;return `color-mix(in srgb,var(${BLOC[s.b][1]}) ${pct}%,var(--card))`};
+const stateOf=st=>{if(!st)return "";if(!st.b)return st.l==="c"?" · Contested frontline":"";const [nm,,ar]=BLOC[st.b];
+  return " · "+(st.l==="m"?nm:st.l==="n"?"Non-aligned":st.l==="c"?`Contested frontline, mostly ${ar}${nm}'s influence`:st.l==="s"?`In the sphere of ${ar}${nm}`:`Partner of ${ar}${nm}`)};
+const eraNodes=e=>DATA.conflicts.nodes.filter(n=>n.c===e).sort((a,b)=>yearOf(a)-yearOf(b));
+const minorNodes=e=>MINOR.filter(n=>n.c===e).sort((a,b)=>yearOf(a)-yearOf(b));
+
+const erasEl=document.getElementById("eras");
+DATA.conflicts.cols.forEach(([k,y],i)=>{
+  const b=document.createElement("button");b.type="button";b.className="era-b";b.dataset.e=i;
+  b.innerHTML=`<b>${k}</b><span>${y}</span>`;
+  b.addEventListener("click",()=>{M.era=i;M.sel=null;mapSelect(null);renderMap()});
+  erasEl.append(b);
+});
+document.getElementById("v-world").addEventListener("click",()=>{M.view="world";renderMap()});
+document.getElementById("v-reg").addEventListener("click",()=>{M.view="reg";renderMap()});
+
+function showMap(){
+  renderMap();
+  if(M.world||M.failed)return;
+  if(!window.d3||!window.topojson){M.failed=true;drawMap();return}
+  fetch("world-110m.json").then(r=>{if(!r.ok)throw 0;return r.json()}).then(t=>{
+    M.world=topojson.feature(t,t.objects.countries).features.filter(f=>!/Antarctic/.test(f.properties.name));drawMap();
+  }).catch(()=>{M.failed=true;drawMap()});
+}
+function renderMap(){
+  const e=M.era,[k,y]=DATA.conflicts.cols[e];
+  erasEl.querySelectorAll(".era-b").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.e===e)));
+  document.getElementById("v-world").setAttribute("aria-pressed",String(M.view==="world"));
+  document.getElementById("v-reg").setAttribute("aria-pressed",String(M.view==="reg"));
+  document.getElementById("era-k").textContent=`${k} · ${y}`;
+  document.getElementById("era-h").textContent=ERA_NOTE[e][0];
+  document.getElementById("era-p").textContent=ERA_NOTE[e][1];
+  const nodes=eraNodes(e),minor=minorNodes(e);
+  M.num={};[...nodes,...minor].forEach((n,i)=>M.num[n.id]=i+1);
+  document.getElementById("list-h").textContent=`Conflicts this era · ${nodes.length}`;
+  document.getElementById("mlist-h").textContent=`Smaller incidents · ${minor.length}`;
+  const row=(n,mark)=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}">${mark}<span><span class="cn">${n.n}</span><span class="cp">${placeOf(n.id)} · ${GROUPS[n.m][0]}</span></span><span class="cy">${n.d}</span></button></li>`;
+  document.getElementById("clist").innerHTML=nodes.map(n=>row(n,`<span class="num" style="--mc:${col(n.m)}">${M.num[n.id]}</span>`)).join("");
+  document.getElementById("mlist").innerHTML=minor.map(n=>row(n,`<span class="num dia" style="--mc:${col(n.m)}"><i>${M.num[n.id]}</i></span>`)).join("");
+  mapView.querySelectorAll("[data-cid]").forEach(b=>b.addEventListener("click",()=>mapSelect(M.sel===b.dataset.cid?null:b.dataset.cid)));
+  const types=[...new Set(DATA.conflicts.nodes.map(n=>n.m))];
+  const sw=(st,l)=>`<span class="lg"><span class="sw" style="background:${st}"></span>${l}</span>`;
+  document.getElementById("map-legend").innerHTML=(e===5
+    ?[...FUT].map(b=>sw(fillFor({b,l:"m"}),BLOC[b][0])).join("")+
+      sw(`linear-gradient(90deg,${fillFor({b:"CHN",l:"s"})} 50%,${fillFor({b:"AFC",l:"s"})} 50%)`,"Sphere of influence")+
+      sw(`linear-gradient(90deg,${fillFor({b:"USA",l:"c"})} 50%,${fillFor({b:"EAS",l:"c"})} 50%)`,"Influence, not control")+
+      `<span class="lg"><span class="sw war"></span>Front line</span>`
+    :Object.entries(BLOC).filter(([b])=>!FUT.has(b)&&(b!=="MER"||e>=2)).map(([b,[nm]])=>sw(fillFor({b,l:"m"}),nm+(b==="MER"?" (from 2177)":""))).join("")+
+      (e<2?sw(fillFor({b:"MER",l:"n"}),"Non-aligned states"):"")+
+      sw(`linear-gradient(90deg,${fillFor({b:"CON",l:"a"})} 50%,${fillFor({b:"ATL",l:"a"})} 50%)`,"Ally, partner or associate")+
+      `<span class="lg"><span class="sw war"></span>Fighting this era</span>`)+sw("var(--land)","Other states")+
+    `<span class="lg"><span class="num" style="--mc:var(--ink-2);width:14px;height:14px"></span>Conflict</span><span class="lg"><span class="num dia" style="--mc:var(--ink-2);width:11px;height:11px"></span>Smaller incident</span>`+
+    `<span class="lg" style="color:var(--ink-2)">Pins by type:</span>`+types.map(c=>`<span class="lg"><span class="num" style="--mc:${col(c)};width:12px;height:12px"></span>${GROUPS[c][0]}</span>`).join("");
+  drawMap();
+}
+// Split a label into at most two lines of `max` characters, shortening the second if it still overflows
+function wrap(t,max){
+  const out=[];t.split(" ").forEach(w=>{const l=out[out.length-1];if(l!=null&&(l+" "+w).length<=max)out[out.length-1]=l+" "+w;else out.push(w)});
+  if(out.length>2)out.splice(1,out.length,out.slice(1).join(" "));
+  return out.map(l=>l.length>max?l.slice(0,max-1)+"…":l);
+}
+function drawMap(){
+  const box=document.getElementById("map-box");
+  if(M.failed){box.innerHTML=`<p class="map-msg">The map couldn't load in this browser. The conflict lists below still work.</p>`;return}
+  if(!M.world)return;
+  const W=1000,fc={type:"FeatureCollection",features:M.world};
+  const proj=d3.geoEqualEarth();let H;
+  if(M.view==="world"){proj.fitWidth(W,fc);H=Math.ceil(d3.geoPath(proj).bounds(fc)[1][1])+4}
+  else{H=560;proj.fitExtent([[0,0],[W,H]],REGION)}
+  const path=d3.geoPath(proj),pol=politics(M.era);
+  const px=Math.max(box.clientWidth,1)/W,k=Math.min(2.4,Math.max(1,.75/px)),B=Math.round(64*Math.min(k,1.6));
+  let s=`<svg viewBox="0 0 ${W} ${H+B}" role="img" aria-label="World map, ${DATA.conflicts.cols[M.era][0]}: bloc territories and conflict locations, with orbital events above">
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.6" height="6" fill="var(--ink)" opacity=".5"/></pattern>
+<clipPath id="mclip"><rect width="${W}" height="${H}"/></clipPath></defs><g transform="translate(0 ${B})"><g clip-path="url(#mclip)">
+<path class="grat" d="${path(d3.geoGraticule10())}"/>`;
+  M.world.forEach(f=>{const st=pol[f.properties.name],d=path(f);if(!d)return;
+    if(st&&st.split){const {at,west,east}=st.split,half=(id,b,w,e,side)=>`<clipPath id="${id}"><path d="${path(d3.geoGraticule().extent([[w,25],[e,88]]).outline())}"/></clipPath><path class="ctry" d="${d}" clip-path="url(#${id})" style="fill:${fillFor({b,l:"m"})}"><title>${f.properties.name} · ${side} to ${BLOC[b][2]}${BLOC[b][0]}</title></path>`;
+      s+=half("split-w",west,-179,at,"West")+half("split-e",east,at,-20,"East")}
+    else s+=`<path class="ctry" d="${d}" style="fill:${fillFor(st)}"><title>${f.properties.name}${stateOf(st)}</title></path>`;
+    if(st&&st.w)s+=`<path d="${d}" fill="url(#hatch)" pointer-events="none"/>`;
+  });
+  const pin=(n,x,y,lbl,dia)=>{const r=(dia?8.5:10)*k,sel=M.sel===n.id,sw=`stroke-width:${(sel?3:1.5)*k}`;
+    const shape=dia?`<rect class="pm" x="${-r*.78}" y="${-r*.78}" width="${r*1.56}" height="${r*1.56}" rx="${1.5*k}" transform="rotate(45)" fill="${col(n.m)}" style="${sw}"/>`:`<circle class="pm" r="${r}" fill="${col(n.m)}" style="${sw}"/>`;
+    return `<g class="pin${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${n.d}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
+${shape}<text style="font-size:${(dia?(M.num[n.id]>9?8:10):11)*k}px">${M.num[n.id]}</text>${lbl?(()=>{const ls=wrap(n.n,lbl),lx=r+7*k;return `<text class="olbl" x="${lx}" style="font-size:${13*k}px">${ls.map((l,i)=>`<tspan x="${lx}" dy="${i?1.15:-0.575*(ls.length-1)}em">${l}</tspan>`).join("")}</text>`})():""}<title>${n.n} · ${n.d}</title></g>`};
+  const now=eraNodes(M.era),inView=(x,y)=>x>-20&&x<W+20&&y>-20&&y<H+20;
+  minorNodes(M.era).forEach(n=>{const [x,y]=proj(n.at);if(inView(x,y))s+=pin(n,x,y,false,true)});
+  now.filter(n=>LOC[n.id]).forEach(n=>{const [x,y]=proj(LOC[n.id]);if(inView(x,y))s+=pin(n,x,y)});
+  s+=`</g></g>`;
+  // Orbit band: events above the atmosphere, laid out left to right in year order
+  s+=`<rect width="${W}" height="${B}" fill="var(--band)"/><line x1="0" x2="${W}" y1="${B}" y2="${B}" stroke="var(--rule)" stroke-dasharray="4 4"/>
+<text class="oband" x="14" y="${16*Math.min(k,1.6)}" style="font-size:${10*Math.min(k,1.6)}px">ORBIT &amp; MARS</text>`;
+  // Each label gets its slot's width: long names wrap to two lines, and narrow screens show numbers only
+  const orb=now.filter(n=>ORBIT[n.id]),step=(W-40)/Math.max(orb.length,1),fit=Math.floor((step-33*k)/(7.3*k));
+  orb.forEach((n,i)=>s+=pin(n,40+14*k+i*step,B/2+8*Math.min(k,1.6),fit>=9?fit:0));
+  if(!orb.length)s+=`<text class="oband" x="${W/2}" y="${B/2+10}" text-anchor="middle" style="font-size:${11*Math.min(k,1.6)}px;letter-spacing:0;text-transform:none">Nothing in orbit this era</text>`;
+  s+=`</svg>`;
+  box.innerHTML=s;
+  box.querySelectorAll("[data-pin]").forEach(g=>{
+    g.addEventListener("click",()=>mapSelect(M.sel===g.dataset.pin?null:g.dataset.pin));
+    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();mapSelect(g.dataset.pin)}});
+  });
+}
+function mapSelect(id){
+  M.sel=id;
+  mapView.querySelectorAll("[data-cid]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.cid===id)));
+  document.querySelectorAll("#map-box [data-pin]").forEach(g=>g.classList.toggle("sel",g.dataset.pin===id));
+  if(!id){sheet.hidden=true;document.body.classList.remove("has-sheet");return}
+  const n=IDX[id]||MINORX[id],[mn,sub]=GROUPS[n.m],c=DATA.conflicts.cols[n.c],minor=!IDX[id];
+  sheet.innerHTML=`<div class="sheet-h"><div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+      <span class="top"><span class="chip" style="--mc:${col(n.m)}">${n.m}</span><span class="desig">${n.d}</span></span>
+      <h3>${n.n}</h3><span class="meta">${mn} · ${placeOf(id)} · ${c[0]}</span></div>
+      <button type="button" class="x" id="close">Close</button></div>
+    ${scene(id,n.n)}
+    <p><b>${n.t}.</b> ${n.x}</p>
+    ${minor?`<span class="meta">Smaller incident · map only</span>`:`<button type="button" class="go" data-go="${id}">Open in the Conflicts tree →</button>`}
+    ${n.mx?`<h4>Machines involved</h4>${goList(n.mx)}`:""}${n.pw?`<h4>Power</h4>${goList(n.pw)}`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`;
+  sheet.hidden=false;document.body.classList.add("has-sheet");
+  sheet.querySelector("#close").addEventListener("click",()=>mapSelect(null));
+  bindArt(sheet);
+  sheet.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
+}
+let mapRaf=0;
+addEventListener("resize",()=>{if(current!=="map")return;cancelAnimationFrame(mapRaf);mapRaf=requestAnimationFrame(drawMap)});
+
+// ---- Factions timeline ----
+// Lanes follow each faction through the map's eras to its 2327 successor. Events: [era column, year label, text, entry id to open (optional)].
+const TL_COLS=[...DATA.conflicts.cols,["2327","No Peace Past Luna"]];
+function renderTimeline(){
+  const el=document.getElementById("tl"),last=TL_COLS.length-1;
+  const ev=([,y,t,id])=>id?`<button type="button" class="tl-ev" data-go="${id}"><span>${y}</span>${t}</button>`:`<div class="tl-ev"><span>${y}</span>${t}</div>`;
+  el.innerHTML=`<div class="tl-cols">${TL_COLS.map(([k,y])=>`<div><b>${k}</b><span>${y}</span></div>`).join("")}</div>`+
+    TIMELINE.map(l=>`<section class="tl-lane" style="--mc:var(--m-${GROUPS[l.g][2]})"><div class="tl-h">${SCENES[l.g]?`<button type="button" class="tl-art" data-art="art/${SCENES[l.g].f}.jpg" data-cap="${l.n} · ${SCENES[l.g].h} · ${SCENES[l.g].c}" title="Key art: ${SCENES[l.g].h}"><img src="art/${SCENES[l.g].f}.jpg" alt="${l.n}: ${SCENES[l.g].h.toLowerCase()}" loading="lazy" decoding="async"></button>`:""}<h2>${l.n}</h2><p>${l.arc}</p></div>
+    <div class="tl-row">${TL_COLS.map((_,c)=>{
+      if(c===last)return `<div class="tl-cell tl-end"><b>${l.end[0]}</b><p>${l.end[1]}</p></div>`;
+      const yr=y=>/^Before/.test(y)?0:y==="War"?9999:parseInt(y,10)||0;
+      const es=l.ev.filter(e=>e[0]===c).sort((a,b)=>yr(a[1])-yr(b[1]));
+      return `<div class="tl-cell${c===last-1?" tl-proj":""}">${es.length?es.map(ev).join(""):`<p class="tl-none">—</p>`}</div>`;
+    }).join("")}</div></section>`).join("");
+  el.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
+  bindArt(el);
+}
+renderTimeline();
+
+// ---- Aces ----
+// Grouped by the era each pilot made their name in (the conflicts tree's columns); filters apply to faction and signature-frame build
+const FAC=Object.fromEntries(ACE_FACTIONS.map(([k,n,c])=>[k,{n,c:`var(--m-${c})`}]));
+const BUILD={S:"Standard",V:"Variant",C:"Custom"};
+const A={fac:null,bld:null};
+// Per frame: aces who flew it as built (ACED), and the named versions aces flew (VERS), shown on the Frames tree
+const isOwn=(id,vn)=>!vn||vn===label(IDX[id]);
+const VERS={},ACED={};
+ACES.forEach(a=>a.fr.forEach(([id,b,vn,note])=>{
+  if(isOwn(id,vn)){const l=ACED[id]=ACED[id]||[];if(!l.includes(a))l.push(a);return}
+  const vs=VERS[id]=VERS[id]||[];let v=vs.find(x=>x.vn===vn);if(!v)vs.push(v={b,vn,note,who:[]});v.who.push(a);
+}));
+const pilots=list=>list.map(a=>`<button type="button" class="pl" data-ace="${a.id}">${a.n}</button>`).join(", ");
+function renderAces(){
+  const fac=document.getElementById("ace-fac");
+  fac.innerHTML=`<span class="legend-label">Faction</span>`+ACE_FACTIONS.map(([k,n])=>`<button type="button" class="af" data-f="${k}" aria-pressed="${A.fac===k}" style="--mc:${FAC[k].c}"><i></i>${n}<small>${ACES.filter(a=>a.g===k).length}</small></button>`).join("");
+  document.getElementById("ace-bld").innerHTML=[[null,"All"],...Object.entries(BUILD)].map(([k,l])=>`<button type="button" data-b="${k||""}" aria-pressed="${A.bld===k}">${l}</button>`).join("");
+  const shown=ACES.filter(a=>(!A.fac||a.g===A.fac)&&(!A.bld||a.fr[0][1]===A.bld));
+  document.getElementById("ace-count").textContent=`Showing ${shown.length} of ${ACES.length} aces`;
+  // A frame flown as built links straight to its tree entry with a short note; a named version links to its base frame, whose card says what changed
+  const frame=([id,b,vn,note])=>`<li>${isOwn(id,vn)
+    ?`<button type="button" class="lk" data-go="${id}"><span class="bd ${b}">${BUILD[b].toUpperCase()}</span><span class="nm">${label(IDX[id])}</span></button><span class="fn">${note}</span>`
+    :`<span class="vn"><span class="bd ${b}">${BUILD[b].toUpperCase()}</span>${vn}</span><button type="button" class="lk base" data-go="${id}"><b>BASE</b>${label(IDX[id])} · what changed →</button>`}</li>`;
+  // The signature frame's scene heads the card: the named version's own art if it has some, otherwise the base frame's
+  const sig=([id,,vn])=>isOwn(id,vn)?[ART[id],label(IDX[id])]:[VART[vn],vn];
+  const thumb=a=>{const [stem,nm]=sig(a.fr[0]);return stem?`<button type="button" class="athumb" data-art="art/${stem}-scene.jpg" data-cap="${nm} · ${a.n}"><img src="thumb/${stem}-scene.jpg" alt="${nm}" loading="lazy" decoding="async"></button>`:""};
+  const card=a=>`<article class="pcard ace" id="ace-${a.id}" style="--pc:${FAC[a.g].c}">${thumb(a)}
+    <span class="meta">${a.r?a.r+" · ":""}${FAC[a.g].n} · ${a.y}</span>
+    <h3>${a.n}${a.cs?` <i>“${a.cs}”</i>`:""}</h3><span class="sv">${a.sv}</span>
+    <ul class="afr">${frame(a.fr[0])}</ul>
+    <p class="rec"><b>RECORD</b>${a.k}</p>
+    <p>${a.x}</p>
+    ${scene(a.id,a.n)}
+    ${a.fr.length>1?`<div class="seeds"><h4>Also flew</h4><ul class="afr also">${a.fr.slice(1).map(frame).join("")}</ul></div>`:""}
+    ${a.cf.length?`<div class="seeds"><h4>Fought in</h4>${goList(a.cf)}</div>`:""}
+    ${a.ln&&a.ln.length?`<div class="seeds"><h4>See also</h4>${goList(a.ln)}</div>`:""}
+    <p class="seed now"><b>NOW</b>${a.z}</p></article>`;
+  document.getElementById("ace-list").innerHTML=ACE_ERAS.map(([e,blurb])=>{
+    const list=shown.filter(a=>a.c===e);if(!list.length)return "";
+    const [k,y]=DATA.conflicts.cols[e];
+    return `<section class="ace-era"><div class="ace-era-h"><h2>${k}</h2><span>${y} · ${list.length} ${list.length===1?"ace":"aces"}</span><p>${blurb}</p></div><div class="powers">${list.map(card).join("")}</div></section>`;
+  }).join("")||`<p class="none">No aces match these filters.</p>`;
+  fac.querySelectorAll("[data-f]").forEach(b=>b.addEventListener("click",()=>{A.fac=A.fac===b.dataset.f?null:b.dataset.f;renderAces()}));
+  document.querySelectorAll("#ace-bld [data-b]").forEach(b=>b.addEventListener("click",()=>{A.bld=b.dataset.b||null;renderAces()}));
+  document.getElementById("ace-list").querySelectorAll("[data-art]").forEach(b=>b.addEventListener("click",()=>openArt(b.dataset.art,b.dataset.cap)));
+  document.getElementById("ace-list").querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
+}
+// Opens the Aces tab on one pilot's card, clearing filters that would hide it
+function showAce(id){
+  build("aces");remember("aces");
+  if(!document.getElementById("ace-"+id)){A.fac=null;A.bld=null;renderAces()}
+  const c=document.getElementById("ace-"+id);
+  requestAnimationFrame(()=>c.scrollIntoView({block:"center",behavior:reduced?"auto":"smooth"}));
+  c.classList.add("hit");setTimeout(()=>c.classList.remove("hit"),1600);
+}
+renderAces();
+
+let start=(location.hash||"").slice(1);
+const known=k=>!!DATA[k]||!!VIEWS[k];
+if(!known(start)){try{start=localStorage.getItem("atlas-tab")||""}catch(e){start=""}}
+build(known(start)?start:"frames");
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
+if("ResizeObserver" in window)new ResizeObserver(draw).observe(chart);
+addEventListener("resize",draw);
+}
+</script>
+
+</body></html>
