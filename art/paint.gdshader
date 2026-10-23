@@ -11,6 +11,8 @@ uniform bool sensor_unit = false;
 uniform bool use_albedo_texture = false;
 uniform sampler2D albedo_texture : source_color, filter_nearest_mipmap;
 uniform float emission_strength = 0.0;
+uniform float local_threshold = 0.12;
+uniform float local_strength = 0.55;
 varying vec3 painted_color;
 
 void fragment() {
@@ -42,6 +44,9 @@ void light() {
 		mix(0.0, 0.48, step(0.18, key)) + 0.52 * step(0.67, key);
 	vec3 shadow = mix(shadow_tint.rgb * 0.32, painted_color, 0.38);
 	vec3 lit = max(painted_color - shadow, vec3(0.0));
-	// Godot light colours include PI. max prevents lamps washing out the cels.
-	DIFFUSE_LIGHT = max(DIFFUSE_LIGHT, lit * band * LIGHT_COLOR / PI * (1.0 - sensor_mix));
+	if (LIGHT_IS_DIRECTIONAL) {
+		DIFFUSE_LIGHT = max(DIFFUSE_LIGHT, lit * band * LIGHT_COLOR / PI * (1.0 - sensor_mix));
+	} else {
+		DIFFUSE_LIGHT += step(local_threshold, key) * painted_color * LIGHT_COLOR / PI * local_strength * (1.0 - sensor_mix);
+	}
 }

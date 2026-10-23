@@ -3,6 +3,7 @@ extends RefCounted
 
 static func build(parent: Node3D, bounds: Rect2) -> WorldEnvironment:
 	var environment := build_lighting(parent)
+	build_lamp_masts(parent, bounds)
 	if bounds == Rect2(-18, -13, 36, 26) and ResourceLoader.exists("res://art/dock/StaticDock.tscn"):
 		parent.add_child(load("res://art/dock/StaticDock.tscn").instantiate())
 		return environment
@@ -68,8 +69,35 @@ static func build_dock_lamps(parent: Node3D, bounds: Rect2) -> void:
 			var material := ArtPalette.paint(Color("ffcc8b"), true).duplicate() as ShaderMaterial
 			material.set_shader_parameter("emission_strength", 3.5)
 			lamp.material_override = material
-			for segment in 5:
-				var streak := Primitives.box(parent, Vector3(0.10, 0.003, 0.28 + segment * 0.07), Vector3(x - side * (0.32 + segment * 0.17), 0.012, z + segment * 0.25), Color("a18a8c"))
-				var reflected := ArtPalette.paint(Color("a18a8c"), true).duplicate() as ShaderMaterial
-				reflected.set_shader_parameter("emission_strength", 0.22 * (1.0 - segment / 5.0))
-				streak.material_override = reflected
+
+static func mast_positions(bounds: Rect2) -> PackedVector3Array:
+	var a := bounds.position
+	var b := bounds.end
+	var c := bounds.get_center()
+	return PackedVector3Array([Vector3(a.x - 0.15, 4.0, c.y), Vector3(b.x + 0.15, 4.0, c.y), Vector3(a.x + 0.5, 4.0, a.y - 0.2), Vector3(b.x - 0.5, 4.0, b.y + 0.2)])
+
+static func build_lamp_masts(parent: Node3D, bounds: Rect2) -> void:
+	var index := 0
+	for at in mast_positions(bounds):
+		var mast := Node3D.new()
+		mast.name = "SodiumMast%d" % index
+		index += 1
+		parent.add_child(mast)
+		Primitives.box(mast, Vector3(0.08, 4.0, 0.08), at - Vector3.UP * 2.0, Color("353340")).material_override = ArtPalette.paint(Color("353340"), true)
+		var head := Primitives.box(mast, Vector3(0.48, 0.12, 0.28), at, Color("ffcc8b"))
+		var material := ArtPalette.paint(Color("ffcc8b"), true).duplicate() as ShaderMaterial
+		material.set_shader_parameter("emission_strength", 3.5)
+		head.material_override = material
+		var light := SpotLight3D.new()
+		light.name = "SodiumSpot"
+		light.position = at - Vector3.UP * 0.12
+		light.light_color = Color("ffcc8b")
+		light.light_energy = 0.85
+		light.spot_range = bounds.size.length() * 0.85
+		light.spot_angle = 32.0
+		light.spot_attenuation = 0.25
+		light.spot_angle_attenuation = 0.7
+		light.shadow_enabled = false
+		light.light_bake_mode = Light3D.BAKE_DISABLED
+		mast.add_child(light)
+		light.look_at(Vector3(bounds.get_center().x, 0, bounds.get_center().y))

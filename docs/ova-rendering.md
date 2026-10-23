@@ -27,11 +27,11 @@ This is a buffer mask, rather than native stencil. Godot's stencil is experiment
 
 ## Wet dock and lighting
 
-`art/environment.gdshader` supplies broad stepped brush washes without normal maps or outlines. A world-space puddle mask adds violet wet patches and varies dock roughness from 0.88 to 0.18. Emissive edge lamps and broken painted streaks suggest reflections without extra lights. Decorative fixtures remain outside the playable envelope and add no collision.
+`art/environment.gdshader` supplies broad stepped brush washes without normal maps or outlines. A world-space puddle mask adds violet wet patches and varies dock roughness from 0.88 to 0.18. Four 4-unit sodium masts sit outside the playable envelope without collision. Their warm `ffcc8b` spots use energy 0.85, angle 32°, distance attenuation 0.25 and angle attenuation 0.7; shadows and baking are disabled. The same masts serve prebuilt and procedural maps. Small edge housings remain emissive, but the old baked-only OmniLights and fixed streak boxes are removed.
 
 **SSR is off by default.** Enable custom Project Setting `rendering/ova/ssr` to experiment; painted lamp streaks are the cheaper default for the tactical orthographic view. Lighting uses one shadowed directional key, coloured ambient fill and emissive fixtures. The live WorldEnvironment and runtime key are always created by `BattlefieldBuilder.build_lighting()`, including on the prebuilt dock. `BattleController.world_environment` exposes those settings to presentation. The saved dock contains no WorldEnvironment, and its key copy is editor-only for baking indirect light.
 
-**The static dock now uses baked LightmapGI.** `art/dock/StaticDock.tscn` contains UV2-unwrapped dock meshes and eight baked-only perimeter lamps. `dock.lmbake` and `dock.exr` contain the completed bake. BattlefieldBuilder loads this scene for the standard 36×26 map; other bounds retain the procedural fallback. Scenario cover, wrecks and units remain dynamic and keep their existing rules and collision behaviour.
+**The static dock uses baked LightmapGI for indirect key and ambient fill.** `art/dock/StaticDock.tscn` contains UV2-unwrapped dock meshes. `dock.lmbake` and `dock.exr` contain the completed bake. BattlefieldBuilder loads this scene for the standard 36×26 map; other bounds retain the procedural fallback. Scenario cover, wrecks and units remain dynamic and keep their existing rules and collision behaviour.
 
 To rebuild, run the editor binary with `--headless --path . --script res://art/build_static_dock.gd`. This regenerates the scene and resets the bake. Create an empty `artifacts/bake-dock.request` and launch the Godot editor with `--editor --path .`; the included Dock Baker plugin consumes the request, selects the LightmapGI, invokes the editor bake, saves and exits. Run one bake editor at a time. Both generation and baking must be repeated after changing the dock layout or baked lights.
 
@@ -50,6 +50,7 @@ To rebuild, run the editor binary with `--headless --path . --script res://art/b
 | Control | Default | Location |
 | --- | --- | --- |
 | Cel bands / rim | 3 / 0.16 | `paint.gdshader` |
+| Local threshold / strength | 0.12 / 0.55 | `paint.gdshader`; additive warm cel band |
 | Hull width | 1.5 render pixels | `outline.gdshader` |
 | Interior ink / background paint | 0.65 / 0.45 | `cel_composite.gdshader` |
 | Glow HDR threshold | 1.3 | `OvaRendering.environment()` |
@@ -67,6 +68,7 @@ Measured on the dev RTX 3060 Ti at 1440×900, Forward+, native 3D scale, 2× MSA
 | --- | --- | --- | --- |
 | Task 0 baseline | 5.001 / 3.952 | 3.141 / 2.662 | 2.959 / 2.130 |
 | task1 | 4.649 / 3.843 | 3.622 / 2.735 | 5.164 / 2.275 |
+| task2 | 5.332 / 4.165 | 4.308 / 3.031 | 4.139 / 1.895 |
 
 Before images and timings are stored under `artifacts/lighting-pass/before-*`; each task records the equivalent `taskN-*` evidence. These ignored files are local verification evidence, not shipped assets.
 

@@ -78,6 +78,9 @@ func run() -> void:
 	ProjectSettings.set_setting("rendering/ova/ssr", original_ssr)
 	game.world_environment.environment.ssr_enabled = original_ssr
 	check(game.find_children("*", "DirectionalLight3D", true, false).filter(func(light: DirectionalLight3D) -> bool: return not light.editor_only).size() == 1, "Battle has exactly one runtime key light")
+	var spots := game.find_children("*", "SpotLight3D", true, false)
+	check(spots.size() == 4 and spots.all(func(light: SpotLight3D) -> bool: return not light.shadow_enabled and light.light_bake_mode == Light3D.BAKE_DISABLED), "Four collision-free sodium masts use unshadowed runtime lights")
+	check(game.find_children("*", "OmniLight3D", true, false).size() == 0, "Old baked perimeter lights have been removed")
 	var lightmap := game.find_child("DockLightmap", true, false) as LightmapGI
 	check(lightmap != null and lightmap.light_data != null and lightmap.light_data.get_user_count() > 0, "Dock loads a populated baked LightmapGI resource")
 	game.manager.paused = true

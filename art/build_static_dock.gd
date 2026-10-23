@@ -30,17 +30,6 @@ func run() -> void:
 			assert(error == OK, "UV2 unwrap failed")
 			node.mesh = mesh
 			node.gi_mode = GeometryInstance3D.GI_MODE_STATIC
-	# Small baked-only dock lights illuminate the wet perimeter; no runtime cost.
-	for side in [-1.0, 1.0]:
-		for i in 4:
-			var lamp := OmniLight3D.new()
-			lamp.position = Vector3(side * 17.7, 0.55, -11 + i * 22.0 / 3.0)
-			lamp.light_color = Color("ffcc8b")
-			lamp.light_energy = 1.0
-			lamp.omni_range = 3.0
-			lamp.light_bake_mode = Light3D.BAKE_STATIC
-			lamp.editor_only = true
-			dock.add_child(lamp)
 	var gi := LightmapGI.new()
 	gi.name = "DockLightmap"
 	gi.quality = LightmapGI.BAKE_QUALITY_MEDIUM

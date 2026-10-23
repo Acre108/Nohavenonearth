@@ -68,6 +68,24 @@ func run() -> void:
 	check(lit.get_luminance() > shadow.get_luminance() + 0.08, "Scene lighting changes the mech's cel band")
 	check(shadow.b > 0.05 and shadow.get_luminance() > 0.1, "Unlit mech retains a visible coloured shadow fill")
 	key.visible = true
+	var lamp := OmniLight3D.new()
+	lamp.position = Vector3(-0.8, 0.7, 2.2)
+	lamp.omni_range = 5.0
+	lamp.omni_attenuation = 0.2
+	lamp.light_energy = 0.65
+	lamp.light_color = Color("ffcc8b")
+	world.add_child(lamp)
+	await draw_frames()
+	var warm := sample(root.get_texture().get_image(), camera, Vector3(-0.8, 0.7, 0.5))
+	check(warm.r > lit.r + 0.015, "Local lamp adds a warm band over the directional key")
+	RenderingServer.global_shader_parameter_set("sensor_mix", 1.0)
+	await draw_frames()
+	var sensor_lit := sample(root.get_texture().get_image(), camera, Vector3(-0.8, 0.7, 0.5))
+	lamp.visible = false
+	await draw_frames()
+	var sensor_unlit := sample(root.get_texture().get_image(), camera, Vector3(-0.8, 0.7, 0.5))
+	check(sensor_lit.is_equal_approx(sensor_unlit), "Sensor contact colour ignores local lamps")
+	RenderingServer.global_shader_parameter_set("sensor_mix", 0.0)
 	# An emissive 3D card blooms; CanvasLayer HUD remains outside the film finish.
 	var hud := CanvasLayer.new()
 	hud.layer = 1
