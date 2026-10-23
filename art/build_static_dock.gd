@@ -13,35 +13,12 @@ func run() -> void:
 	var dock := Node3D.new()
 	dock.name = "StaticDock"
 	root.add_child(dock)
-	var environment := BattlefieldBuilder.build_lighting(dock)
-	environment.free()
-	for light in dock.find_children("*", "DirectionalLight3D", true, false):
-		light.editor_only = true
 	BattlefieldBuilder.build_procedural(dock, Rect2(-18, -13, 36, 26))
 	var index := 0
 	for node in dock.find_children("*", "MeshInstance3D", true, false):
 		node.name = "DockMesh_%03d" % index
 		index += 1
-		var material: Material = node.material_override
-		if material is ShaderMaterial and material.shader == ArtPalette.ENVIRONMENT_SHADER:
-			var mesh := ArrayMesh.new()
-			mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, node.mesh.surface_get_arrays(0))
-			var error := mesh.lightmap_unwrap(node.global_transform, 0.3)
-			assert(error == OK, "UV2 unwrap failed")
-			node.mesh = mesh
-			node.gi_mode = GeometryInstance3D.GI_MODE_STATIC
-	var gi := LightmapGI.new()
-	gi.name = "DockLightmap"
-	gi.quality = LightmapGI.BAKE_QUALITY_MEDIUM
-	gi.generate_probes_subdiv = LightmapGI.GENERATE_PROBES_SUBDIV_4
-	gi.environment_mode = LightmapGI.ENVIRONMENT_MODE_CUSTOM_COLOR
-	gi.environment_custom_color = Color("8c85b3")
-	gi.environment_custom_energy = 0.35
-	gi.light_data = LightmapGIData.new()
 	DirAccess.make_dir_recursive_absolute("res://art/dock")
-	assert(ResourceSaver.save(gi.light_data, "res://art/dock/dock.lmbake") == OK)
-	gi.light_data.take_over_path("res://art/dock/dock.lmbake")
-	dock.add_child(gi)
 	own_nodes(dock, dock)
 	var scene := PackedScene.new()
 	assert(scene.pack(dock) == OK)

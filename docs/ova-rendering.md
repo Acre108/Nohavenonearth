@@ -37,11 +37,13 @@ The environment's custom `light()` writes Lambert diffuse only, eliminating the 
 
 `art/environment.gdshader` supplies broad stepped brush washes without normal maps or outlines. A world-space puddle mask adds violet wet patches and varies dock roughness from 0.88 to 0.18. Four 4-unit sodium masts sit outside the playable envelope without collision. Their warm `ffcc8b` spots use energy 0.85, angle 32°, distance attenuation 0.25 and angle attenuation 0.7; shadows and baking are disabled. The same masts serve prebuilt and procedural maps. Small edge housings remain emissive, but the old baked-only OmniLights and fixed streak boxes are removed.
 
-**SSR is off by default.** Enable custom Project Setting `rendering/ova/ssr` to experiment; painted lamp streaks are the cheaper default for the tactical orthographic view. Lighting uses one shadowed directional key, coloured ambient fill and emissive fixtures. The live WorldEnvironment and runtime key are always created by `BattlefieldBuilder.build_lighting()`, including on the prebuilt dock. `BattleController.world_environment` exposes those settings to presentation. The saved dock contains no WorldEnvironment, and its key copy is editor-only for baking indirect light.
+**SSR follows the camera mode.** Overview forces it off, while Forward+ close and cinematic modes enable it. The `rendering/ova/ssr` setting is the environment factory's initial value, before the battle mode policy applies. Lighting uses one shadowed directional key, coloured ambient fill and four unshadowed sodium spots. The live WorldEnvironment and runtime key are always created by `BattlefieldBuilder.build_lighting()`, including on the prebuilt dock. `BattleController.world_environment` exposes those settings to presentation. The saved dock contains geometry and collision only.
 
-**The static dock uses baked LightmapGI for indirect key and ambient fill.** `art/dock/StaticDock.tscn` contains UV2-unwrapped dock meshes. `dock.lmbake` and `dock.exr` contain the completed bake. BattlefieldBuilder loads this scene for the standard 36×26 map; other bounds retain the procedural fallback. Scenario cover, wrecks and units remain dynamic and keep their existing rules and collision behaviour.
+**Task 7 decision: remove the LightmapGI bake.** With baked lamps replaced, the remaining indirect key/ambient bake made no clear visual difference. At 1440×900, matched captures measured mean luminance differences of 0.00160 (overview) and 0.00291 (close); only 0.00131% and 0.00193% of pixels changed by more than 0.05. Grain, rain and idle poses were held out of the comparison. The evidence is `artifacts/lighting-pass/lightmap-overview-with.png`, `lightmap-overview-without.png`, `lightmap-close-with.png` and `lightmap-close-without.png`.
 
-To rebuild, run the editor binary with `--headless --path . --script res://art/build_static_dock.gd`. This regenerates the scene and resets the bake. Create an empty `artifacts/bake-dock.request` and launch the Godot editor with `--editor --path .`; the included Dock Baker plugin consumes the request, selects the LightmapGI, invokes the editor bake, saves and exits. Run one bake editor at a time. Both generation and baking must be repeated after changing the dock layout or baked lights.
+The lightmap resources, UV2 unwrap and editor bake plugin are removed. `art/dock/StaticDock.tscn` remains a plain prebuilt geometry scene for the standard 36×26 map. Other bounds use the same procedural geometry and live lighting, with no bake limitation. Scenario cover, wrecks and units retain their existing rules and collision behaviour.
+
+To regenerate the standard dock geometry, run the editor binary with `--headless --path . --script res://art/build_static_dock.gd`. No editor UI automation or bake step is required. Runtime lighting and reflection uniforms are applied by BattlefieldBuilder rather than frozen into this resource.
 
 ## Animation, effects and trims
 
@@ -89,6 +91,7 @@ Measured on the dev RTX 3060 Ti at 1440×900, Forward+, native 3D scale, 2× MSA
 | task4 | 5.219 / 3.824 | 5.706 / 2.773 | 5.078 / 2.208 |
 | task5 | 5.071 / 3.943 | 3.849 / 3.165 | 4.090 / 2.125 |
 | task6 | 5.257 / 3.385 | 3.412 / 2.673 | 4.091 / 2.100 |
+| task7 | 5.079 / 3.743 | 4.039 / 2.740 | 4.613 / 2.437 |
 
 Before images and timings are stored under `artifacts/lighting-pass/before-*`; each task records the equivalent `taskN-*` evidence. These ignored files are local verification evidence, not shipped assets.
 

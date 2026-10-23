@@ -98,8 +98,7 @@ func run() -> void:
 	var spots := game.find_children("*", "SpotLight3D", true, false)
 	check(spots.size() == 4 and spots.all(func(light: SpotLight3D) -> bool: return not light.shadow_enabled and light.light_bake_mode == Light3D.BAKE_DISABLED), "Four collision-free sodium masts use unshadowed runtime lights")
 	check(game.find_children("*", "OmniLight3D", true, false).size() == 0, "Old baked perimeter lights have been removed")
-	var lightmap := game.find_child("DockLightmap", true, false) as LightmapGI
-	check(lightmap != null and lightmap.light_data != null and lightmap.light_data.get_user_count() > 0, "Dock loads a populated baked LightmapGI resource")
+	check(game.find_child("StaticDock", true, false) != null and game.find_child("DockLightmap", true, false) == null, "Standard dock uses prebuilt geometry without a lightmap dependency")
 	game.manager.paused = true
 	await create_timer(0.3).timeout
 	var before := JSON.stringify(game.manager.battle.to_dict())
