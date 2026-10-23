@@ -86,6 +86,14 @@ func run() -> void:
 	var sensor_unlit := sample(root.get_texture().get_image(), camera, Vector3(-0.8, 0.7, 0.5))
 	check(sensor_lit.is_equal_approx(sensor_unlit), "Sensor contact colour ignores local lamps")
 	RenderingServer.global_shader_parameter_set("sensor_mix", 0.0)
+	var armor_material := mech.material_override as ShaderMaterial
+	await draw_frames()
+	var glint := sample(root.get_texture().get_image(), camera, Vector3(-0.8, 0.7, 0.5))
+	armor_material.set_shader_parameter("sheen_strength", 0.0)
+	await draw_frames()
+	var matte := sample(root.get_texture().get_image(), camera, Vector3(-0.8, 0.7, 0.5))
+	check(glint.get_luminance() > matte.get_luminance() + 0.02, "Facing armour catches a painted hard highlight")
+	armor_material.set_shader_parameter("sheen_strength", 0.35)
 	# An emissive 3D card blooms; CanvasLayer HUD remains outside the film finish.
 	var hud := CanvasLayer.new()
 	hud.layer = 1

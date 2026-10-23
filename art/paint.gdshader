@@ -13,7 +13,10 @@ uniform sampler2D albedo_texture : source_color, filter_nearest_mipmap;
 uniform float emission_strength = 0.0;
 uniform float local_threshold = 0.12;
 uniform float local_strength = 0.55;
+uniform float sheen_threshold = 0.94;
+uniform float sheen_strength = 0.35;
 varying vec3 painted_color;
+varying vec3 cel_fill;
 
 void fragment() {
 	vec3 base = paint.rgb;
@@ -34,6 +37,7 @@ void fragment() {
 	vec3 shadow = mix(shadow_tint.rgb * 0.32, painted_color, 0.38);
 	EMISSION = mix(shadow + rim * rim_color.rgb * rim_strength + base * emission_strength,
 		sensor, sensor_mix);
+	cel_fill = EMISSION;
 	ALBEDO *= 1.0 - sensor_mix;
 }
 
@@ -48,5 +52,14 @@ void light() {
 		DIFFUSE_LIGHT = max(DIFFUSE_LIGHT, lit * band * LIGHT_COLOR / PI * (1.0 - sensor_mix));
 	} else {
 		DIFFUSE_LIGHT += step(local_threshold, key) * painted_color * LIGHT_COLOR / PI * local_strength * (1.0 - sensor_mix);
+	}
+	float band_is_lit = LIGHT_IS_DIRECTIONAL ? step(0.001, band) : step(local_threshold, key);
+	float glint = step(sheen_threshold, dot(NORMAL, normalize(LIGHT + VIEW))) * ATTENUATION * band_is_lit;
+	vec3 sheen = LIGHT_COLOR / PI * sheen_strength * glint * (1.0 - sensor_mix);
+	// Painted sheen cannot push this lighting result past the 1.3 HDR glow gate.
+	DIFFUSE_LIGHT += min(sheen, max(vec3(1.2) - DIFFUSE_LIGHT - cel_fill, vec3(0.0)));
+	if (emission_strength == 0.0) {
+		// Apply after every light so later local lights cannot push an earlier glint into glow.
+		DIFFUSE_LIGHT = min(DIFFUSE_LIGHT, max(vec3(1.2) - cel_fill, vec3(0.0)));
 	}
 }

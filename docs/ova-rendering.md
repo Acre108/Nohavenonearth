@@ -17,6 +17,8 @@ Godot copies the 3D screen texture before transparency. The scene composite runs
 
 ## Materials and mask
 
+Armour catches a hard painted half-vector highlight from the key and local lamps. It uses threshold 0.94 and strength 0.35, only appears in a lit band and fades with Sensor View. The added sheen is limited to available headroom below 1.2 HDR; ordinary armour highlights do not trigger the 1.3 glow gate. The shader retains `specular_disabled`, specular zero and mask roughness 0.02.
+
 `art/paint.gdshader` uses a custom `light()` with two or three hard bands. Both N·L and shadow-map attenuation affect the band. Blue-violet fill remains visible without direct light; a hard warm rim comes from view angle. Specular and metallic response are disabled. Vertex wear is quantised into hard shapes. Authored albedo textures are preserved and multiplied by paint, including through workshop recolouring.
 
 The front-culled inverted hull remains in `next_pass`, offset along the projected vertex normal at 1.5 render pixels. Projection and model scale no longer change its thickness. In LaserDisc mode the hull is intentionally upscaled along with the cels.
@@ -53,6 +55,7 @@ To rebuild, run the editor binary with `--headless --path . --script res://art/b
 | --- | --- | --- |
 | Cel bands / rim | 3 / 0.16 | `paint.gdshader` |
 | Local threshold / strength | 0.12 / 0.55 | `paint.gdshader`; additive warm cel band |
+| Sheen threshold / strength | 0.94 / 0.35 | `paint.gdshader`; painted highlight |
 | Lamp streak strength / length / width | 0.18 / 3.8 / 0.35 | `environment.gdshader` |
 | Hull width | 1.5 render pixels | `outline.gdshader` |
 | Interior ink / background paint | 0.65 / 0.45 | `cel_composite.gdshader` |
@@ -73,6 +76,7 @@ Measured on the dev RTX 3060 Ti at 1440×900, Forward+, native 3D scale, 2× MSA
 | task1 | 4.649 / 3.843 | 3.622 / 2.735 | 5.164 / 2.275 |
 | task2 | 5.332 / 4.165 | 4.308 / 3.031 | 4.139 / 1.895 |
 | task3 | 5.100 / 3.616 | 3.814 / 2.730 | 5.035 / 2.281 |
+| task4 | 5.219 / 3.824 | 5.706 / 2.773 | 5.078 / 2.208 |
 
 Before images and timings are stored under `artifacts/lighting-pass/before-*`; each task records the equivalent `taskN-*` evidence. These ignored files are local verification evidence, not shipped assets.
 
