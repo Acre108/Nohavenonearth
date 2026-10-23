@@ -13,6 +13,10 @@ func run() -> void:
 	var dock := Node3D.new()
 	dock.name = "StaticDock"
 	root.add_child(dock)
+	var environment := BattlefieldBuilder.build_lighting(dock)
+	environment.free()
+	for light in dock.find_children("*", "DirectionalLight3D", true, false):
+		light.editor_only = true
 	BattlefieldBuilder.build_procedural(dock, Rect2(-18, -13, 36, 26))
 	var index := 0
 	for node in dock.find_children("*", "MeshInstance3D", true, false):

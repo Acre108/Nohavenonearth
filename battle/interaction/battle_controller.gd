@@ -13,6 +13,7 @@ var overlay_renderer: BattleOverlayRenderer
 var planning: PlanningSession
 var manager: TurnManager
 var camera: TacticalCamera
+var world_environment: WorldEnvironment
 var ui: BattleUI
 var actors: Dictionary = {}
 var actors_root: Node3D
@@ -76,7 +77,7 @@ func _ready() -> void:
 		capture_preview.call_deferred()
 
 func build_table() -> void:
-	BattlefieldBuilder.build(self, manager.battle.bounds)
+	world_environment = BattlefieldBuilder.build(self, manager.battle.bounds)
 	camera = TacticalCamera.new()
 	add_child(camera)
 	camera.configure(manager.battle.bounds)

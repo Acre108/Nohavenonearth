@@ -29,7 +29,7 @@ This is a buffer mask, rather than native stencil. Godot's stencil is experiment
 
 `art/environment.gdshader` supplies broad stepped brush washes without normal maps or outlines. A world-space puddle mask adds violet wet patches and varies dock roughness from 0.88 to 0.18. Emissive edge lamps and broken painted streaks suggest reflections without extra lights. Decorative fixtures remain outside the playable envelope and add no collision.
 
-**SSR is off by default.** Enable custom Project Setting `rendering/ova/ssr` to experiment; painted lamp streaks are the cheaper default for the tactical orthographic view. Lighting uses one shadowed directional key, coloured ambient fill and emissive fixtures.
+**SSR is off by default.** Enable custom Project Setting `rendering/ova/ssr` to experiment; painted lamp streaks are the cheaper default for the tactical orthographic view. Lighting uses one shadowed directional key, coloured ambient fill and emissive fixtures. The live WorldEnvironment and runtime key are always created by `BattlefieldBuilder.build_lighting()`, including on the prebuilt dock. `BattleController.world_environment` exposes those settings to presentation. The saved dock contains no WorldEnvironment, and its key copy is editor-only for baking indirect light.
 
 **The static dock now uses baked LightmapGI.** `art/dock/StaticDock.tscn` contains UV2-unwrapped dock meshes and eight baked-only perimeter lamps. `dock.lmbake` and `dock.exr` contain the completed bake. BattlefieldBuilder loads this scene for the standard 36×26 map; other bounds retain the procedural fallback. Scenario cover, wrecks and units remain dynamic and keep their existing rules and collision behaviour.
 
@@ -66,6 +66,7 @@ Measured on the dev RTX 3060 Ti at 1440×900, Forward+, native 3D scale, 2× MSA
 | Checkpoint | Overview GPU / CPU ms | Close GPU / CPU ms | Cinematic GPU / CPU ms |
 | --- | --- | --- | --- |
 | Task 0 baseline | 5.001 / 3.952 | 3.141 / 2.662 | 2.959 / 2.130 |
+| task1 | 4.649 / 3.843 | 3.622 / 2.735 | 5.164 / 2.275 |
 
 Before images and timings are stored under `artifacts/lighting-pass/before-*`; each task records the equivalent `taskN-*` evidence. These ignored files are local verification evidence, not shipped assets.
 

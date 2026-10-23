@@ -70,8 +70,14 @@ func run() -> void:
 				separate.free()
 			check(components == 14, "Teamster region contract maps all fourteen workshop slots")
 		holder.free()
+	var original_ssr: bool = ProjectSettings.get_setting("rendering/ova/ssr", false)
+	ProjectSettings.set_setting("rendering/ova/ssr", true)
 	game = load("res://battle/world/Battlefield.tscn").instantiate()
 	root.add_child(game)
+	check(game.world_environment.environment.ssr_enabled == (RenderingServer.get_current_rendering_method() == "forward_plus"), "Standard dock receives the live SSR setting")
+	ProjectSettings.set_setting("rendering/ova/ssr", original_ssr)
+	game.world_environment.environment.ssr_enabled = original_ssr
+	check(game.find_children("*", "DirectionalLight3D", true, false).filter(func(light: DirectionalLight3D) -> bool: return not light.editor_only).size() == 1, "Battle has exactly one runtime key light")
 	var lightmap := game.find_child("DockLightmap", true, false) as LightmapGI
 	check(lightmap != null and lightmap.light_data != null and lightmap.light_data.get_user_count() > 0, "Dock loads a populated baked LightmapGI resource")
 	game.manager.paused = true

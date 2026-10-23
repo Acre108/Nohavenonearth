@@ -1,13 +1,15 @@
 class_name BattlefieldBuilder
 extends RefCounted
 
-static func build(parent: Node3D, bounds: Rect2) -> void:
+static func build(parent: Node3D, bounds: Rect2) -> WorldEnvironment:
+	var environment := build_lighting(parent)
 	if bounds == Rect2(-18, -13, 36, 26) and ResourceLoader.exists("res://art/dock/StaticDock.tscn"):
 		parent.add_child(load("res://art/dock/StaticDock.tscn").instantiate())
-		return
+		return environment
 	build_procedural(parent, bounds)
+	return environment
 
-static func build_procedural(parent: Node3D, bounds: Rect2) -> void:
+static func build_lighting(parent: Node3D) -> WorldEnvironment:
 	var environment := WorldEnvironment.new()
 	var settings := OvaRendering.environment()
 	environment.environment = settings
@@ -19,6 +21,9 @@ static func build_procedural(parent: Node3D, bounds: Rect2) -> void:
 	light.shadow_enabled = true
 	light.shadow_opacity = 1.0
 	parent.add_child(light)
+	return environment
+
+static func build_procedural(parent: Node3D, bounds: Rect2) -> void:
 	var center := bounds.get_center()
 	Primitives.box(parent, Vector3(bounds.size.x + 0.6, 0.4, bounds.size.y + 0.6), Vector3(center.x, -0.28, center.y), Color("111e2a"))
 	var surface := Primitives.box(parent, Vector3(bounds.size.x, 0.1, bounds.size.y), Vector3(center.x, -0.05, center.y), Color("35414a"))
