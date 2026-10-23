@@ -9,10 +9,14 @@ var is_sensor: bool = false
 var blend: Tween
 var sensor_goal: float = 0.0
 var sensor_until: int = 0
+var atmosphere: BattleAtmosphere
 
 func setup(game: BattleController) -> void:
 	controller = game
 	RenderingServer.global_shader_parameter_set("sensor_mix", sensor_mix)
+	atmosphere = BattleAtmosphere.new()
+	add_child(atmosphere)
+	atmosphere.setup(controller.camera, controller.world_environment.environment)
 
 func set_sensor_view(value: bool) -> void:
 	sensor_enabled = value
@@ -46,6 +50,7 @@ func refresh() -> void:
 func set_mix(value: float) -> void:
 	sensor_mix = value
 	RenderingServer.global_shader_parameter_set("sensor_mix", value)
+	atmosphere.set_sensor_mix(value)
 
 func ping() -> void:
 	for unit in controller.manager.battle.living(0):

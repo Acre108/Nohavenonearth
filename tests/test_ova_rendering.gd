@@ -164,5 +164,31 @@ func run() -> void:
 	root.get_texture().get_image().save_png("res://artifacts/ova-mech-closeup.png")
 	world.queue_free()
 	await process_frame
+	var game: BattleController = load("res://battle/world/Battlefield.tscn").instantiate()
+	root.add_child(game)
+	game.manager.paused = true
+	var atmosphere := game.presentation.atmosphere
+	game.camera.toggle_close()
+	await create_timer(0.65).timeout
+	check(atmosphere.environment.fog_enabled and atmosphere.environment.fog_density > 0.025, "Close view enables fog within 0.6 seconds")
+	check(atmosphere.environment.ssr_enabled and atmosphere.rain.emitting, "Close view enables SSR and rain")
+	game.presentation.set_sensor_view(true)
+	await create_timer(0.65).timeout
+	check(not atmosphere.environment.fog_enabled and not atmosphere.environment.ssr_enabled and not atmosphere.rain.emitting, "Sensor View overrides all perspective atmosphere")
+	game.presentation.set_sensor_view(false)
+	await create_timer(0.65).timeout
+	check(atmosphere.environment.ssr_enabled and atmosphere.rain.emitting, "Leaving Sensor View restores close-view atmosphere")
+	game.camera.toggle_close()
+	await create_timer(0.65).timeout
+	check(is_zero_approx(atmosphere.environment.fog_density) and not atmosphere.environment.ssr_enabled and not atmosphere.rain.emitting, "Overview clears fog SSR and rain")
+	var shot := CameraShot.looking(Vector3(3, 2, 4), Vector3(0, 0.7, 0), 42)
+	game.camera.play_cinematic([{"start": shot, "end": shot, "duration": 1.5, "blend": 0.0}])
+	await create_timer(0.6).timeout
+	check(atmosphere.environment.fog_enabled and atmosphere.environment.ssr_enabled and atmosphere.rain.emitting, "Cinematic mode enables perspective atmosphere")
+	game.camera.skip_cinematic()
+	await create_timer(0.65).timeout
+	check(not atmosphere.rain.emitting and not atmosphere.environment.ssr_enabled, "Cinematic return restores overview atmosphere policy")
+	game.queue_free()
+	await process_frame
 	print("OVA: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)

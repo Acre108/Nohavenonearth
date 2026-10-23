@@ -29,6 +29,10 @@ This is a buffer mask, rather than native stencil. Godot's stencil is experiment
 
 ## Wet dock and lighting
 
+`BattleAtmosphere` listens to `TacticalCamera.mode_changed` through BattlePresentation. Overview has no fog, SSR or rain. Close and cinematic modes fade violet-navy exponential fog to density 0.03 over 0.5 seconds; sky affect is zero. Forward+ also enables SSR with 48 steps in those modes. The mechs retain zero PBR specular and their 0.02 mask ID; the review renders retain their painted appearance rather than a mirror finish.
+
+Rain uses 1,500 thin transparent GPU particle quads at 24 simulation fps, lifetime 1.2 seconds and alpha 0.18, emitting in a world-aligned box in front of the camera. It renders after the composite, excluding it from the mech mask and Kuwahara. Leaving perspective mode stops emission and fades the remaining drops. Sensor mix fades the rain and fog; above 0.5 it immediately suppresses fog, rain visibility/emission and SSR. Compatibility retains fog and GPU rain while keeping SSR disabled. No volumetric fog or collision simulation is used.
+
 The environment's custom `light()` writes Lambert diffuse only, eliminating the view-dependent orthographic specular flare. Puddles retain specular 0.65 and roughness 0.18 for screen-space reflection eligibility. Four mast positions drive painted reflections in the wet material: two hard emission steps, 0.35 units across and 3.8 units toward the camera, with peak strength 0.18. Their orientation follows the camera's horizontal view direction. Both puddles and streaks fade with Sensor View. `test_wet_lighting.gd` compares wet/dry rendered luminance at azimuths 0, 1.1, 2.2 and 3.3, requiring fewer than 0.1% of pixels to rise by more than 0.35. Task 3 measured **zero** such pixels at every angle; the GPU averages remained below 8 ms.
 
 `art/environment.gdshader` supplies broad stepped brush washes without normal maps or outlines. A world-space puddle mask adds violet wet patches and varies dock roughness from 0.88 to 0.18. Four 4-unit sodium masts sit outside the playable envelope without collision. Their warm `ffcc8b` spots use energy 0.85, angle 32°, distance attenuation 0.25 and angle attenuation 0.7; shadows and baking are disabled. The same masts serve prebuilt and procedural maps. Small edge housings remain emissive, but the old baked-only OmniLights and fixed streak boxes are removed.
@@ -43,7 +47,7 @@ To rebuild, run the editor binary with `--headless --path . --script res://art/b
 
 `TeamsterAnimator` advances its AnimationPlayer at 12 Hz, holding each rigid-part pose between updates with blends disabled. Accessories follow that cadence. Imported clips remain intact for precise rig sampling; they are not destructively re-keyed. Clip speeds and durations are preserved. Camera, world translation, UI, combat timing and projectiles retain their smooth clocks.
 
-`art/fx_burst.svg` is a four-frame painted atlas. `CelEffects` plays it on camera-facing AnimatedSprite3D cards: bursts at 12 fps, smoke at 8 fps. Weapon flashes, missile smoke, impacts and destruction bursts now use these cards. Beam travel retains its ribbon and bolt. This pass does not add ambient steam or rain to the tactical map.
+`art/fx_burst.svg` is a four-frame painted atlas. `CelEffects` plays it on camera-facing AnimatedSprite3D cards: bursts at 12 fps, smoke at 8 fps. Weapon flashes, missile smoke, impacts and destruction bursts now use these cards. Beam travel retains its ribbon and bolt. Rain is confined to perspective views; ambient steam and splash bursts remain optional future art.
 
 `art/armour_trim.svg` is a reusable 1024×256 albedo atlas, rasterised by Godot on import. Four 64-pixel strips hold panel seams, stencils (US 01, 317, 02, 09), caution tape and chips, without PBR channels. Map panel UVs to a strip and pass the texture to `ArtPalette.unit_paint(color, faction, texture)`, or assign it to the source material before `paint_model()`.
 
@@ -57,6 +61,9 @@ To rebuild, run the editor binary with `--headless --path . --script res://art/b
 | Local threshold / strength | 0.12 / 0.55 | `paint.gdshader`; additive warm cel band |
 | Sheen threshold / strength | 0.94 / 0.35 | `paint.gdshader`; painted highlight |
 | Lamp streak strength / length / width | 0.18 / 3.8 / 0.35 | `environment.gdshader` |
+| Fog density / transition | 0.03 / 0.5 s | `BattleAtmosphere`; perspective only |
+| Rain count / alpha / lifetime | 1500 / 0.18 / 1.2 s | `BattleAtmosphere` and `rain.gdshader` |
+| SSR steps | 48 | Forward+ perspective only |
 | Hull width | 1.5 render pixels | `outline.gdshader` |
 | Interior ink / background paint | 0.65 / 0.45 | `cel_composite.gdshader` |
 | Glow HDR threshold | 1.3 | `OvaRendering.environment()` |
@@ -77,6 +84,7 @@ Measured on the dev RTX 3060 Ti at 1440×900, Forward+, native 3D scale, 2× MSA
 | task2 | 5.332 / 4.165 | 4.308 / 3.031 | 4.139 / 1.895 |
 | task3 | 5.100 / 3.616 | 3.814 / 2.730 | 5.035 / 2.281 |
 | task4 | 5.219 / 3.824 | 5.706 / 2.773 | 5.078 / 2.208 |
+| task5 | 5.071 / 3.943 | 3.849 / 3.165 | 4.090 / 2.125 |
 
 Before images and timings are stored under `artifacts/lighting-pass/before-*`; each task records the equivalent `taskN-*` evidence. These ignored files are local verification evidence, not shipped assets.
 
