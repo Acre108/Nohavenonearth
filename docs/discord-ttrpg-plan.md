@@ -12,7 +12,7 @@ group can run on Discord, with a GM, a rules bot and the [atlas](atlas/) as the 
 | --- | --- | --- |
 | [tabletop-d10-system.md](tabletop-d10-system.md) | Playtest rules draft, combat only | **The rulebook's combat chapter.** Players and the GM read it; the bot implements it. |
 | `combat_rules.gd`, `melee_rules.gd`, `movement_rules.gd`, `unit_state.gd` | Godot rules code with ~18,700 passing checks | **Reference implementation.** Answers "what exactly happens?" and produces test vectors the bot must match. Not extended with new features. |
-| F3 debug sandbox (forced stats, altitude, damage, step-through) | Prototype debug tool | **Rules lab.** Set up a disputed situation, step it through, and record the result as a worked example or test vector. |
+| [Combat sandbox](https://claude.ai/artifact/JgqktsdJAv71A8j6XkpviL) (hex map, Gen 1 and Gen 2 frames, playtest squads) | claude.ai artifact used for the October playtests | **Rules lab and stand-in for the bot.** Its frame and weapon tables are the source for the Player's Guide; the GM runs fights in it until the bot exists, and settles disputed geometry with it. Godot's F3 debug menu does the same for the continuous game. |
 | `standard.json`, `costs.json`, workshop catalogues | Game data | **The bot's data**, loaded directly, validated strictly (unknown keys are errors). |
 | Teamster and Kestrel workshops | Mech fitting UI | **Model for the mech sheet:** regions, two components per region, Frame / Pilot / Total / Threshold. |
 | Atlas and NPPL briefs | Lore | **The setting chapter** and campaign hooks. |
@@ -66,6 +66,11 @@ then write the answer into the rulebook as an example.
 
 **Done when:** a new player can build a pilot, read the Player's guide and play one fight without
 asking the GM how a rule works.
+
+*Status, 30 October:* the Player's Guide and GM's Guide are written as Google Docs (see
+[rulebook](rulebook/README.md)), with items 1–6 above drafted as **Proposed** rules. The setting
+guide already existed as the Roleplaying Setting Claude Doc, which stays where it is and is linked
+from both guides. Next: play one fight from the guides and settle the proposed rules.
 
 ### Phase 2 — Bot, minimum playable (3–4 weeks)
 

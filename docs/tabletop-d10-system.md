@@ -1,5 +1,8 @@
 # No Haven on Earth — Tabletop d10 system
 
+> Since 30 October 2026 the player-facing rules live in the shared [rulebook](rulebook/README.md).
+> This draft is kept as the source they were written from.
+
 **Component: tabletop roleplaying game. It is best played over Discord with a dice-and-rules bot,
 and playable on paper.**
 
