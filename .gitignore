@@ -5,5 +5,13 @@ artifacts/
 *.log
 *.exe
 *.pck
-output/
+output/*
+!output/.gdignore
 __pycache__/
+tmp/*
+!tmp/.gdignore
+# Unredacted atlas originals: local only, never publish.
+docs/atlas/atlas-redactions.json
+# Blender sources live in Google Drive, not in the repository.
+*.blend
+*.blend1
