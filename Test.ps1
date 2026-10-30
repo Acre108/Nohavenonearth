@@ -36,3 +36,6 @@ if ($WithUI) {
     Invoke-GodotCheck 'art-tests' '--path . --script res://tests/test_art.gd'
     Invoke-GodotCheck 'ova-rendering' '--path . --script res://tests/test_ova_rendering.gd'
 }
+# Tabletop tools: strict catalogue check and test vectors.
+& py -m unittest discover -s (Join-Path $PSScriptRoot 'tabletop')
+if ($LASTEXITCODE -ne 0) { throw 'Tabletop tests failed.' }
