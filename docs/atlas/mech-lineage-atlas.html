@@ -13,7 +13,7 @@
   --sea:#D9E1DF; --land:#F4F5F1;
   --m-PRE:#6F7773; --m-HAL:#2E5DA6; --m-BHH:#6A6E22; --m-VEK:#2A7D7A; --m-CAS:#B3263A;
   --m-TSM:#A3561C; --m-OKB:#694B92; --m-MHI:#AE3A7D; --m-QAC:#86663A; --m-ASC:#9C7A00;
-  --m-BOR:#3C7F4C; --m-NSK:#1B7AA6; --m-UNO:#4B5FC4;
+  --m-BOR:#3C7F4C; --m-NSK:#1B7AA6; --m-UNO:#4B5FC4; --m-LUN:#5E7387; --m-FNK:#C2185B; --m-KHM:#689F38; --m-EUX:#865057;
   --display:"Chakra Petch","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
@@ -24,7 +24,7 @@
   --sea:#0D1110; --land:#262C2A;
   --m-PRE:#9BA49F; --m-HAL:#76A0EA; --m-BHH:#AEB25A; --m-VEK:#5FC0BA; --m-CAS:#EF6879;
   --m-TSM:#E38E4E; --m-OKB:#AA8CD8; --m-MHI:#E67DB9; --m-QAC:#CBA571; --m-ASC:#E3BD30;
-  --m-BOR:#7CC48C; --m-NSK:#5CB6E0; --m-UNO:#9AA6F2;
+  --m-BOR:#7CC48C; --m-NSK:#5CB6E0; --m-UNO:#9AA6F2; --m-LUN:#A9BCCF; --m-FNK:#F27BAA; --m-KHM:#AED581; --m-EUX:#C68D93;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#131715; --card:#1B201E; --ink:#E2E7E3; --ink-2:#9BA49F; --rule:#323A36;
@@ -32,7 +32,7 @@
   --sea:#0D1110; --land:#262C2A;
   --m-PRE:#9BA49F; --m-HAL:#76A0EA; --m-BHH:#AEB25A; --m-VEK:#5FC0BA; --m-CAS:#EF6879;
   --m-TSM:#E38E4E; --m-OKB:#AA8CD8; --m-MHI:#E67DB9; --m-QAC:#CBA571; --m-ASC:#E3BD30;
-  --m-BOR:#7CC48C; --m-NSK:#5CB6E0; --m-UNO:#9AA6F2;
+  --m-BOR:#7CC48C; --m-NSK:#5CB6E0; --m-UNO:#9AA6F2; --m-LUN:#A9BCCF; --m-FNK:#F27BAA; --m-KHM:#AED581; --m-EUX:#C68D93;
   color-scheme:dark}
 
 *{box-sizing:border-box}
@@ -177,8 +177,10 @@ header p{margin:0;color:var(--ink-2)}
 .map-box{position:relative;background:var(--sea);border:1px solid var(--rule);border-radius:3px;overflow:hidden}
 .map-box svg{display:block;width:100%;height:auto}
 .map-msg{margin:0;padding:48px 16px;text-align:center;color:var(--ink-2);font:13px var(--mono)}
-.ctry{stroke:var(--sea);stroke-width:.6;stroke-linejoin:round}
-.grat{fill:none;stroke:var(--rule);stroke-width:.5;opacity:.7}
+.ctry{stroke:var(--sea);stroke-width:.6;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.grat{fill:none;stroke:var(--rule);stroke-width:.5;opacity:.7;vector-effect:non-scaling-stroke}
+.zm{cursor:grab}
+.zm:active{cursor:grabbing}
 .pin{cursor:pointer;outline:none}
 .pin .pm{stroke:var(--card)}
 .num.dia{width:17px;height:17px;border-radius:2px;transform:rotate(45deg);margin:2px 3px}
@@ -194,6 +196,10 @@ header p{margin:0;color:var(--ink-2)}
 .map-lists .clist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));column-gap:32px;border-top:0}
 .map-lists .citem{border-top:1px solid var(--rule)}
 .map-lists .citem button{border-bottom:0}
+.pin .om{stroke:var(--ink);fill:var(--card)}
+.pin .oi{stroke:none}
+.pin.sel .om{stroke:var(--focus)}
+.num.org{border-radius:2px;width:15px;height:15px;margin:3px 4px;background:var(--card);border:2px solid var(--ink);box-shadow:inset 0 0 0 2.5px var(--card),inset 0 0 0 10px var(--mc)}
 .pin text.olbl{font-family:var(--display);font-weight:600;fill:var(--ink);text-anchor:start}
 .oband{font-family:var(--mono);fill:var(--ink-2);letter-spacing:.1em}
 .map-lists h3{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px}
@@ -233,6 +239,29 @@ header p{margin:0;color:var(--ink-2)}
 .seeds ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
 .seeds li{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .seeds .lk{font-size:13px}
+/* Front-page timeline: one curated spine of beats by era, filterable to one faction's story */
+.chr-tools{display:flex;flex-direction:column;gap:10px}
+.chr-arc{margin:0;font-size:14px;color:var(--ink-2)}
+.chr-era{display:flex;flex-direction:column;gap:10px;border-top:2px solid var(--ink);padding-top:14px}
+.chr-era-h{display:flex;align-items:baseline;gap:4px 14px;flex-wrap:wrap}
+.chr-era-h h2{font-size:24px;font-weight:700;line-height:1.1}
+.chr-era-h span{font:12px var(--mono);color:var(--ink-2)}
+.chr-era-h p{margin:0;flex-basis:100%;font-size:14px;color:var(--ink-2)}
+.chr-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.beat{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:2px 14px;align-items:start;width:100%;padding:9px 6px 10px 10px;background:none;border:0;border-left:3px solid var(--bc);border-bottom:1px solid var(--rule);text-align:left;font:inherit;color:inherit}
+button.beat{cursor:pointer}
+button.beat:hover .bt{text-decoration:underline}
+button.beat:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.beat.proj{border-left-style:dashed}
+.beat .by{font:12px/1.5 var(--mono);color:var(--ink-2);font-variant-numeric:tabular-nums;padding-top:2px}
+.beat .bt{font:600 15.5px/1.25 var(--display);display:block}
+.beat .bx{font-size:13.5px;line-height:1.45;color:var(--ink-2);display:block;margin-top:2px}
+.beat .bk{font:500 10px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);border:1px solid var(--rule);border-radius:2px;padding:3px 5px;margin-top:3px;white-space:nowrap}
+.beat .bk.S{color:var(--xfer);border-color:var(--xfer)}
+.beat .bdots{display:flex;gap:3px;margin-top:6px;flex-wrap:wrap}
+.beat .bdots i{width:8px;height:8px;border-radius:2px;background:var(--dc)}
+.chr-now{margin:4px 0 0;padding:10px 12px;border:1.5px solid var(--xfer);border-radius:3px;color:var(--xfer);font:600 13px/1.4 var(--mono);letter-spacing:.02em}
+@media (max-width:620px){.beat{grid-template-columns:minmax(0,1fr) auto}.beat .by{grid-column:1/-1;padding:0}}
 /* Factions timeline: one lane per faction across the map's eras, ending in its 2327 successor */
 .tl{min-width:1100px}
 .tl-cols,.tl-row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));column-gap:16px}
@@ -331,16 +360,32 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 @media (max-width:620px){.hero img{aspect-ratio:16/8}}
 .tl-art{width:120px;align-self:center}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.rd{background:var(--ink);color:transparent;border-radius:1px;-webkit-box-decoration-break:clone;box-decoration-break:clone;user-select:none}
+.rd::selection{color:transparent;background:var(--ink)}
+/* Redacted entries get a classification band along the foot of the card, in flow so it never covers the card's details */
+.card.rx{border-left:3px solid var(--xfer)}
+.card.rx::after{content:"Redacted · under review";white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;margin:5px -10px -9px -10px;padding:4px 10px 5px;font:600 9.5px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--xfer);border-top:1px dashed var(--xfer);border-radius:0 0 2px 2px;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--xfer) 13%,transparent) 0 5px,transparent 5px 10px);pointer-events:none}
+.stamp{display:inline-block;align-self:flex-start;font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--xfer);border:1.5px solid var(--xfer);padding:4px 6px 3px;transform:rotate(-2deg);margin:0 0 4px}
 </style>
 
 <div class="wrap">
   <header>
-    <span class="eyebrow">Lineage atlas · Two generations · 2161–2186</span>
+    <span class="eyebrow">Lineage atlas · Gen 0 to Gen 4 · to 2186</span>
     <h1>No Haven on Earth Atlas</h1>
-    <p>Family trees for the setting's mech frames, weapons, power plants and doctrine, plus the tanks and aircraft that fight alongside them, the carriers that move them, the space fleets that come after them, and the organisations behind them all: where each came from, and where every manufacturer and power bloc branched off with its own version. Select any entry to trace its lineage. Frames link to the power, weapons and doctrine they were built around. The world map shows where the blocs stood, and where they fought, in each era. The atlas covers the decades up to 2186 that build toward the Third World War, the war in which No Haven on Earth is set. Its last map era looks past the war to the five Earth powers of No Peace Past Luna and the United Nations of Earth and Luna that ends it. The Aces tab lists the pilots who made the frames famous. The Factions tab follows each faction through the whole period, and the Successors tab shows what each one becomes by 2327.</p>
+    <p>The 22nd century is running on empty. Two hundred years of warming have drowned the coasts and thinned the harvests, and what's left is being fought over by three great power blocs: the United States, the Continental Union and the Eurasian Pact. For years they only stared each other down. Then, in 2162, four Garrisons came down a ravine at Iron Gate and destroyed a tank column in eleven minutes. The frame had fired the first shot, and the silence was over.</p>
+    <p>This atlas follows everything that came after: the frames and the arms race behind them, the wars they fought, the pilots who made them famous, and the road to the Third World War.</p>
     <figure class="hero" id="hero" hidden></figure>
     <nav class="tabs" role="tablist" id="tabs"></nav>
   </header>
+
+  <section class="view" id="chView" hidden aria-label="Timeline">
+    <p class="intro">The whole story in order, from the Ares mission to No Peace Past Luna in 2327. Dates marked c. are estimates, and play can start in any generation. The war has no dates, only early, middle and late. Pick a faction to follow its story alone, from its first frame to what it becomes. Select any entry to open it in its tree.</p>
+    <div class="chr-tools">
+      <div class="legend-row" id="chr-fac" role="group" aria-label="Follow a faction"></div>
+      <p class="chr-arc" id="chr-arc"></p>
+    </div>
+    <div class="ace-list" id="chr-list"></div>
+  </section>
 
   <section class="view" id="mapView" hidden aria-label="World map">
     <p class="intro">Where the power blocs stand and where they have fought, era by era. Pick an era to redraw the map with that era's conflicts, numbered in the order they happened. Events in orbit and on Mars sit in the band above the map. Select a pin or a list entry for the full account, then follow it into the Conflicts tree. The last era is projected: where the war's fronts are expected to run, and the powers that come out of it. The Successors tab describes those powers in full.</p>
@@ -348,7 +393,9 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
     <div class="era-head">
       <div><span class="era" id="era-k"></span><h2 id="era-h"></h2><p id="era-p"></p></div>
       <div class="map-tools">
-        <div class="seg" role="group" aria-label="Map extent"><button type="button" id="v-world" aria-pressed="true">World</button><button type="button" id="v-reg" aria-pressed="false">Middle East &amp; Central Asia</button></div>
+        <div class="seg" role="group" aria-label="Map zoom"><button type="button" id="z-in" aria-label="Zoom in">+</button><button type="button" id="z-out" aria-label="Zoom out">−</button><button type="button" id="z-reset">Reset</button></div>
+        <label class="chk"><input type="checkbox" id="org-on" checked> Organisations</label>
+        <p class="hint">Drag to pan. Pinch, Ctrl + scroll or the buttons to zoom.</p>
       </div>
     </div>
     <figure class="map-fig">
@@ -358,6 +405,7 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
     <div class="map-lists">
       <div><h3 id="list-h">Conflicts this era</h3><ol class="clist" id="clist"></ol></div>
       <div><h3 id="mlist-h">Smaller incidents</h3><ol class="clist" id="mlist"></ol></div>
+      <div><h3 id="olist-h">Organisations this era</h3><p class="hint" style="margin:0 0 8px">Companies, laboratories, cooperatives and private forces, but not governments. Where the atlas names no city, the pin sits in the home country.</p><ol class="clist" id="olist"></ol></div>
     </div>
   </section>
 
@@ -365,13 +413,13 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
     <p class="intro">What the atlas's blocs and programs have become by 2327, in No Peace Past Luna: the Earth powers that come out of the war, and the space factions whose arguments start in this era.</p>
     <section class="heirs" aria-labelledby="heirs-h">
       <h2 id="heirs-h">Where the blocs are heading</h2>
-      <p>None of the atlas's blocs comes through the war intact. These are the five Earth powers of No Peace Past Luna (2327) and the blocs each one grows from, followed by the institution that ends the war between them. Each scale runs from the first pole on the left to the second on the right. Values still undecided are marked TBD.</p>
+      <p>None of the atlas's blocs comes through the war intact. These are the five Earth powers of No Peace Past Luna (2327) and the blocs each one grows from, followed by the institution that ends the war between them. Each scale runs from the first pole on the left to the second on the right. Values still undecided are marked TBD. Select a seed to open it in its tree, or a pilot to open their ace card.</p>
       <ul class="hmap" id="hmap"></ul>
       <div class="powers" id="powers"></div>
     </section>
     <section class="heirs" aria-labelledby="space-h">
       <h2 id="space-h">Where the space factions begin</h2>
-      <p>Most of No Peace Past Luna's colonial and outer-system factions start here as arguments about what a person may become: what one bloc did to its pilots, and what someone else learned from watching. Some start somewhere colder, or worse. Space doesn't carry Earth's politics outward unchanged; it mutates them, and each colony keeps its sponsor's argument while changing what it means. The Constitutionalists don't appear: they are built later, to replace Colony One. The top colour shows the Earth power each faction descends from; grey means none. Select a seed to open it in its tree.</p>
+      <p>Most of No Peace Past Luna's colonial and outer-system factions start here as arguments about what a person may become: what one bloc did to its pilots, and what someone else learned from watching. Some start somewhere colder, or worse. Space doesn't carry Earth's politics outward unchanged; it mutates them, and each colony keeps its sponsor's argument while changing what it means. The Constitutionalists are built later, to replace Colony One, but the charter they are built on is written here. The top colour shows the Earth power each faction descends from; grey means none. Select a seed to open it in its tree, or a pilot to open their ace card.</p>
       <div class="powers" id="space"></div>
     </section>
   </section>
@@ -417,11 +465,20 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <script>
+// Runs of █ in the data are redactions: wrap each in a solid bar wherever text lands outside SVG
+(()=>{const RD=/█+/;
+function redact(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:t=>RD.test(t.nodeValue)&&t.parentNode&&!t.parentNode.closest("svg,.rd,title,script,style")?1:2});
+  const hits=[];while(w.nextNode())hits.push(w.currentNode);
+  hits.forEach(t=>{const f=document.createDocumentFragment();t.nodeValue.split(/(█+)/).forEach(p=>{if(!p)return;if(p[0]==="█"){const s=document.createElement("span");s.className="rd";s.setAttribute("role","img");s.setAttribute("aria-label","redacted");s.title="Redacted";s.textContent=p;f.append(s)}else f.append(p)});t.replaceWith(f)})}
+new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1)redact(n);else if(n.nodeType===3&&n.parentNode)redact(n.parentNode)}))).observe(document.documentElement,{childList:true,subtree:true});
+})();
 fetch("atlas-data.json").then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(init,()=>{
   document.getElementById("intro").textContent="The atlas data couldn't load. Reload the page to try again."});
 // Everything below runs once atlas-data.json has loaded
-function init({GROUPS,COLS,ART,VART,PLATES,SCENES,DATA,BLOC,MEMB,US_ALLIES,LEAGUE,ASSOC,OVR,FUTURE,FUTURE_SPHERE,FUTURE_FRONT,FUTURE_FIGHTING,CANADA_SPLIT,LOC,MINOR,ORBIT,ERA_NOTE,AXES,POWERS,HEIRS,UNEL,SPACE,TIMELINE,ACE_FACTIONS,ACE_ERAS,ACES}){
+function init({GROUPS,COLS,ART,VART,PLATES,SCENES,DATA,BLOC,MEMB,US_ALLIES,LEAGUE,ASSOC,OVR,FUTURE,FUTURE_SPHERE,FUTURE_FRONT,FUTURE_FIGHTING,CANADA_SPLIT,LOC,MINOR,ORBIT,ERA_NOTE,AXES,POWERS,HEIRS,UNEL,SPACE,TIMELINE,ACE_FACTIONS,ACE_ERAS,ACES,ORGMAP={},CHRONO=[]}){
 const FUT=new Set(Object.keys(FUTURE));
+// The Pact's halves after the Sealed Session, shown on the 2186 map in its place
+const SPLIT=new Set(["PB","PM","EUX"]);
 const SVGNS="http://www.w3.org/2000/svg";
 const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const chart=document.getElementById("chart");
@@ -436,6 +493,7 @@ const short=n=>ds.desig&&n.d&&!/^(Now|War|\d{4})$/.test(n.d)?n.d:n.n;
 const ORDER=["frames","supers","conflicts","weapons","power","doctrine","vehicles","carriers","fleets","orgs"];
 const SRC={frames:"Frames using it",supers:"Super programs using it",conflicts:"Seen in conflicts",vehicles:"Vehicle lines linked",carriers:"Carriers linked",fleets:"Space fleets linked",orgs:"Organisations linked"};
 const IDX={},KEYOF={},USED={};
+const ACEX=Object.fromEntries(ACES.map(a=>[a.id,a])),ACEC=Object.fromEntries(ACE_FACTIONS.map(([k,,c])=>[k,c]));
 ORDER.forEach(k=>DATA[k].nodes.forEach(n=>{IDX[n.id]=n;KEYOF[n.id]=k}));
 ["frames","supers","conflicts","vehicles","carriers","fleets","orgs"].forEach(k=>DATA[k].nodes.forEach(f=>[...(f.ln||[]),...(f.fr||[]),...(f.mx||[]),...(f.pw||[]),...(f.wp||[]),...(f.dc||[])].forEach(id=>{const u=USED[id]=USED[id]||{};(u[k]=u[k]||[]).push(f.id)})));
 const ref=id=>{const n=IDX[id];return n.d||n.n};
@@ -444,6 +502,8 @@ function goTo(id){const k=KEYOF[id];if(k!==current){build(k);remember(k)}select(
 
 // tabs
 const tabs=document.getElementById("tabs");
+{const c=document.createElement("button");c.type="button";c.className="tab";c.role="tab";c.id="tab-chrono";c.dataset.k="chrono";
+  c.textContent="Timeline";c.addEventListener("click",()=>{build("chrono");remember("chrono")});tabs.append(c)}
 ORDER.forEach(k=>{
   const v=DATA[k];
   const b=document.createElement("button");b.type="button";b.className="tab";b.role="tab";b.id="tab-"+k;b.dataset.k=k;
@@ -471,9 +531,9 @@ ORDER.forEach(k=>{
     tabs.append(s);
   }
 });
-const treeView=document.getElementById("treeView"),mapView=document.getElementById("mapView"),tlView=document.getElementById("tlView"),sucView=document.getElementById("sucView"),aceView=document.getElementById("aceView");
+const chView=document.getElementById("chView"),treeView=document.getElementById("treeView"),mapView=document.getElementById("mapView"),tlView=document.getElementById("tlView"),sucView=document.getElementById("sucView"),aceView=document.getElementById("aceView");
 // Views that aren't lineage trees, by tab key
-const VIEWS={map:mapView,timeline:tlView,successors:sucView,aces:aceView};
+const VIEWS={chrono:chView,map:mapView,timeline:tlView,successors:sucView,aces:aceView};
 
 function build(key){
   if(current===key)return;
@@ -541,7 +601,7 @@ function build(key){
     const grid=document.createElement("div");grid.className="grid";
     ds.nodes.filter(n=>n.f===fid).forEach(n=>{
       const b=document.createElement("button");
-      b.type="button";b.className="card"+(n.m==="PRE"||(ds.preCol&&n.c===0)?" pre":"")+(n.z?" end":"")+(ds.projCol!=null&&n.c>=ds.projCol?" proj":"");
+      b.type="button";b.className="card"+(n.m==="PRE"||(ds.preCol&&n.c===0)?" pre":"")+(n.z?" end":"")+(ds.projCol!=null&&n.c>=ds.projCol?" proj":"")+(n.rx?" rx":"");
       b.style.gridColumn=n.c+1;b.style.gridRow=n.r+1;
       b.style.setProperty("--mc",col(n.m));
       const cross=n.p.filter(([pid])=>byId[pid].f!==n.f).map(([pid])=>short(byId[pid]));
@@ -599,7 +659,7 @@ function relList(list){
 }
 function goList(ids){
   if(!ids||!ids.length)return `<p class="none">None.</p>`;
-  return `<ul>${ids.map(id=>{const n=IDX[id];return `<li><button type="button" class="lk" data-go="${id}"><span class="chip" style="--mc:${col(n.m)}">${n.m==="PRE"?"PRE":n.m}</span><span class="nm">${label(n)}</span></button><span class="rt">${DATA[KEYOF[id]].label.toLowerCase()} tree →</span></li>`}).join("")}</ul>`;
+  return `<ul>${ids.map(id=>{const a=ACEX[id];if(a)return `<li><button type="button" class="lk" data-ace="${id}"><span class="chip" style="--mc:var(--m-${ACEC[a.g]})">ACE</span><span class="nm">${a.n}${a.cs?` “${a.cs}”`:""}</span></button><span class="rt">aces →</span></li>`;const n=IDX[id];return `<li><button type="button" class="lk" data-go="${id}"><span class="chip" style="--mc:${col(n.m)}">${n.m==="PRE"?"PRE":n.m}</span><span class="nm">${label(n)}</span></button><span class="rt">${DATA[KEYOF[id]].label.toLowerCase()} tree →</span></li>`}).join("")}</ul>`;
 }
 // Concept art pair for one entry or named version: scene and technical drawing, each opening full size
 const artPair=(stem,lbl)=>`<div class="art">${[["scene","Scene"],["tech","Technical drawing"]].map(([k,l])=>`<button type="button" data-art="art/${stem}-${k}.jpg" data-cap="${lbl} · ${l}"><img src="art/${stem}-${k}.jpg" alt="${lbl}, ${l.toLowerCase()}" loading="lazy"><span>${l}</span></button>`).join("")}</div>`;
@@ -633,6 +693,7 @@ function renderSheet(){
       <span class="top"><span class="chip" style="--mc:${col(n.m)}">${chipText(n.m)}</span>${n.d?`<span class="desig">${n.d}</span>`:""}</span>
       <h3>${n.n}</h3><span class="meta">${mn} · ${sub} · ${(ds.cols||COLS)[n.c][0]} (${(ds.cols||COLS)[n.c][1]})${n.s&&n.s!=="varies"?` · ${n.s}`:""}</span></div>
       <button type="button" class="x" id="close">Close</button></div>
+    ${n.rx?`<span class="stamp">Redacted · released under review</span>`:""}
     ${ART[n.id]?artPair(ART[n.id],label(n)):""}
     ${scene(n.id,label(n))}
     <p>${n.x}</p>
@@ -682,7 +743,10 @@ function politics(e){
 }
 const MINORX=Object.fromEntries(MINOR.map(n=>[n.id,n]));
 const FIGHT=new Set(["WAR","CLH","PRX","IRR"]);
-const placeOf=id=>LOC[id]?LOC[id][2]:ORBIT[id]||MINORX[id].at[2];
+// Non-government organisations alive in an era: from their own column to the war, or to the column in "to"
+const orgNodes=e=>DATA.orgs.nodes.filter(n=>ORGMAP[n.id]&&n.c<=e&&(ORGMAP[n.id].to==null||e<=ORGMAP[n.id].to));
+const orgPlace=id=>{const o=ORGMAP[id];return o.sky||o.at.map(a=>a[2]).join("; ")};
+const placeOf=id=>ORGMAP[id]?orgPlace(id):LOC[id]?LOC[id][2]:ORBIT[id]||MINORX[id].at[2];
 const pos=(v,[,l,r])=>v===0?"Neutral":`${Math.abs(v)===2?"Strongly":"Weakly"} ${v<0?l:r}`;
 const pcard=(p,colour,extra="")=>`<article class="pcard" style="--pc:var(${colour})"><h3>${p.n}</h3><span class="meta">${p.home} · Faith: ${p.faith}</span><p>${p.id}</p>
     <ul class="axes">${AXES.map((a,i)=>{const v=p.ax[i];return `<li title="${a[1]} ↔ ${a[2]}"><span class="an">${a[0]}</span><span class="dots" aria-hidden="true">${[-2,-1,0,1,2].map(x=>`<i${x===v?' class="on"':""}></i>`).join("")}</span><span>${v==null?"TBD":pos(v,a)}</span></li>`}).join("")}</ul>
@@ -690,16 +754,18 @@ const pcard=(p,colour,extra="")=>`<article class="pcard" style="--pc:var(${colou
 function renderHeirs(){
   document.getElementById("hmap").innerHTML=HEIRS.map(([from,to,note])=>`<li><span class="hb">${from}<i aria-label="becomes">→</i>${to.map(t=>BLOC[t]?BLOC[t][0]:t).join(" and ")}</span><span class="hn">${note}</span></li>`).join("");
   const powers=document.getElementById("powers");
-  powers.innerHTML=POWERS.map(p=>pcard(p,BLOC[p.b][1])).join("")+pcard(UNEL,"--m-ASC",`${scene("UNEL",UNEL.n)}<div class="seeds"><h4>Starts in this atlas</h4>${goList(UNEL.from)}</div>`);
+  powers.innerHTML=POWERS.map(p=>pcard(p,BLOC[p.b][1],`${p.k?scene(p.k,p.n):""}<div class="seeds"><h4>Starts in this atlas</h4>${goList(p.from)}</div>`)).join("")+pcard(UNEL,"--m-ASC",`${scene("UNEL",UNEL.n)}<div class="seeds"><h4>Starts in this atlas</h4>${goList(UNEL.from)}</div>`);
   powers.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
+  powers.querySelectorAll("[data-ace]").forEach(b=>b.addEventListener("click",()=>showAce(b.dataset.ace)));
   bindArt(powers);
   const space=document.getElementById("space");
-  space.innerHTML=SPACE.map(p=>pcard(p,`--m-${GROUPS[p.b][2]}`,`<div class="seeds"><h4>Starts in this atlas</h4>${goList(p.from)}</div>`)).join("");
+  space.innerHTML=SPACE.map(p=>pcard(p,`--m-${GROUPS[p.b][2]}`,`${p.k?scene(p.k,p.n):""}<div class="seeds"><h4>Starts in this atlas</h4>${goList(p.from)}</div>`)).join("");
   space.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
+  space.querySelectorAll("[data-ace]").forEach(b=>b.addEventListener("click",()=>showAce(b.dataset.ace)));
+  bindArt(space);
 }
 renderHeirs();
-const REGION={type:"MultiPoint",coordinates:[[17,10],[92,52]]};
-const M={era:4,view:"world",past:true,sel:null,world:null,failed:false,num:{}};
+const M={orgs:true,era:4,past:true,sel:null,world:null,failed:false,num:{},zt:null,zoom:null,zsel:null};
 const yearOf=n=>n.d==="Now"?2186:(parseInt(n.d,10)||9999);
 const fillFor=s=>{if(!s||!s.b)return "var(--land)";const pct=s.l==="m"?60:s.l==="n"?30:s.l==="c"?20:26;return `color-mix(in srgb,var(${BLOC[s.b][1]}) ${pct}%,var(--card))`};
 const stateOf=st=>{if(!st)return "";if(!st.b)return st.l==="c"?" · Contested frontline":"";const [nm,,ar]=BLOC[st.b];
@@ -714,8 +780,12 @@ DATA.conflicts.cols.forEach(([k,y],i)=>{
   b.addEventListener("click",()=>{M.era=i;M.sel=null;mapSelect(null);renderMap()});
   erasEl.append(b);
 });
-document.getElementById("v-world").addEventListener("click",()=>{M.view="world";renderMap()});
-document.getElementById("v-reg").addEventListener("click",()=>{M.view="reg";renderMap()});
+// Zoom buttons step the map in and out around its centre; Reset returns to the whole world
+const zoomBy=f=>{if(!M.zsel)return;(reduced?M.zsel:M.zsel.transition().duration(250)).call(M.zoom.scaleBy,f)};
+document.getElementById("org-on").addEventListener("change",e=>{M.orgs=e.target.checked;if(M.sel&&ORGMAP[M.sel]&&!M.orgs)mapSelect(null);drawMap()});
+document.getElementById("z-in").addEventListener("click",()=>zoomBy(1.6));
+document.getElementById("z-out").addEventListener("click",()=>zoomBy(1/1.6));
+document.getElementById("z-reset").addEventListener("click",()=>{if(M.zsel)(reduced?M.zsel:M.zsel.transition().duration(250)).call(M.zoom.transform,d3.zoomIdentity)});
 
 function showMap(){
   renderMap();
@@ -728,8 +798,6 @@ function showMap(){
 function renderMap(){
   const e=M.era,[k,y]=DATA.conflicts.cols[e];
   erasEl.querySelectorAll(".era-b").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.e===e)));
-  document.getElementById("v-world").setAttribute("aria-pressed",String(M.view==="world"));
-  document.getElementById("v-reg").setAttribute("aria-pressed",String(M.view==="reg"));
   document.getElementById("era-k").textContent=`${k} · ${y}`;
   document.getElementById("era-h").textContent=ERA_NOTE[e][0];
   document.getElementById("era-p").textContent=ERA_NOTE[e][1];
@@ -740,6 +808,9 @@ function renderMap(){
   const row=(n,mark)=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}">${mark}<span><span class="cn">${n.n}</span><span class="cp">${placeOf(n.id)} · ${GROUPS[n.m][0]}</span></span><span class="cy">${n.d}</span></button></li>`;
   document.getElementById("clist").innerHTML=nodes.map(n=>row(n,`<span class="num" style="--mc:${col(n.m)}">${M.num[n.id]}</span>`)).join("");
   document.getElementById("mlist").innerHTML=minor.map(n=>row(n,`<span class="num dia" style="--mc:${col(n.m)}"><i>${M.num[n.id]}</i></span>`)).join("");
+  const orgs=orgNodes(e);
+  document.getElementById("olist-h").textContent=`Organisations this era · ${orgs.length}`;
+  document.getElementById("olist").innerHTML=orgs.map(n=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}"><span class="num org" style="--mc:${col(n.m)}"></span><span><span class="cn">${n.n}</span><span class="cp">${orgPlace(n.id)} · ${GROUPS[n.m][1]}</span></span><span class="cy">${ORGMAP[n.id].sky?"Off the map":"Since "+DATA.orgs.cols[n.c][0]}</span></button></li>`).join("");
   mapView.querySelectorAll("[data-cid]").forEach(b=>b.addEventListener("click",()=>mapSelect(M.sel===b.dataset.cid?null:b.dataset.cid)));
   const types=[...new Set(DATA.conflicts.nodes.map(n=>n.m))];
   const sw=(st,l)=>`<span class="lg"><span class="sw" style="background:${st}"></span>${l}</span>`;
@@ -748,11 +819,11 @@ function renderMap(){
       sw(`linear-gradient(90deg,${fillFor({b:"CHN",l:"s"})} 50%,${fillFor({b:"AFC",l:"s"})} 50%)`,"Sphere of influence")+
       sw(`linear-gradient(90deg,${fillFor({b:"USA",l:"c"})} 50%,${fillFor({b:"EAS",l:"c"})} 50%)`,"Influence, not control")+
       `<span class="lg"><span class="sw war"></span>Front line</span>`
-    :Object.entries(BLOC).filter(([b])=>!FUT.has(b)&&(b!=="MER"||e>=2)).map(([b,[nm]])=>sw(fillFor({b,l:"m"}),nm+(b==="MER"?" (from 2177)":""))).join("")+
+    :Object.entries(BLOC).filter(([b])=>!FUT.has(b)&&(b!=="MER"||e>=2)&&(SPLIT.has(b)?e===4:!(e===4&&b==="EUR"))).map(([b,[nm]])=>sw(fillFor({b,l:"m"}),nm+(b==="MER"?" (from 2177)":""))).join("")+
       (e<2?sw(fillFor({b:"MER",l:"n"}),"Non-aligned states"):"")+
       sw(`linear-gradient(90deg,${fillFor({b:"CON",l:"a"})} 50%,${fillFor({b:"ATL",l:"a"})} 50%)`,"Ally, partner or associate")+
       `<span class="lg"><span class="sw war"></span>Fighting this era</span>`)+sw("var(--land)","Other states")+
-    `<span class="lg"><span class="num" style="--mc:var(--ink-2);width:14px;height:14px"></span>Conflict</span><span class="lg"><span class="num dia" style="--mc:var(--ink-2);width:11px;height:11px"></span>Smaller incident</span>`+
+    `<span class="lg"><span class="num org" style="--mc:var(--ink-2);margin:0"></span>Organisation</span><span class="lg"><span class="num" style="--mc:var(--ink-2);width:14px;height:14px"></span>Conflict</span><span class="lg"><span class="num dia" style="--mc:var(--ink-2);width:11px;height:11px"></span>Smaller incident</span>`+
     `<span class="lg" style="color:var(--ink-2)">Pins by type:</span>`+types.map(c=>`<span class="lg"><span class="num" style="--mc:${col(c)};width:12px;height:12px"></span>${GROUPS[c][0]}</span>`).join("");
   drawMap();
 }
@@ -767,14 +838,12 @@ function drawMap(){
   if(M.failed){box.innerHTML=`<p class="map-msg">The map couldn't load in this browser. The conflict lists below still work.</p>`;return}
   if(!M.world)return;
   const W=1000,fc={type:"FeatureCollection",features:M.world};
-  const proj=d3.geoEqualEarth();let H;
-  if(M.view==="world"){proj.fitWidth(W,fc);H=Math.ceil(d3.geoPath(proj).bounds(fc)[1][1])+4}
-  else{H=560;proj.fitExtent([[0,0],[W,H]],REGION)}
+  const proj=d3.geoEqualEarth();proj.fitWidth(W,fc);const H=Math.ceil(d3.geoPath(proj).bounds(fc)[1][1])+4;
   const path=d3.geoPath(proj),pol=politics(M.era);
   const px=Math.max(box.clientWidth,1)/W,k=Math.min(2.4,Math.max(1,.75/px)),B=Math.round(64*Math.min(k,1.6));
   let s=`<svg viewBox="0 0 ${W} ${H+B}" role="img" aria-label="World map, ${DATA.conflicts.cols[M.era][0]}: bloc territories and conflict locations, with orbital events above">
 <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.6" height="6" fill="var(--ink)" opacity=".5"/></pattern>
-<clipPath id="mclip"><rect width="${W}" height="${H}"/></clipPath></defs><g transform="translate(0 ${B})"><g clip-path="url(#mclip)">
+<clipPath id="mclip"><rect width="${W}" height="${H}"/></clipPath></defs><g class="zm" transform="translate(0 ${B})"><rect width="${W}" height="${H}" fill="transparent"/><g clip-path="url(#mclip)"><g class="zl">
 <path class="grat" d="${path(d3.geoGraticule10())}"/>`;
   M.world.forEach(f=>{const st=pol[f.properties.name],d=path(f);if(!d)return;
     if(st&&st.split){const {at,west,east}=st.split,half=(id,b,w,e,side)=>`<clipPath id="${id}"><path d="${path(d3.geoGraticule().extent([[w,25],[e,88]]).outline())}"/></clipPath><path class="ctry" d="${d}" clip-path="url(#${id})" style="fill:${fillFor({b,l:"m"})}"><title>${f.properties.name} · ${side} to ${BLOC[b][2]}${BLOC[b][0]}</title></path>`;
@@ -782,14 +851,20 @@ function drawMap(){
     else s+=`<path class="ctry" d="${d}" style="fill:${fillFor(st)}"><title>${f.properties.name}${stateOf(st)}</title></path>`;
     if(st&&st.w)s+=`<path d="${d}" fill="url(#hatch)" pointer-events="none"/>`;
   });
+  // Pins sit outside the zoomed layer so they keep their size; the zoom handler moves them
+  s+=`</g><g class="zp">`;
   const pin=(n,x,y,lbl,dia)=>{const r=(dia?8.5:10)*k,sel=M.sel===n.id,sw=`stroke-width:${(sel?3:1.5)*k}`;
     const shape=dia?`<rect class="pm" x="${-r*.78}" y="${-r*.78}" width="${r*1.56}" height="${r*1.56}" rx="${1.5*k}" transform="rotate(45)" fill="${col(n.m)}" style="${sw}"/>`:`<circle class="pm" r="${r}" fill="${col(n.m)}" style="${sw}"/>`;
-    return `<g class="pin${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${n.d}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
+    return `<g class="pin${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${n.d}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
 ${shape}<text style="font-size:${(dia?(M.num[n.id]>9?8:10):11)*k}px">${M.num[n.id]}</text>${lbl?(()=>{const ls=wrap(n.n,lbl),lx=r+7*k;return `<text class="olbl" x="${lx}" style="font-size:${13*k}px">${ls.map((l,i)=>`<tspan x="${lx}" dy="${i?1.15:-0.575*(ls.length-1)}em">${l}</tspan>`).join("")}</text>`})():""}<title>${n.n} · ${n.d}</title></g>`};
   const now=eraNodes(M.era),inView=(x,y)=>x>-20&&x<W+20&&y>-20&&y<H+20;
+  // Organisation pins: a hollow square in the maker's colour, one per site, unnumbered
+  const opin=(n,x,y,where)=>{const r=6*k,sel=M.sel===n.id;
+    return `<g class="pin opin${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${where}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><rect class="om" x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" rx="${1.5*k}" style="stroke-width:${(sel?2.6:1.6)*k}"/><rect class="oi" x="${-r*.5}" y="${-r*.5}" width="${r}" height="${r}" fill="${col(n.m)}"/><title>${n.n} · ${where}</title></g>`};
+  if(M.orgs)orgNodes(M.era).forEach(n=>(ORGMAP[n.id].at||[]).forEach(([lon,lat,where])=>{const [x,y]=proj([lon,lat]);if(inView(x,y))s+=opin(n,x,y,where)}));
   minorNodes(M.era).forEach(n=>{const [x,y]=proj(n.at);if(inView(x,y))s+=pin(n,x,y,false,true)});
   now.filter(n=>LOC[n.id]).forEach(n=>{const [x,y]=proj(LOC[n.id]);if(inView(x,y))s+=pin(n,x,y)});
-  s+=`</g></g>`;
+  s+=`</g></g></g>`;
   // Orbit band: events above the atmosphere, laid out left to right in year order
   s+=`<rect width="${W}" height="${B}" fill="var(--band)"/><line x1="0" x2="${W}" y1="${B}" y2="${B}" stroke="var(--rule)" stroke-dasharray="4 4"/>
 <text class="oband" x="14" y="${16*Math.min(k,1.6)}" style="font-size:${10*Math.min(k,1.6)}px">ORBIT &amp; MARS</text>`;
@@ -799,6 +874,14 @@ ${shape}<text style="font-size:${(dia?(M.num[n.id]>9?8:10):11)*k}px">${M.num[n.i
   if(!orb.length)s+=`<text class="oband" x="${W/2}" y="${B/2+10}" text-anchor="middle" style="font-size:${11*Math.min(k,1.6)}px;letter-spacing:0;text-transform:none">Nothing in orbit this era</text>`;
   s+=`</svg>`;
   box.innerHTML=s;
+  // Pan and zoom the map layer; pins are repositioned rather than scaled
+  const zs=d3.select(box).select(".zm"),zl=zs.select(".zl"),zp=zs.selectAll(".zp .pin");
+  const place=t=>{zl.attr("transform",t);zp.attr("transform",function(){return `translate(${t.applyX(+this.dataset.x).toFixed(1)} ${t.applyY(+this.dataset.y).toFixed(1)})`})};
+  M.zoom=d3.zoom().scaleExtent([1,8]).extent([[0,0],[W,H]]).translateExtent([[0,0],[W,H]])
+    .filter(e=>e.type==="wheel"?(e.ctrlKey||e.metaKey):!e.button)
+    .on("zoom",e=>{M.zt=e.transform;place(e.transform)});
+  M.zsel=zs.call(M.zoom).on("dblclick.zoom",null);
+  if(M.zt)M.zsel.call(M.zoom.transform,M.zt);
   box.querySelectorAll("[data-pin]").forEach(g=>{
     g.addEventListener("click",()=>mapSelect(M.sel===g.dataset.pin?null:g.dataset.pin));
     g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();mapSelect(g.dataset.pin)}});
@@ -809,14 +892,15 @@ function mapSelect(id){
   mapView.querySelectorAll("[data-cid]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.cid===id)));
   document.querySelectorAll("#map-box [data-pin]").forEach(g=>g.classList.toggle("sel",g.dataset.pin===id));
   if(!id){sheet.hidden=true;document.body.classList.remove("has-sheet");return}
-  const n=IDX[id]||MINORX[id],[mn,sub]=GROUPS[n.m],c=DATA.conflicts.cols[n.c],minor=!IDX[id];
+  const n=IDX[id]||MINORX[id],[mn,sub]=GROUPS[n.m],minor=!IDX[id],tree=minor?"conflicts":KEYOF[id],c=DATA[tree].cols[n.c];
   sheet.innerHTML=`<div class="sheet-h"><div style="display:flex;flex-direction:column;gap:6px;min-width:0">
-      <span class="top"><span class="chip" style="--mc:${col(n.m)}">${n.m}</span><span class="desig">${n.d}</span></span>
+      <span class="top"><span class="chip" style="--mc:${col(n.m)}">${n.m}</span>${n.d?`<span class="desig">${n.d}</span>`:""}</span>
       <h3>${n.n}</h3><span class="meta">${mn} · ${placeOf(id)} · ${c[0]}</span></div>
       <button type="button" class="x" id="close">Close</button></div>
+    ${n.rx?`<span class="stamp">Redacted · released under review</span>`:""}
     ${scene(id,n.n)}
     <p><b>${n.t}.</b> ${n.x}</p>
-    ${minor?`<span class="meta">Smaller incident · map only</span>`:`<button type="button" class="go" data-go="${id}">Open in the Conflicts tree →</button>`}
+    ${minor?`<span class="meta">Smaller incident · map only</span>`:`<button type="button" class="go" data-go="${id}">Open in the ${DATA[tree].label} tree →</button>`}${n.ln?`<h4>In the atlas</h4>${goList(n.ln)}`:""}
     ${n.mx?`<h4>Machines involved</h4>${goList(n.mx)}`:""}${n.pw?`<h4>Power</h4>${goList(n.pw)}`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`;
   sheet.hidden=false;document.body.classList.add("has-sheet");
   sheet.querySelector("#close").addEventListener("click",()=>mapSelect(null));
@@ -844,6 +928,37 @@ function renderTimeline(){
   bindArt(el);
 }
 renderTimeline();
+
+// ---- Front timeline ----
+// Curated beats in order (CHRONO); a faction filter keeps the beats that belong to that lane's story
+const KIND={W:"War",T:"Machines",P:"Politics",O:"Off-world",S:"Secrets"};
+const CH={fac:null};try{const v=localStorage.getItem("atlas-chrono-fac");CH.fac=v===null||v===""?null:+v}catch(e){}
+function renderChrono(){
+  const fac=document.getElementById("chr-fac");
+  if(CH.fac!=null&&!TIMELINE[CH.fac])CH.fac=null;
+  fac.innerHTML=`<span class="legend-label">Follow</span><button type="button" class="af" data-l="" aria-pressed="${CH.fac==null}" style="--mc:var(--ink)"><i></i>Everyone<small>${CHRONO.length}</small></button>`+
+    TIMELINE.map((l,i)=>`<button type="button" class="af" data-l="${i}" aria-pressed="${CH.fac===i}" style="--mc:var(--m-${GROUPS[l.g][2]})"><i></i>${l.n} → ${l.end[0]}<small>${CHRONO.filter(b=>b.f.includes(i)).length}</small></button>`).join("");
+  const lane=CH.fac==null?null:TIMELINE[CH.fac];
+  document.getElementById("chr-arc").textContent=lane?`${lane.n}: ${lane.arc}`:"";
+  const shown=CHRONO.filter(b=>CH.fac==null||b.f.includes(CH.fac));
+  const cols=[...DATA.conflicts.cols,["2327","No Peace Past Luna"]];
+  const dots=b=>`<span class="bdots" aria-hidden="true">${b.f.length===TIMELINE.length?"":b.f.map(i=>`<i style="--dc:var(--m-${GROUPS[TIMELINE[i].g][2]})" title="${TIMELINE[i].n}"></i>`).join("")}</span>`;
+  const beat=b=>{const lead=CH.fac!=null?CH.fac:b.f[0],bc=b.f.length===TIMELINE.length?"var(--ink)":`var(--m-${GROUPS[TIMELINE[lead].g][2]})`;
+    const inner=`<span class="by">${b.y}</span><span><span class="bt">${b.t}</span><span class="bx">${b.x}</span>${dots(b)}</span><span class="bk ${b.k}">${KIND[b.k]}</span>`;
+    const cls=`beat${b.e===5?" proj":""}`;
+    return `<li>${b.id&&(IDX[b.id]||ACEX[b.id])?`<button type="button" class="${cls}" style="--bc:${bc}" ${IDX[b.id]?`data-go="${b.id}"`:`data-ace="${b.id}"`}>${inner}</button>`:`<div class="${cls}" style="--bc:${bc}">${inner}</div>`}</li>`};
+  document.getElementById("chr-list").innerHTML=cols.map(([k,y],e)=>{
+    const list=shown.filter(b=>b.e===e);if(!list.length)return "";
+    const note=e===5?"The Third World War":e<6?ERA_NOTE[e][0]:"Where the stories end";
+    if(e===5)y="Dates ambiguous";
+    return `<section class="chr-era"><div class="chr-era-h"><h2>${k}</h2><span>${y} · ${list.length} ${list.length===1?"entry":"entries"}</span><p>${note}</p></div>${e===5?`<p class="chr-now">c. 2187 · Likely start of the Third World War. All dates are ambiguous.</p>`:""}<ol class="chr-list">${list.map(beat).join("")}</ol></section>`;
+  }).join("");
+  fac.querySelectorAll("[data-l]").forEach(b=>b.addEventListener("click",()=>{CH.fac=b.dataset.l===""?null:+b.dataset.l;try{localStorage.setItem("atlas-chrono-fac",CH.fac==null?"":String(CH.fac))}catch(e){}renderChrono()}));
+  const L=document.getElementById("chr-list");
+  L.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
+  L.querySelectorAll("[data-ace]").forEach(b=>b.addEventListener("click",()=>showAce(b.dataset.ace)));
+}
+renderChrono();
 
 // ---- Aces ----
 // Grouped by the era each pilot made their name in (the conflicts tree's columns); filters apply to faction and signature-frame build
@@ -905,7 +1020,7 @@ renderAces();
 let start=(location.hash||"").slice(1);
 const known=k=>!!DATA[k]||!!VIEWS[k];
 if(!known(start)){try{start=localStorage.getItem("atlas-tab")||""}catch(e){start=""}}
-build(known(start)?start:"frames");
+build(known(start)?start:"chrono");
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
 if("ResizeObserver" in window)new ResizeObserver(draw).observe(chart);
 addEventListener("resize",draw);

@@ -6,7 +6,7 @@
       "callsign": "ANCHOR",
       "role": "Brawler",
       "portrait": "res://art/portraits/anchor.png",
-      "stats": {"gunnery": 1, "melee": 1, "precision": 0, "reflex": 0, "guard": 1, "systems": 0, "countermeasures": 0, "spirit": 2},
+      "stats": {"gunnery": 1, "melee": 1, "precision": 0, "reflex": 1, "systems": 0, "countermeasures": 2, "spirit": 2},
       "abilities": ["push"]
     },
     {
@@ -15,7 +15,7 @@
       "callsign": "KESTREL",
       "role": "Marksman",
       "portrait": "res://art/portraits/kestrel.png",
-      "stats": {"gunnery": 1.5, "melee": 0, "precision": 1, "reflex": 0, "guard": 0.5, "systems": 0, "countermeasures": 0, "spirit": 2},
+      "stats": {"gunnery": 2, "melee": 0, "precision": 1, "reflex": 0, "systems": 2, "countermeasures": 0, "spirit": 2},
       "abilities": ["push"]
     },
     {
@@ -24,7 +24,7 @@
       "callsign": "ROOK",
       "role": "Skirmisher",
       "portrait": "res://art/portraits/rook.png",
-      "stats": {"gunnery": 0.5, "melee": 0.5, "precision": 0, "reflex": 1, "guard": 1, "systems": 0, "countermeasures": 0, "spirit": 2},
+      "stats": {"gunnery": 1, "melee": 0, "precision": 0, "reflex": 2, "systems": 1, "countermeasures": 1, "spirit": 2},
       "abilities": ["push"]
     }
   ]

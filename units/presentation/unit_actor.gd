@@ -42,13 +42,19 @@ func setup(state: UnitState) -> void:
 	var model_scale := unit.loadout.frame.model_scale()
 	model.scale = Vector3.ONE * model_scale
 	UnitModelFactory.build_model(model, unit.loadout.frame.movement_type, faction_color, unit.loadout.frame.id)
-	if not unit.loadout.workshop_parts.is_empty():
+	if unit.loadout.frame.id == "m9_teamster" and not unit.loadout.workshop_parts.is_empty():
 		TeamsterParts.apply(model, unit.loadout.workshop_parts)
 	if unit.loadout.frame.id == "m9_teamster":
 		animation = TeamsterAnimator.new()
 		model.add_child(animation)
 		animation.two_handed = TeamsterParts.two_handed(unit.loadout.workshop_parts)
 		animation.setup(model)
+	elif unit.loadout.frame.id == "hx7_kestrel":
+		animation = KestrelAnimator.new()
+		model.add_child(animation)
+		(animation as KestrelAnimator).airborne = unit.altitude > 0
+		animation.setup(model, false)
+		animation.idle()
 	if not unit.loadout.workshop_finish.is_empty():
 		var has_hornet := unit.loadout.weapons.any(func(weapon: WeaponData) -> bool: return weapon.id == "hornet_pod")
 		WorkshopAppearance.apply(model, WorkshopAppearance.finish_by_id(unit.loadout.workshop_finish), "", not has_hornet, unit.loadout.workshop_part_finishes)
@@ -222,7 +228,14 @@ func animate(path: PackedVector2Array) -> void:
 	move_duration = clampf(distance / 0.9, 0.7, 2.6) if animation != null and distance > 0.02 else 0.55
 	if animation != null:
 		if distance > 0.02:
-			animation.walk(clampf(distance / move_duration / 0.58, 0.65, 2.5))
+			var speed := clampf(distance / move_duration / 0.58, 0.65, 2.5)
+			if animation is KestrelAnimator: (animation as KestrelAnimator).move(speed, unit.altitude > 0)
+			else: animation.walk(speed)
+		elif animation is KestrelAnimator and (animation as KestrelAnimator).airborne != (unit.altitude > 0):
+			var kestrel := animation as KestrelAnimator
+			kestrel.airborne = unit.altitude > 0
+			kestrel.walking = false
+			kestrel.play("takeoff" if kestrel.airborne else "land")
 		elif absf(angle_difference(model.rotation.y, -unit.facing)) > 0.03:
 			animation.turn(angle_difference(model.rotation.y, -unit.facing))
 	# Preserve curved aircraft paths while keeping interpolation lightweight.

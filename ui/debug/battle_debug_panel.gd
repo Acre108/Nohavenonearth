@@ -74,12 +74,12 @@ func refresh_debug() -> void:
 	debug_body.add_child(grid)
 	for heading in ["Stat", "Pilot", "Bonus (frame/parts)", "Total"]:
 		label(grid, heading, 13, MUTED)
-	# Quarter steps exercise fractional parts; the total shows the capped value the rules use.
+	# Pilot ratings are whole; bonus quarter steps exercise fractional parts. The total is what the rules use.
 	for stat in UnitState.STAT_NAMES:
 		label(grid, stat.capitalize())
 		var total_label := Label.new()
-		spin(grid, float(unit.pilot_stats.get(stat, 0)), UnitState.STAT_CAPS[stat] + 2, func(value: float) -> void: unit.pilot_stats[stat] = value; total_label.text = str(unit.stat(stat)); manager.debug_changed(unit), 0, 0.25)
-		spin(grid, float(unit.bonus_stats.get(stat, 0)), UnitState.STAT_CAPS[stat] + 2, func(value: float) -> void: unit.bonus_stats[stat] = value; total_label.text = str(unit.stat(stat)); manager.debug_changed(unit), 0, 0.25)
+		spin(grid, float(unit.pilot_stats.get(stat, 0)), UnitState.PILOT_CAPS[stat] + 2, func(value: float) -> void: unit.pilot_stats[stat] = value; total_label.text = str(unit.stat(stat)); manager.debug_changed(unit), 0, 1)
+		spin(grid, float(unit.bonus_stats.get(stat, 0)), UnitState.PILOT_CAPS[stat] + 2, func(value: float) -> void: unit.bonus_stats[stat] = value; total_label.text = str(unit.stat(stat)); manager.debug_changed(unit), 0, 0.25)
 		total_label.text = str(unit.stat(stat))
 		grid.add_child(total_label)
 	var resources := GridContainer.new()

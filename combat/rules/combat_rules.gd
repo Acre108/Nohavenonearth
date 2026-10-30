@@ -1,9 +1,10 @@
 class_name CombatRules
 extends RefCounted
 
-## Every shot rolls 0–100 against one hit chance. Each point of the attacker's stat adds the same
-## percentage, and each point of the target's Reflex, Guard (melee) or cover subtracts it. The weapon's
-## aim bonus and the target's size class shift it further.
+## Every shot rolls a d10 against one hit chance, kept in percent for forecasts: 60% hits on 1–6.
+## Each point of the attacker's stat adds 10, and each point of the target's Reflex or cover subtracts
+## it, for ranged and melee alike. The weapon's aim bonus and the target's size class shift it further. Every
+## modifier is a multiple of 10, and the limits mean a 1 always hits and a 10 always misses.
 const BASE_HIT: float = 50.0
 const PER_POINT: float = 10.0
 const MIN_HIT: float = 10.0
@@ -32,10 +33,8 @@ static func range_distance(attacker: UnitState, defender: UnitState, weapon: Wea
 static func hit_chance(battle: BattleState, attacker: UnitState, defender: UnitState, weapon: WeaponData, bonus: float = 0.0) -> float:
 	var defence := defender.stat("reflex") + TerrainRules.cover(battle, attacker, defender)
 	bonus += weapon.aim_bonus + SizeClass.HIT_MODIFIER.get(defender.loadout.frame.size_class, 0.0)
-	if weapon.melee:
-		defence += defender.stat("guard")
-		if charge_bonus(attacker, defender):
-			bonus += MeleeRules.CHARGE_BONUS
+	if weapon.melee and charge_bonus(attacker, defender):
+		bonus += MeleeRules.CHARGE_BONUS
 	return clampf(BASE_HIT + PER_POINT * (attacker.stat(attack_stat(weapon)) - defence) + bonus, MIN_HIT, MAX_HIT)
 
 ## A charge that connected this round adds to melee against the unit it hit.
@@ -169,10 +168,14 @@ static func take_lock(battle: BattleState, unit: UnitState, target: UnitState) -
 	return true
 
 static func roll_shot(battle: BattleState, hit: float, glance: float, crit: float) -> int:
-	var roll := battle.rng.randf() * 100.0
-	if roll < hit:
-		return AttackResult.Shot.CRIT if battle.rng.randf() * 100.0 < crit else AttackResult.Shot.HIT
-	return AttackResult.Shot.GLANCE if roll < hit + glance else AttackResult.Shot.MISS
+	var roll := d10(battle)
+	if roll <= hit:
+		return AttackResult.Shot.CRIT if d10(battle) <= crit else AttackResult.Shot.HIT
+	return AttackResult.Shot.GLANCE if roll <= hit + glance else AttackResult.Shot.MISS
+
+## One d10 in percent (10–100), so it compares directly with the chances above.
+static func d10(battle: BattleState) -> float:
+	return battle.rng.randi_range(1, 10) * 10.0
 
 ## extra_bonus: situational to-hit bonus, such as a parting strike at a unit breaking off.
 static func resolve(battle: BattleState, attacker: UnitState, defender: UnitState, weapon: WeaponData, use_will: bool = false, after_roll: Callable = Callable(), push: bool = false, extra_bonus: float = 0.0) -> AttackResult:

@@ -1,16 +1,5 @@
-extends SceneTree
+extends "res://tests/test_suite.gd"
 ## GPU checks: actual rendered mask/occlusion, finish ordering, held-pose timing.
-var checks := 0
-var failures := 0
-
-func _initialize() -> void:
-	run.call_deferred()
-
-func check(value: bool, message: String) -> void:
-	checks += 1
-	if not value:
-		failures += 1
-		push_error("OVA FAIL / " + message)
 
 func draw_frames() -> void:
 	for i in 5: await process_frame
@@ -214,7 +203,46 @@ func run() -> void:
 	game.camera.skip_cinematic()
 	await create_timer(0.65).timeout
 	check(not atmosphere.rain.emitting and not atmosphere.environment.ssr_enabled, "Cinematic return restores overview atmosphere policy")
+	await test_wet_lighting(game)
 	game.queue_free()
 	await process_frame
-	print("OVA: %d checks, %d failures" % [checks, failures])
-	quit(1 if failures else 0)
+	finish()
+
+func wet_image() -> Image:
+	await frames(4)
+	await RenderingServer.frame_post_draw
+	return root.get_texture().get_image()
+
+func test_wet_lighting(game: BattleController) -> void:
+	game.ui.visible = false
+	for actor in game.actors.values():
+		if actor.animation != null: actor.animation.rest(true)
+		actor.selection.visible = false
+		actor.active_ring.visible = false
+	var rendering := game.find_child("OvaRendering", true, false) as OvaRendering
+	rendering.finish.set_shader_parameter("grain_strength", 0.0)
+	var wet: Array[ShaderMaterial] = []
+	for mesh in game.find_children("*", "MeshInstance3D", true, false):
+		var material := mesh.material_override as ShaderMaterial
+		if material != null and material.shader == ArtPalette.ENVIRONMENT_SHADER and material.get_shader_parameter("wet_ground"):
+			wet.append(material)
+	if wet.is_empty():
+		check(false, "No wet dock material found")
+		return
+	for angle in [0.0, 1.1, 2.2, 3.3]:
+		game.camera.azimuth = angle
+		game.camera.update_camera()
+		for material in wet: material.set_shader_parameter("wet_ground", true)
+		var a := await wet_image()
+		a.save_png("res://artifacts/wet-check-%.1f.png" % angle)
+		for material in wet: material.set_shader_parameter("wet_ground", false)
+		var b := await wet_image()
+		b.save_png("res://artifacts/dry-check-%.1f.png" % angle)
+		var bright := 0
+		for y in a.get_height():
+			for x in a.get_width():
+				if a.get_pixel(x,y).get_luminance() - b.get_pixel(x,y).get_luminance() > 0.35: bright += 1
+		var ratio := float(bright) / (a.get_width() * a.get_height())
+		print("WET azimuth=%.1f bright_fraction=%.6f" % [angle, ratio])
+		check(ratio < 0.001, "Wet ground avoids a flare at angle %.1f" % angle)
+	for material in wet: material.set_shader_parameter("wet_ground", true)

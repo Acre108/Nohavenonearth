@@ -1,0 +1,329 @@
+{
+  "frame_id": "hx7_kestrel",
+  "default_pilot": "rook",
+  "default_finish": "halcyon",
+  "starting_spares": [
+    "hx7_sensor_standard",
+    "hx7_structure_standard",
+    "hx7_torso_standard",
+    "hx7_arm_standard",
+    "hx7_arm_shell",
+    "hx7_leg_standard",
+    "hx7_leg_shell",
+    "hx7_power_standard",
+    "hx7_service_standard",
+    "hx7_module_standard"
+  ],
+  "stock_arm_weapons": {
+    "right_arm.actuator": "lr3_rifle",
+    "right_arm.armour": "vb2_knife"
+  },
+  "weapon_slots": ["right_arm.actuator", "right_arm.armour", "backpack.module"],
+  "regions": [
+    {
+      "id": "head",
+      "name": "Head",
+      "slots": [
+        {
+          "id": "head.sensor",
+          "name": "Sensor assembly",
+          "family": "hx7_sensor",
+          "standard": "hx7_sensor_standard"
+        }
+      ]
+    },
+    {
+      "id": "torso",
+      "name": "Torso",
+      "slots": [
+        {
+          "id": "torso.structure",
+          "name": "Cockpit & structure",
+          "family": "hx7_structure",
+          "standard": "hx7_structure_standard"
+        },
+        {
+          "id": "torso.armour",
+          "name": "Armour package",
+          "family": "hx7_torso_armour",
+          "standard": "hx7_torso_standard"
+        }
+      ]
+    },
+    {
+      "id": "left_arm",
+      "name": "Left arm",
+      "slots": [
+        {
+          "id": "left_arm.actuator",
+          "name": "Actuator assembly",
+          "family": "hx7_arm_drive",
+          "standard": "hx7_arm_standard"
+        },
+        {
+          "id": "left_arm.armour",
+          "name": "Armour shell",
+          "family": "hx7_arm_armour",
+          "standard": "hx7_arm_shell"
+        }
+      ]
+    },
+    {
+      "id": "right_arm",
+      "name": "Right arm",
+      "slots": [
+        {
+          "id": "right_arm.actuator",
+          "name": "Actuator assembly",
+          "family": "hx7_arm_drive",
+          "standard": "hx7_arm_standard"
+        },
+        {
+          "id": "right_arm.armour",
+          "name": "Armour shell",
+          "family": "hx7_arm_armour",
+          "standard": "hx7_arm_shell"
+        }
+      ]
+    },
+    {
+      "id": "left_leg",
+      "name": "Left leg",
+      "slots": [
+        {
+          "id": "left_leg.drive",
+          "name": "Drive assembly",
+          "family": "hx7_leg_drive",
+          "standard": "hx7_leg_standard"
+        },
+        {
+          "id": "left_leg.armour",
+          "name": "Armour shell",
+          "family": "hx7_leg_armour",
+          "standard": "hx7_leg_shell"
+        }
+      ]
+    },
+    {
+      "id": "right_leg",
+      "name": "Right leg",
+      "slots": [
+        {
+          "id": "right_leg.drive",
+          "name": "Drive assembly",
+          "family": "hx7_leg_drive",
+          "standard": "hx7_leg_standard"
+        },
+        {
+          "id": "right_leg.armour",
+          "name": "Armour shell",
+          "family": "hx7_leg_armour",
+          "standard": "hx7_leg_shell"
+        }
+      ]
+    },
+    {
+      "id": "power",
+      "name": "Power",
+      "slots": [
+        {
+          "id": "power.plant",
+          "name": "Turbine-capacitor plant",
+          "family": "hx7_power",
+          "standard": "hx7_power_standard"
+        }
+      ]
+    },
+    {
+      "id": "backpack",
+      "name": "Backpack",
+      "slots": [
+        {
+          "id": "backpack.service",
+          "name": "Service assembly",
+          "family": "hx7_service",
+          "standard": "hx7_service_standard"
+        },
+        {
+          "id": "backpack.module",
+          "name": "Mission module",
+          "family": "hx7_module",
+          "standard": "hx7_module_standard"
+        }
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "id": "hx7_sensor_standard",
+      "name": "HX-7 Slit-visor Avionics",
+      "family": "hx7_sensor",
+      "description": "Amber visor, narrow helmet and blade antenna.",
+      "bonuses": {},
+      "wear": {},
+      "repair_rate": 2,
+      "manufacturer": "halcyon",
+      "size_class": "medium",
+      "energy_reservation": 0,
+      "rarity": "standard"
+    },
+    {
+      "id": "hx7_structure_standard",
+      "name": "HX-7 Fuselage Structure",
+      "family": "hx7_structure",
+      "description": "Cockpit frame, waist turntable and aircraft spars.",
+      "bonuses": {},
+      "wear": {},
+      "repair_rate": 3,
+      "manufacturer": "halcyon",
+      "size_class": "medium",
+      "energy_reservation": 0,
+      "rarity": "standard"
+    },
+    {
+      "id": "hx7_torso_standard",
+      "name": "HX-7 Curved Chest Fairings",
+      "family": "hx7_torso_armour",
+      "description": "Canopy surround and flank intake fairings.",
+      "bonuses": {},
+      "wear": {},
+      "repair_rate": 2,
+      "manufacturer": "halcyon",
+      "size_class": "medium",
+      "energy_reservation": 0,
+      "rarity": "standard"
+    },
+    {
+      "id": "hx7_arm_standard",
+      "name": "HX-7 Arm Actuators",
+      "family": "hx7_arm_drive",
+      "description": "Shoulder gimbal, elbow pin and wrist drive.",
+      "bonuses": {},
+      "wear": {},
+      "repair_rate": 2,
+      "manufacturer": "halcyon",
+      "size_class": "medium",
+      "energy_reservation": 0,
+      "rarity": "standard"
+    },
+    {
+      "id": "hx7_arm_shell",
+      "name": "HX-7 Arm Fairings",
+      "family": "hx7_arm_armour",
+      "description": "Navy shoulder fairings and white tapered forearms; the right shell houses the stowed VB-2 knife.",
+      "bonuses": {},
+      "wear": {},
+      "repair_rate": 1,
+      "manufacturer": "halcyon",
+      "size_class": "medium",
+      "energy_reservation": 0,
+      "rarity": "standard"
+    },
+    {
+      "id": "hx7_leg_standard",
+      "name": "HX-7 Leg & Fan Drive",
+      "family": "hx7_leg_drive",
+      "description": "Long leg drives, calf pistons and heel fan outlets.",
+      "bonuses": {},
+      "wear": {},
+      "repair_rate": 2,
+      "manufacturer": "halcyon",
+      "size_class": "medium",
+      "energy_reservation": 0,
+      "rarity": "standard"
+    },
+    {
+      "id": "hx7_leg_shell",
+      "name": "HX-7 Nacelle Fairings",
+      "family": "hx7_leg_armour",
+      "description": "White calf nacelles, thigh shells and clawed insteps.",
+      "bonuses": {},
+      "wear": {},
+      "repair_rate": 1,
+      "manufacturer": "halcyon",
+      "size_class": "medium",
+      "energy_reservation": 0,
+      "rarity": "standard"
+    },
+    {
+      "id": "hx7_power_standard",
+      "name": "QX Quick-swap Battery Spine",
+      "family": "hx7_power",
+      "description": "Four battery cells with lifting handles and quick-release latches.",
+      "bonuses": {},
+      "wear": {},
+      "repair_rate": 3,
+      "manufacturer": "halcyon",
+      "size_class": "medium",
+      "energy_reservation": 0,
+      "rarity": "standard"
+    },
+    {
+      "id": "hx7_service_standard",
+      "name": "HX-7 Binder Service Rig",
+      "family": "hx7_service",
+      "description": "Wing-root hinges and deployment actuators.",
+      "bonuses": {},
+      "wear": {},
+      "repair_rate": 1,
+      "manufacturer": "halcyon",
+      "size_class": "medium",
+      "energy_reservation": 0,
+      "rarity": "standard"
+    },
+    {
+      "id": "hx7_module_standard",
+      "name": "AGM-M Wing Stores",
+      "family": "hx7_module",
+      "description": "Swept wing binders and four AGM-M missiles, two per wing.",
+      "bonuses": {},
+      "wear": {},
+      "repair_rate": 1,
+      "weapon": "agm_stores",
+      "manufacturer": "halcyon",
+      "size_class": "medium",
+      "energy_reservation": 0,
+      "rarity": "standard"
+    }
+  ],
+  "manufacturers": {
+    "halcyon": "Halcyon Aeronautics"
+  },
+  "finishes": [
+    {
+      "id": "depot",
+      "name": "Depot olive",
+      "primary": "656a4a",
+      "secondary": "3e4939",
+      "marking": "c2bda4"
+    },
+    {
+      "id": "winter",
+      "name": "Winter service",
+      "primary": "b6beb8",
+      "secondary": "566867",
+      "marking": "e5c88d"
+    },
+    {
+      "id": "desert",
+      "name": "Desert recovery",
+      "primary": "ac9870",
+      "secondary": "6b604c",
+      "marking": "ded1a5"
+    },
+    {
+      "id": "naval",
+      "name": "Coastal grey",
+      "primary": "6d8290",
+      "secondary": "3b505c",
+      "marking": "c9ba87"
+    },
+    {
+      "id": "halcyon",
+      "name": "Halcyon factory",
+      "primary": "263c56",
+      "secondary": "c9ceca",
+      "marking": "c47b3e"
+    }
+  ]
+}

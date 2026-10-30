@@ -9,7 +9,8 @@ const EXPLODED_OFFSETS := {"head":Vector3(0,0.18,0), "torso":Vector3.ZERO,
 ## Node-name prefixes on the base model that belong to each limb region.
 const LIMB_PREFIXES := {"l_arm":"left_arm", "r_arm":"right_arm", "l_leg":"left_leg", "r_leg":"right_leg"}
 ## Factory paint colours on the model, and the finish channel that replaces each.
-const PAINT_CHANNELS := {"656a4a":"primary", "3e4939":"secondary", "c2bda4":"marking"}
+const PAINT_CHANNELS := {"656a4a":"primary", "3e4939":"secondary", "c2bda4":"marking",
+	"263c56":"primary", "c9ceca":"secondary", "c47b3e":"marking"}
 ## Surfaces with no readable colour are treated as factory primary.
 const FACTORY_PRIMARY := Color("656a4a")
 const HIGHLIGHT := Color("f2bc73")

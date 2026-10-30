@@ -5,7 +5,7 @@ extends SceneTree
 ##   Round robin:     --script res://tests/matchup_run.gd -- --all --seeds 60
 ## Add --standard-pilots to give every unit the same pilot, so only frames and weapons are compared.
 const MAX_ROUNDS := 40
-const STANDARD_PILOT := {"gunnery": 1, "melee": 1, "precision": 1, "reflex": 0, "guard": 0, "systems": 0, "countermeasures": 0, "spirit": 2}
+const STANDARD_PILOT := {"gunnery": 1, "melee": 1, "precision": 1, "reflex": 0, "systems": 0, "countermeasures": 0, "spirit": 2}
 
 var costs := PointCosts.new()
 var standard_pilots := false

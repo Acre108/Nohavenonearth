@@ -38,7 +38,7 @@ func _ready() -> void:
 	add_label(copy, "01   /   SERVICE DEPOT", 12, GOLD)
 	workshop_button = add_button(copy, "Open workshop", open_workshop)
 	workshop_button.name = "OpenWorkshop"
-	add_paragraph(copy, "Inspect your M9 Teamster. Assign a pilot, repair damage, replace components and customise its finish. Applied refits are saved locally.")
+	add_paragraph(copy, "Inspect the M9 Teamster or HX-7 Kestrel. Assign a pilot, repair damage, replace components and customise the finish. Each frame has its own saved refit.")
 	add_label(copy, "02   /   TACTICAL SKIRMISH", 12, ArtPalette.FRIEND)
 	battle_button = add_button(copy, "Play battle demo", open_demo)
 	battle_button.name = "PlayBattleDemo"

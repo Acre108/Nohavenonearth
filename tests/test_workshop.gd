@@ -1,17 +1,6 @@
-extends SceneTree
+extends "res://tests/test_suite.gd"
 
 const SAVE := "res://artifacts/workshop-test.json"
-var checks := 0
-var failures := 0
-
-func _initialize() -> void:
-	run.call_deferred()
-
-func check(condition: bool, message: String) -> void:
-	checks += 1
-	if not condition:
-		failures += 1
-		push_error("WORKSHOP FAIL / " + message)
 
 func run() -> void:
 	var store := WorkshopState.new()
@@ -23,7 +12,7 @@ func run() -> void:
 	check(store.validate_state(store.owned).is_empty(), "Initial owned state is valid")
 	var edit := store.draft()
 	check(store.cost(edit) == 0 and not store.changed(edit), "Unedited draft is free and clean")
-	check(store.resolve(base, edit).stat_bonuses.get("melee") == -0.25, "Damaged actuator applies its declared penalty")
+	check(store.resolve(base, edit).stat_fractions.get("melee") == -0.25, "Damaged actuator applies its declared penalty as a fraction")
 	edit.repairs.append(edit.installed["left_arm.actuator"])
 	edit.repair_hull = true
 	check(store.cost(edit) == 202, "Repairs quote exact hull and component costs")
@@ -42,7 +31,7 @@ func run() -> void:
 	var original_uid: String = edit.installed["left_arm.actuator"]
 	edit.installed["left_arm.actuator"] = "spare_arm_precision"
 	check(store.cost(edit) == 40, "One replacement has one fitting charge")
-	check(store.resolve(base, edit).stat_bonuses.gunnery == 0.25, "Replacement changes resolved hardware stats")
+	check(store.resolve(base, edit).stat_fractions.gunnery == 0.25, "Replacement changes resolved hardware stats")
 	check(store.apply(edit, SAVE), "Replacement saves over an existing save")
 	check(store.owned.inventory.has(original_uid) and original_uid not in store.owned.installed.values(), "Removed part returns to stores")
 	var before := JSON.stringify(store.owned)
@@ -101,8 +90,7 @@ func run() -> void:
 	test_power_and_compatibility()
 	test_component_finishes()
 	test_workshop_pilots()
-	print("WORKSHOP: %d checks, %d failures" % [checks, failures])
-	quit(1 if failures else 0)
+	finish()
 
 func test_workshop_pilots() -> void:
 	var store := WorkshopState.new(SAVE)
@@ -110,7 +98,7 @@ func test_workshop_pilots() -> void:
 	for entry in store.pilots.entries.values():
 		var total := 0.0
 		for value in entry.stats.values(): total += value
-		check(total == 5.0, entry.id + " uses the same five-point stat budget")
+		check(total == 7.0, entry.id + " uses the same seven-point stat budget")
 		check(ResourceLoader.exists(entry.portrait), entry.id + " has an imported generated portrait")
 	var edit := store.draft()
 	edit.pilot = "rook"
@@ -127,10 +115,11 @@ func test_workshop_pilots() -> void:
 	var unit := BattleState.new(catalogue,42).unit_by_id("blue_teamster")
 	check(unit.loadout.pilot.id == "rook" and unit.loadout.callsign == "ROOK", "Deployment receives selected pilot and callsign")
 	for stat in UnitState.STAT_NAMES:
-		var expected := clampf(roundf((reloaded.pilots.entries.rook.stats[stat] + unit.loadout.frame.stat_bonuses.get(stat,0))*4)/4,0,unit.stat_max(stat))
+		var fractions := UnitState.toward_zero(unit.loadout.frame.stat_fractions.get(stat,0))
+		var expected := clampf(reloaded.pilots.entries.rook.stats[stat] + unit.loadout.frame.stat_bonuses.get(stat,0) + fractions,0,unit.stat_max(stat))
 		check(unit.stat(stat) == expected, "Deployed " + stat + " uses capped pilot plus frame and equipment")
 	unit.loadout.pilot.stats.gunnery = 4
-	check(reloaded.pilots.entries.rook.stats.gunnery == 0.5 and Catalogue.new().pilots.anchor.stats.gunnery == 1, "Deployment pilot is detached from roster and standalone catalogue")
+	check(reloaded.pilots.entries.rook.stats.gunnery == 1 and Catalogue.new().pilots.anchor.stats.gunnery == 1, "Deployment pilot is detached from roster and standalone catalogue")
 	edit = reloaded.draft()
 	edit.pilot = "unknown"
 	var before := JSON.stringify(reloaded.owned)

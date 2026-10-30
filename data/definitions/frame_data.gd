@@ -8,9 +8,11 @@ extends Resource
 @export var generation: int = 2
 @export var tier: String = "line"
 @export var tonnage: float = 0.0
-## Additions to pilot stats from this frame's hardware; workshop parts will add here too.
+## Whole-point additions to pilot stats from this frame's hardware; workshop parts add here too.
 @export var stat_bonuses: Dictionary = {}
-## Per-stat ceiling on pilot + bonuses for this frame. Missing stats use the global cap.
+## The fractional parts of hardware bonuses, summed. They count only once they add up to a whole point.
+@export var stat_fractions: Dictionary = {}
+## Per-stat ceiling on pilot + hardware for this frame. The validator requires all eight stats.
 @export var stat_max: Dictionary = {}
 @export var size_class: String = "medium"
 @export var manufacturer: String = ""
@@ -34,6 +36,13 @@ extends Resource
 
 func model_scale() -> float:
 	return SizeClass.MODEL_SCALE.get(size_class, 1.0)
+
+## Adds one piece of hardware's stat change: its whole points count at once, its fraction joins the
+## running total of fractions.
+func add_stat(stat: String, value: float) -> void:
+	var whole := UnitState.toward_zero(value)
+	stat_bonuses[stat] = float(stat_bonuses.get(stat, 0.0)) + whole
+	stat_fractions[stat] = float(stat_fractions.get(stat, 0.0)) + value - whole
 
 func energy_available() -> float:
 	return maxf(0.0, float(energy_capacity) - energy_reserved)

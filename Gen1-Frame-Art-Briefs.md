@@ -1,6 +1,6 @@
 # Gen 1 Frame Art Briefs
 
-Concept art briefs for all 9 Generation 1 mecha frames in the No Haven on Earth Atlas. Gen 1 covers roughly 25 to 15 years before the present: the first machines that ever walked into combat.
+Concept art briefs for all 10 Generation 1 mecha frames in the No Haven on Earth Atlas. Gen 1 covers roughly 25 to 15 years before the present: the first machines that ever walked into combat.
 
 ## How to use this file (instructions for ChatGPT)
 
@@ -48,11 +48,12 @@ Gen 1 frames are the ancestors. Every one of them is a first attempt, and it sho
 | Vauclair-Ehrlich Konsortium | VK-1 | Écuyer | 17.2 m · 59 t | Licensed M4 Garrison | VK-3 Haubert |
 | Boreal Dynamics | BD-2 | Tundra | 17.2 m · 64 t | Licensed M4 Garrison + Arctic haulers | BD-5 Caribou |
 | Tianlong State Machinery | Type-01 | Tieniu | 16.4 m · 72 t | Excavators and heavy tractors | Type-09 Tieshan, QF-2 Haboob |
+| Kirov-Mikoyan OKB-7 | OB-4 | Korsak | 16.9 m · 41 t | Interceptor landing gear, fighter cannon, helicopter turboshaft | OB-19 Volk (by way of the OB-16 Rys) |
 | Mitsurugi Heavy Industries | MR-1 | Kizuna | 14.0 m · 30 t | Rescue robots and exoskeletons | MX-01 Hayate |
 | Pan-African League workshops | — | Technical Refit | varies | Surplus Garrisons and Tieniu | QF-2 Haboob |
 | Ascension Orbital Works | AW-3 | Lifter | 11.5 m · 22 t | EVA construction pods | AW-5 Rigger |
 
-**Matching Gen 2 reference images** (attach to the ChatGPT request for family resemblance): `output/imagegen/01-hx-7-kestrel-*`, `04-m9-teamster-*`, `06-vk-3-enact-*`, `10-type-09-tieshan-*`, `16-mx-01-hayate-*`, `18-qf-2-haboob-*`, `21-aw-5-rigger-*`.
+**Matching Gen 2 reference images** (attach to the ChatGPT request for family resemblance): `output/imagegen/01-hx-7-kestrel-*`, `04-m9-teamster-*`, `06-vk-3-enact-*`, `10-type-09-tieshan-*`, `13-ob-12-medved-*`, `15-ob-19-volk-*-v2` (the Korsak's descendant), `16-mx-01-hayate-*`, `18-qf-2-haboob-*`, `21-aw-5-rigger-*`.
 
 ---
 
@@ -271,6 +272,43 @@ Type-01 Tieniu, 16.4 metre first-generation mass-produced mech built from excava
 
 ---
 
+## Kirov-Mikoyan OKB-7
+
+*Eurasian Pact · Moscow*
+
+In Gen 1, OKB-7 is still a fighter bureau that has been told to build a frame. Its first one is a small run for the airborne divisions, made from what the bureau already had: interceptor landing gear for legs, a fighter's cannon in the arm, a helicopter turboshaft on the back and a fighter cockpit with its limits switched off. The angular, predatory look of the later Medved and Volk starts here, but on a thin, riveted airframe rather than slab armour. Grey-green over light blue-grey, the colours of the bombers it was dropped from.
+
+**Early house style:** early OKB-7 design language: fighter-bureau aircraft engineering applied to a lean mech frame, angular wedge-shaped panels, riveted aluminium-alloy skin with aviation access hatches and warning stencils, interceptor landing-gear legs, a framed armoured fighter-style canopy, faded grey-green over light blue-grey with red stars outlined in white, an airborne parachute-and-wings emblem and large white board numbers.
+
+### OB-4 Korsak
+
+Gen 1 · 16.9 m · 41 t · Airborne raider on interceptor landing gear · Ancestor of the OB-19 Volk
+
+- **Silhouette:** Tall, lean and forward-leaning, like a sprinter in the blocks: a narrow wedge-shaped torso carried high on long legs. It is the lightest-looking military Gen 1 frame, but still riveted, crude and patched. It should read as the Volk's ancestor, a generation earlier and far rougher.
+- **Head:** A small, low wedge-shaped head pushed forward like a fighter's nose, with a pointed radome taken from an interceptor, an infrared search-and-track ball under it and two small camera ports.
+- **Torso:** A narrow fuselage section in riveted aluminium-alloy skin, with aviation access panels and warning triangles. A framed armoured canopy of thick glass blocks sits on the upper chest, adapted from a fighter cockpit, with an ejection-seat warning stencil beside it. Rigging hard points and release shackles on the shoulders and back for the parachute platform.
+- **Arms:** Slim arms with exposed hydraulic actuators. The right forearm is the GSh-30F: a twin-barrel 30 mm aircraft cannon built into the arm, barrels projecting past the wrist, with an ammunition belt chute running up to a magazine box on the upper arm. The left hand is a simple three-finger grip.
+- **Legs:** The defining feature. Long legs built from interceptor main landing-gear forgings: bare machined-steel oleo struts with oily seals as the shins, scissor torque links at the knees, a backward-angled ankle, and broad splayed feet where the wheels used to be. They look made for landing hard and running, not for standing still.
+- **Back & power:** TV-26 turboshaft from a heavy-lift helicopter: a cylindrical engine housing across the upper back with a big intake on top and a short jet-pipe exhaust angled up and back, the panels around it scorched and blistered.
+- **Weapons:** GSh-30F forearm twin cannon on the right arm. A Type-03 rocket rack (sixteen 80 mm tubes, borrowed from Tianlong stores) on the left shoulder.
+- **Colours:** Faded grey-green over light blue-grey, red stars outlined in white, an airborne parachute-and-wings emblem on the shoulder, large white board numbers.
+- **Details:** Soot streaks from the exhaust, rope burns and chafed paint from parachute rigging, scorch marks on the feet from the platform's braking rockets, a repaired canopy frame in a different shade.
+- **Shot:** The drop at Talysh, 2169. Dawn over the Talysh Mountains. Korsaks come down under clusters of huge parachutes, strapped to drop platforms, from a lumbering converted four-engine bomber. One has just landed in a crouch on a mountain pass road, its platform's braking rockets kicking up a wall of dust; others drift off course over a ravine. Far down the valley, smoke rises from a burning column of squat egg-shaped mechs. Paratroopers run along the road for scale.
+
+**Scene prompt**
+
+```text
+OB-4 Korsak, 16.9 metre first-generation airborne raider mech built by a fighter-aircraft bureau, tall lean forward-leaning silhouette like a sprinter in the blocks, narrow wedge-shaped torso in riveted aluminium-alloy skin with aviation access panels and warning triangles, a small low wedge-shaped head with a pointed interceptor radome nose, an infrared search-and-track ball and two camera ports, a framed armoured fighter-style canopy of thick glass blocks on the upper chest, rigging hard points and release shackles on the shoulders, slim arms with exposed hydraulic actuators, a twin-barrel 30 mm aircraft cannon built into the right forearm with a belt chute to a magazine box on the upper arm, a simple three-finger left hand, long legs made from interceptor landing-gear forgings with bare machined-steel oleo struts as shins, scissor torque links at the knees, backward-angled ankles and broad splayed feet, a helicopter turboshaft housing across the upper back with a big intake and a short scorched exhaust pipe, a sixteen-tube rocket rack on the left shoulder, faded grey-green over light blue-grey with red stars outlined in white, an airborne parachute-and-wings emblem and large white board numbers. early OKB-7 design language: fighter-bureau aircraft engineering applied to a lean mech frame, angular wedge-shaped panels, riveted aluminium-alloy skin with aviation access hatches and warning stencils, interceptor landing-gear legs, a framed armoured fighter-style canopy, faded grey-green over light blue-grey with red stars outlined in white, an airborne parachute-and-wings emblem and large white board numbers. Scene: dawn over high rocky mountains, several of these mechs descending under clusters of huge parachutes strapped to drop platforms from a lumbering converted four-engine bomber, one has just landed in a crouch on a mountain pass road with its platform's braking rockets kicking up a wall of dust, others drifting off course over a ravine, far down the valley smoke rising from a burning column of squat egg-shaped mechs, paratroopers running along the road for scale. first-generation mech from twenty years ago, cruder and heavier than later designs, bolted and riveted flat armour plates, exposed hydraulic rams, hoses and cable bundles, parts adapted from tanks, aircraft and construction machinery, faded and repainted military finish, period vehicles a generation old. grounded real-robot mecha concept art, believable military hardware, visible joints, hydraulic pistons and armour panel lines, stencilled markings, realistic weathering with chipped paint and grime, clear scale reference with vehicles or people nearby, early-generation technology with no glowing energy effects, detailed industrial design, cinematic lighting. Avoid: super robot proportions, glowing energy wings, magic effects, chrome, organic or biomechanical forms, fantasy armour, cape, oversized head, chibi, cute, extra limbs, deformed hands, blurry, text, watermark, logo, sleek modern streamlined armour, stealth panelling.
+```
+
+**Turnaround prompt**
+
+```text
+OB-4 Korsak, 16.9 metre first-generation airborne raider mech built by a fighter-aircraft bureau, tall lean forward-leaning silhouette like a sprinter in the blocks, narrow wedge-shaped torso in riveted aluminium-alloy skin with aviation access panels and warning triangles, a small low wedge-shaped head with a pointed interceptor radome nose, an infrared search-and-track ball and two camera ports, a framed armoured fighter-style canopy of thick glass blocks on the upper chest, rigging hard points and release shackles on the shoulders, slim arms with exposed hydraulic actuators, a twin-barrel 30 mm aircraft cannon built into the right forearm with a belt chute to a magazine box on the upper arm, a simple three-finger left hand, long legs made from interceptor landing-gear forgings with bare machined-steel oleo struts as shins, scissor torque links at the knees, backward-angled ankles and broad splayed feet, a helicopter turboshaft housing across the upper back with a big intake and a short scorched exhaust pipe, a sixteen-tube rocket rack on the left shoulder, faded grey-green over light blue-grey with red stars outlined in white, an airborne parachute-and-wings emblem and large white board numbers. early OKB-7 design language: fighter-bureau aircraft engineering applied to a lean mech frame, angular wedge-shaped panels, riveted aluminium-alloy skin with aviation access hatches and warning stencils, interceptor landing-gear legs, a framed armoured fighter-style canopy, faded grey-green over light blue-grey with red stars outlined in white, an airborne parachute-and-wings emblem and large white board numbers. mechanical design turnaround sheet, front, side, back and three-quarter views, orthographic, full body, neutral grey background, separate callouts of the forearm twin cannon and the oleo-strut leg with its torque link, a small inset of the frame crouched and strapped to its parachute drop platform, height scale bar with a human figure. first-generation mech from twenty years ago, cruder and heavier than later designs, bolted and riveted flat armour plates, exposed hydraulic rams, hoses and cable bundles, parts adapted from tanks, aircraft and construction machinery, faded and repainted military finish. grounded real-robot mecha concept art, believable military hardware, visible joints, hydraulic pistons and armour panel lines, stencilled markings, realistic weathering with chipped paint and grime, early-generation technology with no glowing energy effects, detailed industrial design. Avoid: super robot proportions, glowing energy wings, magic effects, chrome, organic or biomechanical forms, fantasy armour, cape, oversized head, chibi, cute, extra limbs, deformed hands, blurry, text, watermark, logo, sleek modern streamlined armour, stealth panelling.
+```
+
+---
+
 ## Mitsurugi Heavy Industries
 
 *Japan · civil disaster response*
@@ -384,4 +422,4 @@ AW-3 Lifter, 11.5 metre first-generation zero-gravity station worker mech descen
 
 ## Output naming
 
-To slot into the existing art folder and the Atlas, save results as `output/imagegen/g1-<nn>-<designation>-<name>-scene.png` and `...-technical-profile.png`, for example `g1-03-m4-garrison-scene.png`. Suggested order, by lineage importance: 03 Garrison, 05 Tieniu, 01 Merlin, 02 Sparrowhawk, 04 Écuyer, 06 Kizuna, 07 Technical Refit, 08 Lifter, 09 Tundra.
+To slot into the existing art folder and the Atlas, save results as `output/imagegen/g1-<nn>-<designation>-<name>-scene.png` and `...-technical-profile.png`, for example `g1-03-m4-garrison-scene.png`. Suggested order, by lineage importance: 03 Garrison, 05 Tieniu, 01 Merlin, 02 Sparrowhawk, 04 Écuyer, 06 Kizuna, 07 Technical Refit, 08 Lifter, 09 Tundra, 10 Korsak. The files already made are in `output/imagegen/gen1/` as `<nn>-<designation>-<name>-scene.png` and `-technical.png`, so the Korsak goes there as `10-ob-4-korsak-scene.png` and `10-ob-4-korsak-technical.png`.

@@ -1,20 +1,34 @@
 # Workshop pilots
 
 The workshop roster is in `data/catalogues/workshop_pilots.json`. It is separate from the
-standalone skirmish catalogue. Anchor retains the existing Sol profile; the other two profiles
-have the same five-point budget and use quarter-point stats. These are initial balance values.
+standalone skirmish catalogue. All three profiles have the same seven-point budget. Pilot ratings
+are whole numbers. These are initial balance values.
 
-| Pilot | Role | Gunnery | Melee | Precision | Reflex | Guard | Spirit |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Sol / ANCHOR | Brawler | 1 | 1 | 0 | 0 | 1 | 2 |
-| Mara / KESTREL | Marksman | 1.5 | 0 | 1 | 0 | 0.5 | 2 |
-| Vale / ROOK | Skirmisher | 0.5 | 0.5 | 0 | 1 | 1 | 2 |
+| Pilot | Role | Gunnery | Melee | Precision | Reflex | Systems | Countermeasures | Spirit |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Sol / ANCHOR | Brawler | 1 | 1 | 0 | 1 | 0 | 2 | 2 |
+| Mara / KESTREL | Marksman | 2 | 0 | 1 | 0 | 2 | 0 | 2 |
+| Vale / ROOK | Skirmisher | 1 | 0 | 0 | 2 | 1 | 1 | 2 |
 
-All have Systems 0, Countermeasures 0 and the existing Push ability. Systems and Countermeasures
-are displayed as reserved stats, matching the current rules. Each pilot's eight stats are shown
+Changes on 26 October 2026:
+- The budget went from five points to seven, to give every pilot Systems and Countermeasures for
+  Target Lock and Protocols.
+- ANCHOR took Countermeasures 2, KESTREL Systems 2, and ROOK one of each.
+
+Changes on 23 October 2026:
+- The move to a d10 made pilot ratings whole. KESTREL went from Gunnery 1.5 and Guard 0.5 to
+  Gunnery 2, and ROOK from Gunnery 0.5 and Melee 0.5 to Gunnery 1.
+- Guard was removed the same day, and each pilot's Guard moved into Reflex: ANCHOR 0 → 1, ROOK 1 → 2.
+
+All have the existing Push ability. The game still displays Systems and Countermeasures as
+reserved stats, because Target Lock and Protocols are not built yet. Their rules are in the
+[tabletop rules](tabletop-d10-system.md). Spirit is pilot-only, so its Frame
+column is always empty and its Threshold is the pilot limit of 6. Each pilot's seven stats are shown
 in the single right-hand table: Frame, Pilot, Total and Threshold. The Frame column includes
-hardware bonuses and wear penalties. Total uses pilot + resolved hardware, rounded to quarter
-points and clamped to Threshold, the effective maximum allowed by the frame and global caps.
+hardware bonuses and wear penalties, fractions included. Total is the pilot rating plus the whole
+points of hardware, held at or below Threshold. The fractions on parts are summed and count only in
+whole points, rounded toward zero, so a matched set of ¼ parts adds a point. Threshold is the
+frame's own maximum; pilots have separate limits on their own ratings.
 Movement follows the current frame-only rules; Will is whole Spirit.
 Weapon profiles include mounted weapons and the frame's standard melee attack.
 

@@ -1,17 +1,4 @@
-extends SceneTree
-
-var passed: int = 0
-var failed: int = 0
-
-func _initialize() -> void:
-	run.call_deferred()
-
-func check(condition: bool, description: String) -> void:
-	if condition:
-		passed += 1
-	else:
-		failed += 1
-		push_error("FAIL / " + description)
+extends "res://tests/test_suite.gd"
 
 func fresh(seed_value: int = 42) -> BattleState:
 	return BattleState.new(Catalogue.new(), seed_value)
@@ -40,8 +27,7 @@ func run() -> void:
 	test_horizontal_range()
 	for seed_value in range(1, 9):
 		test_full_battle(seed_value)
-	print("RULE TESTS / %d passed / %d failed" % [passed, failed])
-	quit(0 if failed == 0 else 1)
+	finish()
 
 func test_catalogue_validation() -> void:
 	var definitions: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalogues/standard.json"))
@@ -74,24 +60,40 @@ func test_stats() -> void:
 	var values: Array = []
 	for stat in UnitState.STAT_NAMES:
 		values.append(ace.stat(stat))
-	# Gunnery, Melee, Precision, Reflex (1 + Kestrel 2), Guard, Systems (1 + 1), Countermeasures (1 + 1), Spirit.
-	check(values == [2.0, 2.0, 2.0, 3.0, 1.0, 2.0, 2.0, 4.0], "Ace totals are pilot plus Kestrel bonus")
+	# Gunnery, Melee, Precision, Reflex (2 + Kestrel 2), Systems (1 + 1), Countermeasures (1 + 1), Spirit.
+	check(values == [2.0, 2.0, 2.0, 4.0, 2.0, 2.0, 4.0], "Ace totals are pilot plus Kestrel bonus")
 	check(ace.will == 4 and ace.will_max() == 4, "Spirit sets maximum Will")
 	ace.pilot_stats.reflex = 0
-	check(ace.stat("reflex") == 2 and int(ace.loadout.pilot.stats.reflex) == 1, "Debug overrides do not mutate base Resource")
-	check(fresh().units[0].stat("reflex") == 3, "New battle resets overrides")
+	check(ace.stat("reflex") == 2 and int(ace.loadout.pilot.stats.reflex) == 2, "Debug overrides do not mutate base Resource")
+	check(fresh().units[0].stat("reflex") == 4, "New battle resets overrides")
 	ace.pilot_stats.reflex = 5
 	check(ace.stat("reflex") == float(ace.loadout.frame.stat_max.reflex) and ace.stat_max("reflex") == 4, "Frame max caps the total")
 	ace.pilot_stats.spirit = 3.0 - 0.000001
 	check(ace.whole_stat("spirit") == 3, "Float error never loses a whole point")
+	ace.bonus_stats.spirit = 2
+	check(ace.stat("spirit") == 3 and ace.stat_max("spirit") == UnitState.PILOT_CAPS.spirit, "Spirit is the pilot's own: hardware neither adds to it nor limits it")
+	ace.pilot_stats.spirit = 6
+	check(ace.stat("spirit") == 6, "Spirit reaches the pilot cap in any frame")
 	ace.pilot_stats.gunnery = 2
-	ace.bonus_stats.gunnery = 0.3
-	check(ace.stat("gunnery") == 2.25, "Stats resolve to quarter points")
+	ace.bonus_stats.gunnery = 0
+	ace.fraction_stats.gunnery = 0.75
+	check(ace.stat("gunnery") == 2, "Fractions short of a whole point count for nothing")
+	ace.fraction_stats.gunnery = 1.0
+	check(ace.stat("gunnery") == 3, "Fractions that add up to a whole point count")
+	ace.bonus_stats.gunnery = 1
+	ace.fraction_stats.gunnery = -0.25
+	check(ace.stat("gunnery") == 3, "A part's -0.25 never eats a frame's whole bonus")
+	ace.bonus_stats.gunnery = 0
+	ace.fraction_stats.gunnery = -1.0
+	check(ace.stat("gunnery") == 1, "Four -0.25 penalties cost a point")
+	ace.fraction_stats.gunnery = 0
 	ace.bonus_stats.gunnery = 10
-	check(ace.stat("gunnery") == UnitState.STAT_CAPS.gunnery, "Pilot plus bonuses is capped")
+	check(ace.stat("gunnery") == ace.stat_max("gunnery"), "The frame threshold caps the total")
+	ace.loadout.frame.stat_max.gunnery = 6
+	check(ace.stat("gunnery") == 6, "Thresholds may exceed a pilot's own limit")
 	var teamster := battle.units[1]
 	teamster.bonus_stats.gunnery = 10
-	check(teamster.stat("gunnery") == 3.0, "A lower frame max caps below the global cap")
+	check(teamster.stat("gunnery") == 3.0, "A lower frame threshold caps lower")
 	var ground: ManoeuvreData = battle.catalogue.manoeuvres.ground
 	teamster.pilot_stats.reflex = 2
 	check(is_equal_approx(MovementRules.maximum_distance(teamster, ground), teamster.loadout.frame.base_move), "Reflex no longer changes move distance")
@@ -262,7 +264,8 @@ func test_combat() -> void:
 	heavy.position = Vector2(0, -1)
 	check("range" in CombatRules.target_error(battle, ace, heavy, rifle), "Minimum weapon range")
 	heavy.position = Vector2(0, -3)
-	# Medved: Reflex 0, Large (+10%), Armour 3 ballistic. LR-3 aims +10%. Every point moves the hit chance 10%.
+	# Medved with its pilot at Reflex 0: Large (+10%), Armour 3 ballistic. LR-3 aims +10%. Every point moves the hit chance 10%.
+	heavy.pilot_stats.reflex = 0
 	for gunnery in range(0, 5):
 		ace.pilot_stats.gunnery = gunnery
 		check(is_equal_approx(CombatRules.hit_chance(battle, ace, heavy, rifle), minf(90.0, 70.0 + 10.0 * gunnery)), "Gunnery %d is +%d%% to hit" % [gunnery, 10 * gunnery])
@@ -270,7 +273,8 @@ func test_combat() -> void:
 	ace.pilot_stats.precision = 3
 	check(is_equal_approx(CombatRules.crit_chance(ace), 30.0), "Each Precision point is +10% crit")
 	ace.pilot_stats.precision = 2
-	check(is_equal_approx(CombatRules.hit_chance(battle, heavy, ace, battle.catalogue.weapons.gsh6m_rotary), 30.0), "The target's Reflex lowers the attacker's hit chance")
+	# BULWARK Gunnery 1 against the ace's Reflex 4: 50 + 10 × (1 − 4).
+	check(is_equal_approx(CombatRules.hit_chance(battle, heavy, ace, battle.catalogue.weapons.gsh6m_rotary), 20.0), "The target's Reflex lowers the attacker's hit chance")
 	check(is_equal_approx(CombatRules.hit_chance(battle, heavy, ace, battle.catalogue.weapons.gsh6m_rotary) - CombatRules.hit_chance(battle, heavy, ace, battle.catalogue.weapons.grad_m), 0.0), "Weapons without an aim bonus share a hit chance")
 	check(CombatRules.effective_armour(rifle, heavy) == 3, "Ballistic armour +2 vs ballistic, minus AP 2")
 	check(CombatRules.effective_armour(battle.catalogue.weapons.ar40_rifle, heavy) == 5, "Matching armour type counts 2 higher")
@@ -295,10 +299,10 @@ func test_combat() -> void:
 	check(CombatRules.resolve(battle, heavy, ace, battle.catalogue.weapons.grad_m) == null, "Destroyed units cannot attack")
 	var counts := [0, 0, 0, 0]
 	for i in 10000:
-		counts[CombatRules.roll_shot(battle, 60.0, 20.0, 25.0)] += 1
+		counts[CombatRules.roll_shot(battle, 60.0, 20.0, 30.0)] += 1
 	check(counts[AttackResult.Shot.MISS] > 1800 and counts[AttackResult.Shot.MISS] < 2200, "Seeded rolls miss about 20% at 60% hit / 20% glance")
 	check(counts[AttackResult.Shot.GLANCE] > 1800 and counts[AttackResult.Shot.GLANCE] < 2200, "Seeded rolls glance about 20%")
-	check(counts[AttackResult.Shot.CRIT] > 1300 and counts[AttackResult.Shot.CRIT] < 1700, "A quarter of hits crit at 25%")
+	check(counts[AttackResult.Shot.CRIT] > 1600 and counts[AttackResult.Shot.CRIT] < 2000, "Three in ten hits crit at 30%")
 
 ## Size class sets base radius, model scale, how easy a frame is to hit, and what it can carry.
 func test_size_and_hands() -> void:
@@ -312,9 +316,9 @@ func test_size_and_hands() -> void:
 	for unit in [ace, jet, medved]:
 		check(is_equal_approx(unit.loadout.frame.size, SizeClass.RADIUS[unit.loadout.frame.size_class]), "Base radius comes from the size class (%s)" % unit.loadout.id)
 	check(is_equal_approx(medved.loadout.frame.model_scale(), 1.2) and is_equal_approx(jet.loadout.frame.model_scale(), 0.8), "Model scale follows size class")
-	var base := 50.0 + 10.0 * (ace.stat("gunnery") - 0.0)
+	var base := 50.0 + 10.0 * (ace.stat("gunnery") - medved.stat("reflex"))
 	check(is_equal_approx(CombatRules.hit_chance(battle, ace, medved, stores), base + 10.0), "Large targets are 10% easier to hit")
-	check(is_equal_approx(CombatRules.hit_chance(battle, ace, jet, stores), clampf(base - 10.0 * jet.stat("reflex") - 10.0, 10, 90)), "Small targets are 10% harder to hit")
+	check(is_equal_approx(CombatRules.hit_chance(battle, ace, jet, stores), clampf(50.0 + 10.0 * (ace.stat("gunnery") - jet.stat("reflex")) - 10.0, 10, 90)), "Small targets are 10% harder to hit")
 	check(SizeClass.HIT_MODIFIER.super_heavy == 20.0, "Super heavy targets are 20% easier to hit")
 	check(SizeClass.can_carry("large", "medium") and not SizeClass.can_carry("small", "medium"), "Frames carry weapons up to their own size")
 	var definitions: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalogues/standard.json"))
@@ -355,11 +359,12 @@ func test_melee() -> void:
 	ace.altitude = 1
 	check("range" in CombatRules.target_error(battle, ace, tieshan, knife), "Melee cannot reach another altitude band")
 	ace.altitude = 0
-	# Ace Melee 2 vs Tieshan Reflex 1 + WRAITH Guard 1, +10% because the Tieshan is Large.
-	check(is_equal_approx(CombatRules.hit_chance(battle, ace, tieshan, knife), 60.0), "Guard and Reflex both defend against melee")
-	tieshan.pilot_stats.guard = 3
-	check(is_equal_approx(CombatRules.hit_chance(battle, ace, tieshan, knife), 40.0), "Each Guard point is −10% to be hit in melee")
-	check(is_equal_approx(CombatRules.hit_chance(battle, ace, tieshan, battle.catalogue.weapons.lr3_rifle), 80.0), "Guard does not apply to ranged attacks")
+	# Ace Melee 2 vs Tieshan Reflex 2 (WRAITH 1 + Tieshan 1), +10% because the Tieshan is Large.
+	check(is_equal_approx(CombatRules.hit_chance(battle, ace, tieshan, knife), 60.0), "Reflex defends against melee")
+	# Ace Gunnery 2 vs the same Reflex 2, +10% Large, +10% LR-3 aim.
+	check(is_equal_approx(CombatRules.hit_chance(battle, ace, tieshan, battle.catalogue.weapons.lr3_rifle), 70.0), "Reflex defends against ranged attacks the same way")
+	tieshan.pilot_stats.reflex = 0
+	check(is_equal_approx(CombatRules.hit_chance(battle, ace, tieshan, knife), 70.0), "Each Reflex point is −10% to be hit in melee")
 	var radii := CombatRules.horizontal_range(knife, 0, CombatRules.reach_allowance(knife, ace, tieshan))
 	check(is_equal_approx(radii.y, contact + 0.5), "Melee overlay includes the base allowance")
 
@@ -590,7 +595,7 @@ func test_charge_and_engagement() -> void:
 	check(teamster.energy == energy - charge.energy_cost and teamster.charge_target == "red_medved", "Charge spends Energy and marks its target")
 	check(absf(rad_to_deg(teamster.forward().angle_to(medved.position - teamster.position))) < 1.0, "Charger ends facing its target")
 	check(not MovementRules.overlaps(battle, teamster, teamster.position, 0), "Charge never overlaps the target")
-	var plain := 50.0 + 10.0 * (teamster.stat("melee") - medved.stat("reflex") - medved.stat("guard")) + SizeClass.HIT_MODIFIER.large
+	var plain := 50.0 + 10.0 * (teamster.stat("melee") - medved.stat("reflex")) + SizeClass.HIT_MODIFIER.large
 	check(is_equal_approx(CombatRules.hit_chance(battle, teamster, medved, stake), clampf(plain + MeleeRules.CHARGE_BONUS, 10, 90)), "Charge bonus applies to melee against the charged unit")
 	check(not CombatRules.charge_bonus(medved, teamster), "The charged unit gets no charge bonus")
 	check(CombatRules.target_error(battle, medved, teamster, ram).is_empty(), "Engaged melee ignores the firing arc")
@@ -607,7 +612,7 @@ func test_charge_and_engagement() -> void:
 	var structure := teamster.structure
 	var result := MeleeRules.break_off(battle, teamster)
 	check(result.ok and result.strikes.size() == 1 and result.strikes[0].parting and medved.attacked, "Breaking off provokes a parting strike that uses the foe's attack")
-	check(is_equal_approx(result.strikes[0].hit_chance, clampf(50.0 + 10.0 * (medved.stat("melee") - teamster.stat("reflex") - teamster.stat("guard")) + MeleeRules.PARTING_BONUS, 10, 90)), "Parting strikes get the turning-away bonus")
+	check(is_equal_approx(result.strikes[0].hit_chance, clampf(50.0 + 10.0 * (medved.stat("melee") - teamster.stat("reflex")) + MeleeRules.PARTING_BONUS, 10, 90)), "Parting strikes get the turning-away bonus")
 	check(teamster.structure == structure - result.strikes[0].damage, "Parting strike damage is applied")
 	check(teamster.engaged.is_empty() and medved.engaged.is_empty() and teamster.action_used, "Breaking off ends the engagement and uses the action")
 	check(MeleeRules.edge_gap(teamster, medved) > MeleeRules.ENGAGE_REACH, "Breaking off leaves melee reach")

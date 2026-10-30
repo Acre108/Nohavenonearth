@@ -32,10 +32,8 @@
       "melee": 3.0,
       "precision": 3.0,
       "reflex": 5.0,
-      "guard": 2.0,
       "systems": 1.0,
-      "countermeasures": 1.0,
-      "spirit": 2.0
+      "countermeasures": 1.0
     }
   },
   "weapon": {
@@ -67,7 +65,6 @@
       "melee": 2.0,
       "precision": 2.0,
       "reflex": 3.0,
-      "guard": 1.0,
       "systems": 0.5,
       "countermeasures": 0.5,
       "spirit": 1.0

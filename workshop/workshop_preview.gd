@@ -26,6 +26,7 @@ var inspection_size: float = 1.0
 var animator: TeamsterAnimator
 var preview_clip: String = "rest"
 var highlight_selection: bool = true
+var frame_id: String = "m9_teamster"
 
 func _ready() -> void:
 	stretch = true
@@ -80,17 +81,25 @@ func show_fit(finish: Dictionary, region: String, recovery: bool, components: Di
 		model.queue_free()
 	model = Node3D.new()
 	rig.add_child(model)
-	UnitModelFactory.build_model(model, "ground", ArtPalette.FRIEND, "m9_teamster")
+	UnitModelFactory.build_model(model, "ground", ArtPalette.FRIEND, frame_id)
 	var visible_fit := components.duplicate()
 	if recovery and not visible_fit.has("backpack.module"): visible_fit["backpack.module"] = "module_recovery"
-	TeamsterParts.apply(model, visible_fit)
+	if frame_id == "m9_teamster": TeamsterParts.apply(model, visible_fit)
 	WorkshopAppearance.apply(model, finish, region if highlight_selection else "", recovery, part_finishes)
-	animator = TeamsterAnimator.new()
-	model.add_child(animator)
-	animator.two_handed = TeamsterParts.two_handed(components)
-	animator.setup(model, false)
-	if preview_clip == "rest": animator.rest()
-	else: animator.play(preview_clip, 0)
+	animator = null
+	if frame_id == "m9_teamster":
+		animator = TeamsterAnimator.new()
+		model.add_child(animator)
+		animator.two_handed = TeamsterParts.two_handed(components)
+		animator.setup(model, false)
+		if preview_clip == "rest": animator.rest()
+		else: animator.play(preview_clip, 0)
+	elif frame_id == "hx7_kestrel":
+		animator = KestrelAnimator.new()
+		model.add_child(animator)
+		animator.setup(model, false)
+		if preview_clip == "rest": animator.rest()
+		else: animator.play(preview_clip, 0)
 	rebuild_picking()
 	set_inspection(inspection_mode)
 

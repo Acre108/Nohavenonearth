@@ -12,6 +12,9 @@ const INK := Color("263342")
 const PAINT_SHADER := preload("res://art/paint.gdshader")
 const ENVIRONMENT_SHADER := preload("res://art/environment.gdshader")
 const OUTLINE_SHADER := preload("res://art/outline.gdshader")
+const DOCK_CONCRETE := preload("res://art/textures/demo-dock/dock-concrete-albedo-v1.png")
+const COVER_CONCRETE := preload("res://art/textures/demo-dock/cover-concrete-albedo-v1.png")
+const WEATHERED_STEEL := preload("res://art/textures/demo-dock/weathered-steel-albedo-v1.png")
 static var paint_materials: Dictionary = {}
 
 static func paint(color: Color, terrain: bool = false) -> ShaderMaterial:
@@ -28,6 +31,20 @@ static func paint(color: Color, terrain: bool = false) -> ShaderMaterial:
 
 static func faction(faction_id: int) -> Color:
 	return FRIEND if faction_id == 0 else HOSTILE
+
+static func environment_texture(texture: Texture2D, world_size: float, tint: Color = Color.WHITE, wet: bool = false) -> ShaderMaterial:
+	var key := "environment/%s/%s/%s/%s" % [texture.get_instance_id(), world_size, tint.to_html(), wet]
+	if paint_materials.has(key):
+		return paint_materials[key]
+	var material := ShaderMaterial.new()
+	material.shader = ENVIRONMENT_SHADER
+	material.set_shader_parameter("paint", tint)
+	material.set_shader_parameter("use_albedo_texture", true)
+	material.set_shader_parameter("albedo_texture", texture)
+	material.set_shader_parameter("texture_world_size", world_size)
+	material.set_shader_parameter("wet_ground", wet)
+	paint_materials[key] = material
+	return material
 
 static func unit_paint(color: Color, faction_color: Color, texture: Texture2D = null, emission: float = 0.0, trim_rect: Vector4 = Vector4(0,0,1,1)) -> ShaderMaterial:
 	var key := color.to_html() + "/outline/" + faction_color.to_html() + "/%s/%.2f/%s" % [texture.get_instance_id() if texture != null else 0, emission, trim_rect]

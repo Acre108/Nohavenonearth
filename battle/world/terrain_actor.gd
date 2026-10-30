@@ -6,8 +6,10 @@ func setup(data: Dictionary) -> void:
 	var height := float(data.height)
 	var size := Vector3(float(data.half_size[0]) * 2, height, float(data.half_size[1]) * 2)
 	var color := Color("58616a") if data.blocks_los else Color("68665e")
-	paint_box(size, Vector3(0, height * 0.5, 0), color)
-	paint_box(Vector3(size.x, 0.06, size.z), Vector3(0, height - 0.03, 0), Color("798080"))
+	var body := Primitives.box(self, size, Vector3(0, height * 0.5, 0), color)
+	body.material_override = ArtPalette.environment_texture(ArtPalette.COVER_CONCRETE, 3.5, Color("c2c9d1") if data.blocks_los else Color("d4d1c9"))
+	var roof := Primitives.box(self, Vector3(size.x, 0.06, size.z), Vector3(0, height - 0.03, 0), Color("798080"))
+	roof.material_override = ArtPalette.environment_texture(ArtPalette.WEATHERED_STEEL, 2.5)
 	# All architectural detail stays within the authoritative terrain envelope.
 	if height > 1.5:
 		for level in range(1, int(height / 0.55)):

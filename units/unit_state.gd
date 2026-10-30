@@ -1,9 +1,11 @@
 class_name UnitState
 extends RefCounted
 
-const STAT_NAMES: Array[String] = ["gunnery", "melee", "precision", "reflex", "guard", "systems", "countermeasures", "spirit"]
-## Absolute ceilings on pilot + frame + parts; each frame's stat_max can set a lower one.
-const STAT_CAPS := {"gunnery": 4, "melee": 4, "precision": 5, "reflex": 4, "guard": 4, "systems": 4, "countermeasures": 4, "spirit": 6}
+const STAT_NAMES: Array[String] = ["gunnery", "melee", "precision", "reflex", "systems", "countermeasures", "spirit"]
+## Highest rating a pilot can hold alone. Mech totals are limited only by the frame's thresholds.
+const PILOT_CAPS := {"gunnery": 4, "melee": 4, "precision": 5, "reflex": 4, "systems": 4, "countermeasures": 4, "spirit": 6}
+## The pilot's own: no hardware adds to them and no frame limits them, only the pilot cap.
+const PILOT_ONLY: Array[String] = ["spirit"]
 ## Stored and shown, but no rule uses them yet.
 const RESERVED_STATS: Array[String] = ["systems", "countermeasures"]
 const ALTITUDES: Array[String] = ["GROUND", "LOW", "HIGH"]
@@ -17,8 +19,10 @@ var structure: int = 0
 var energy: float = 0.0
 var will: int = 0
 var pilot_stats: Dictionary
-## Frame bonuses now; workshop parts add to the same dictionary.
+## Whole points from the frame and its parts.
 var bonus_stats: Dictionary
+## Fractions from the frame and its parts, summed; they count once they make a whole point.
+var fraction_stats: Dictionary
 var locks: Array[String] = []
 var order: MovementOrder
 var action_used: bool = false
@@ -44,24 +48,45 @@ func _init(definition: UnitLoadout = null) -> void:
 	energy = definition.frame.energy_available()
 	pilot_stats = definition.pilot.stats.duplicate(true)
 	bonus_stats = definition.frame.stat_bonuses.duplicate(true)
+	fraction_stats = definition.frame.stat_fractions.duplicate(true)
 	will = will_max()
 
-## Pilot + bonuses, kept to quarter points so fractional parts never lose a step to float error,
-## then capped at the frame's maximum for that stat.
+## Whole points only: the pilot rating plus hardware, capped at the frame's threshold.
 func stat(name: String) -> float:
-	return quarter_capped(float(pilot_stats.get(name, 0)) + float(bonus_stats.get(name, 0)), stat_max(name))
+	return resolve_stat(name, float(pilot_stats.get(name, 0)), float(bonus_stats.get(name, 0)), float(fraction_stats.get(name, 0)), loadout.frame)
 
 func stat_max(name: String) -> float:
 	return stat_cap(name, loadout.frame)
 
 ## Shared with the workshop so its stat table resolves exactly as battle does.
-static func quarter_capped(total: float, cap: float) -> float:
-	return clampf(roundf(total * 4.0) / 4.0, 0.0, cap)
+static func resolve_stat(name: String, pilot: float, bonus: float, fractions: float, frame: FrameData) -> float:
+	if name in PILOT_ONLY:
+		return resolve(pilot, 0.0, 0.0, stat_cap(name, frame))
+	return resolve(pilot, bonus, fractions, stat_cap(name, frame))
 
+## Hardware fractions count
+## only once they add up to a whole point, for bonuses and penalties alike: +0.75 gives nothing and a
+## lone −0.25 costs nothing, but four −0.25 parts cost a point. A frame's +1 is never eaten by a part's −0.25.
+static func resolve(pilot: float, bonus: float, fractions: float, cap: float) -> float:
+	var whole := toward_zero(bonus)
+	var spare := quarter(bonus) - whole + quarter(fractions)
+	return clampf(floorf(quarter(pilot)) + whole + toward_zero(spare), 0.0, cap)
+
+## Quarter rounding first stops float error from losing a step.
+static func quarter(value: float) -> float:
+	return roundf(value * 4.0) / 4.0
+
+static func toward_zero(value: float) -> float:
+	var stepped := quarter(value)
+	return signf(stepped) * floorf(absf(stepped))
+
+## Thresholds are the only ceiling on a mech's totals; the validator requires every frame to list all of them.
 static func stat_cap(name: String, frame: FrameData) -> float:
-	return minf(STAT_CAPS[name], float(frame.stat_max.get(name, STAT_CAPS[name])))
+	if name in PILOT_ONLY:
+		return float(PILOT_CAPS[name])
+	return float(frame.stat_max.get(name, 0))
 
-## Whole points only, for stats that count things (Spirit → Will).
+## As an int, for stats that count things (Spirit → Will).
 func whole_stat(name: String) -> int:
 	return floori(stat(name))
 
@@ -72,6 +97,7 @@ func will_max() -> int:
 func copy_stats_to(other: UnitState) -> void:
 	other.pilot_stats = pilot_stats.duplicate()
 	other.bonus_stats = bonus_stats.duplicate()
+	other.fraction_stats = fraction_stats.duplicate()
 
 func alive() -> bool:
 	return structure > 0
@@ -88,4 +114,4 @@ func range_position() -> Vector3:
 func to_dict() -> Dictionary:
 	return {"loadout": loadout.id, "position": [position.x, position.y], "facing": facing,
 		"altitude": altitude, "structure": structure, "energy": energy, "will": will,
-		"pilot_stats": pilot_stats.duplicate(), "bonus_stats": bonus_stats.duplicate(), "locks": locks.duplicate(), "withdrawn": withdrawn, "engaged": engaged.duplicate()}
+		"pilot_stats": pilot_stats.duplicate(), "bonus_stats": bonus_stats.duplicate(), "fraction_stats": fraction_stats.duplicate(), "locks": locks.duplicate(), "withdrawn": withdrawn, "engaged": engaged.duplicate()}

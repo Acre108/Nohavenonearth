@@ -17,6 +17,12 @@ var two_handed: bool = false
 const CEL_FRAME := 1.0 / 12.0
 var pose_accumulator: float = 0.0
 var clip_speed: float = 1.0
+## Frame profiles share playback and cel timing; equipment cues remain frame-specific.
+var clips: Array = CLIPS
+var loop_clips: Array = ["idle", "walk", "twohand_idle", "twohand_walk"]
+var weapon_clips: Dictionary = WEAPON_CLIPS
+var shot_times: Dictionary = SHOT_TIMES
+var socket_names: Dictionary = {"ar40_rifle":"Socket_rifle_muzzle", "hornet_pod":"Socket_missile_muzzle", "pb4_stake":"Socket_stake_tip", "br90_rifle":"Socket_br90_muzzle", "ac30_cannon":"Socket_ac30_muzzle", "sg12_breacher":"Socket_sg12_muzzle"}
 
 func setup(root: Node3D, start_idle: bool = true) -> void:
 	model = root
@@ -24,9 +30,9 @@ func setup(root: Node3D, start_idle: bool = true) -> void:
 	if player == null or not player.has_animation("idle"):
 		player = null
 		return
-	for clip in CLIPS:
+	for clip in clips:
 		if player.has_animation(clip):
-			player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR if clip in ["idle", "walk", "twohand_idle", "twohand_walk"] else Animation.LOOP_NONE
+			player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR if clip in loop_clips else Animation.LOOP_NONE
 	player.animation_finished.connect(_finished)
 	# Advance only mech poses at 12 Hz. Cameras, UI and game clocks stay smooth.
 	player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
@@ -37,7 +43,7 @@ func play(clip: String, _blend: float = 0.10, speed: float = 1.0) -> void:
 		clip = {"idle":"twohand_idle", "walk":"twohand_walk", "ready":"twohand_ready", "fire_rifle":"twohand_fire", "turn_left":"twohand_turn_left", "turn_right":"twohand_turn_right"}.get(clip, clip)
 	if player == null or not player.has_animation(clip): return
 	paused = false
-	firing_clip = clip if SHOT_TIMES.has(clip) else ""
+	firing_clip = clip if shot_times.has(clip) else ""
 	elapsed = -0.001
 	cue_index = 0
 	pose_accumulator = 0.0
@@ -60,7 +66,12 @@ func turn(angle: float) -> void:
 
 func fire(weapon_id: String) -> void:
 	walking = false
-	play(WEAPON_CLIPS.get(weapon_id, "melee"), 0.03)
+	play(weapon_clips.get(weapon_id, "melee"), 0.03)
+
+func weapon_for_animation(clip: String) -> String:
+	for weapon in weapon_clips:
+		if weapon_clips[weapon] == clip: return weapon
+	return ""
 
 ## The weapon whose firing clip this is, or "" for non-firing clips.
 static func weapon_for_clip(clip: String) -> String:
@@ -71,7 +82,7 @@ static func weapon_for_clip(clip: String) -> String:
 
 func socket(weapon_id: String) -> Node3D:
 	if model == null: return null
-	var name: String = {"ar40_rifle":"Socket_rifle_muzzle", "hornet_pod":"Socket_missile_muzzle", "pb4_stake":"Socket_stake_tip", "br90_rifle":"Socket_br90_muzzle", "ac30_cannon":"Socket_ac30_muzzle", "sg12_breacher":"Socket_sg12_muzzle"}.get(weapon_id, "Socket_stake_tip")
+	var name: String = socket_names.get(weapon_id, "Socket_stake_tip")
 	return model.find_child(name, true, false) as Node3D
 
 func rest(neutral: bool = false) -> void:
@@ -104,13 +115,13 @@ func _process(delta: float) -> void:
 		_animate_accessories(held_delta)
 	if firing_clip.is_empty(): return
 	elapsed += delta * absf(player.speed_scale * clip_speed)
-	var times: Array = SHOT_TIMES[firing_clip]
+	var times: Array = shot_times[firing_clip]
 	while cue_index < times.size() and elapsed >= float(times[cue_index]):
 		if flashes_enabled: _flash(firing_clip)
 		cue_index += 1
 
 func _flash(clip: String) -> void:
-	var muzzle := socket(weapon_for_clip(clip))
+	var muzzle := socket(weapon_for_animation(clip))
 	if muzzle == null or not muzzle.is_visible_in_tree(): return
 	var flash := CelEffects.burst(muzzle, Vector3.ZERO, 0.16 if clip != "fire_stake" else 0.1)
 	flash.name = "WeaponFlash"

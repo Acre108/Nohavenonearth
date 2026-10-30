@@ -34,8 +34,8 @@ func frame_breakdown(frame: FrameData, catalogue: Catalogue = null) -> Dictionar
 		parts.mobility += w.aircraft
 	# Ground and Charge come with legs; every other manoeuvre is an extra option.
 	parts.mobility += w.manoeuvre * frame.manoeuvres.filter(func(id: String) -> bool: return id not in ["ground", "charge"]).size()
-	for stat in frame.stat_bonuses:
-		parts.stats += float(frame.stat_bonuses[stat]) * float(w.stat_bonus_per_point.get(stat, 0.0))
+	for stat in UnitState.STAT_NAMES:
+		parts.stats += (float(frame.stat_bonuses.get(stat, 0.0)) + float(frame.stat_fractions.get(stat, 0.0))) * float(w.stat_bonus_per_point.get(stat, 0.0))
 	if catalogue != null and not frame.default_melee.is_empty():
 		parts["hands"] = weapon_cost(catalogue.weapons[frame.default_melee])
 	return parts

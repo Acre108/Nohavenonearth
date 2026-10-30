@@ -26,10 +26,23 @@ var owned: Dictionary = {}
 var error: String = ""
 var save_path: String
 var pilots := WorkshopPilots.new()
+var frame_id: String = "m9_teamster"
+var default_pilot: String = DEFAULT_PILOT
+var default_finish: String = "depot"
+var stock_arm_weapons: Dictionary = STOCK_ARM_WEAPONS
+var starting_spares: Array = STARTING_SPARES
+var weapon_slots: Array = WEAPON_SLOTS
 
-func _init(path: String = SAVE_PATH) -> void:
+func _init(path: String = SAVE_PATH, selected_frame: String = "m9_teamster") -> void:
 	save_path = path
-	var content: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(CONTENT))
+	frame_id = selected_frame
+	var content_path := "res://data/catalogues/kestrel_workshop.json" if frame_id == "hx7_kestrel" else CONTENT
+	var content: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(content_path))
+	default_pilot = content.get("default_pilot", DEFAULT_PILOT)
+	default_finish = content.get("default_finish", "depot")
+	stock_arm_weapons = content.get("stock_arm_weapons", STOCK_ARM_WEAPONS)
+	starting_spares = content.get("starting_spares", STARTING_SPARES)
+	weapon_slots = content.get("weapon_slots", WEAPON_SLOTS)
 	regions = content.regions
 	finishes = content.finishes
 	manufacturers = content.manufacturers
@@ -47,20 +60,21 @@ func _init(path: String = SAVE_PATH) -> void:
 	owned = initial_state()
 
 func initial_state() -> Dictionary:
-	var state := {"version":1, "credits":1800, "installed":{}, "inventory":{}, "hull_damage":14, "finish":"depot", "part_finishes":{}, "pilot":DEFAULT_PILOT, "last_result":""}
+	var state := {"version":1, "credits":1800, "installed":{}, "inventory":{}, "hull_damage":14 if frame_id == "m9_teamster" else 0, "finish":default_finish, "part_finishes":{}, "pilot":default_pilot, "last_result":""}
 	var count := 0
 	for slot_id in slots:
 		count += 1
 		var uid := "factory_%02d" % count
 		state.installed[slot_id] = uid
 		# The damaged left actuator gives a first visit something worn to repair.
-		state.inventory[uid] = {"part":slots[slot_id].standard, "integrity":55 if slot_id == "left_arm.actuator" else 100}
-	for part_id in STARTING_SPARES:
+		state.inventory[uid] = {"part":slots[slot_id].standard, "integrity":55 if frame_id == "m9_teamster" and slot_id == "left_arm.actuator" else 100}
+	for part_id in starting_spares:
 		state.inventory["spare_" + part_id] = {"part":part_id, "integrity":80 if part_id == "arm_standard" else 100}
 	seed_new_spares(state)
 	return state
 
 func seed_new_spares(state: Dictionary) -> void:
+	if frame_id != "m9_teamster": return
 	if int(state.get("content_revision", 0)) >= CONTENT_REVISION:
 		state.content_revision = int(state.content_revision)
 		return
@@ -76,14 +90,14 @@ func fit_parts(edit: Dictionary) -> Dictionary:
 
 func weapon_ids(edit: Dictionary) -> Array[String]:
 	var result: Array[String] = []
-	for slot in WEAPON_SLOTS:
+	for slot in weapon_slots:
 		var weapon := weapon_for(part_for(slot, edit), slot)
 		if not weapon.is_empty(): result.append(weapon)
 	return result
 
 ## The weapon this part provides when mounted in the slot, or "".
 func weapon_for(part: Dictionary, slot_id: String) -> String:
-	return part.get("weapon", STOCK_ARM_WEAPONS.get(slot_id, ""))
+	return part.get("weapon", stock_arm_weapons.get(slot_id, ""))
 
 func dependency_issue(edit: Dictionary) -> String:
 	var fit := fit_parts(edit)
@@ -301,6 +315,7 @@ func resolve(base: FrameData, edit: Dictionary) -> FrameData:
 	# Catalogue values describe a complete standard fit. Alternatives add only deltas.
 	var frame: FrameData = base.duplicate(true)
 	frame.stat_bonuses = base.stat_bonuses.duplicate(true)
+	frame.stat_fractions = base.stat_fractions.duplicate(true)
 	frame.energy_reserved = 0.0
 	for slot_id in slots:
 		var part := part_for(slot_id, edit)
@@ -340,7 +355,7 @@ func add_bonuses(frame: FrameData, bonuses: Dictionary) -> void:
 		if stat in FRAME_STATS:
 			frame.set(stat, frame.get(stat) + bonuses[stat])
 		else:
-			frame.stat_bonuses[stat] = frame.stat_bonuses.get(stat, 0.0) + bonuses[stat]
+			frame.add_stat(stat, bonuses[stat])
 
 func hull(base: FrameData, edit: Dictionary) -> int:
 	return maxi(0, resolve(base, edit).structure - (0 if edit.repair_hull else int(owned.hull_damage)))

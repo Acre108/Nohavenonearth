@@ -27,11 +27,12 @@ Invoke-GodotCheck 'import' '--headless --path . --editor --import --quit'
 Invoke-GodotCheck 'rules' '--headless --path . --script res://tests/test_rules.gd'
 Invoke-GodotCheck 'workshop' '--headless --path . --script res://tests/test_workshop.gd'
 Invoke-GodotCheck 'animation' '--headless --path . --script res://tests/test_teamster_animation.gd'
+Invoke-GodotCheck 'kestrel-animation' '--headless --path . --script res://tests/test_kestrel_animation.gd'
 Invoke-GodotCheck 'variants' '--headless --path . --script res://tests/test_teamster_variants.gd'
 if ($WithUI) {
+	Invoke-GodotCheck 'kestrel-workshop' '--path . --script res://tests/test_kestrel_workshop.gd'
     Invoke-GodotCheck 'workshop-ui' '--path . --script res://tests/test_workshop_ui.gd'
     Invoke-GodotCheck 'ui' '--path . --script res://tests/test_ui.gd'
     Invoke-GodotCheck 'art-tests' '--path . --script res://tests/test_art.gd'
     Invoke-GodotCheck 'ova-rendering' '--path . --script res://tests/test_ova_rendering.gd'
 }
-    Invoke-GodotCheck 'wet-lighting' '--path . --script res://tests/test_wet_lighting.gd'

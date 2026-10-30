@@ -1,27 +1,6 @@
-extends SceneTree
+extends "res://tests/test_suite.gd"
 
-var checks := 0
-var failures := 0
 var screen: WorkshopUI
-
-func _initialize() -> void:
-	run.call_deferred()
-
-func check(condition: bool, message: String) -> void:
-	checks += 1
-	if not condition:
-		failures += 1
-		push_error("WORKSHOP UI FAIL / " + message)
-
-func frames(count: int = 3) -> void:
-	for i in count:
-		await process_frame
-
-func capture(name: String) -> void:
-	await frames(5)
-	if DisplayServer.get_name() != "headless":
-		await RenderingServer.frame_post_draw
-		root.get_texture().get_image().save_png("res://artifacts/" + name + ".png")
 
 func find_button(parent: Node, prefix: String) -> Button:
 	for node in parent.find_children("*", "Button", true, false):
@@ -56,8 +35,8 @@ func run() -> void:
 	check(find_button(screen.footer,"Deploy").disabled, "Pending pilot assignment requires Apply before deployment")
 	screen.pilot_bar.get_node("Pilot_kestrel").pressed.emit()
 	await frames()
-	check(screen.stats_column.find_child("Stat_gunnery",true,false).text == "1.5" and screen.stats_column.find_child("Stat_precision",true,false).text == "1", "Marksman profile updates shooting and precision totals")
-	check(screen.stats_column.find_child("Frame_gunnery",true,false).text == "0" and screen.stats_column.find_child("Pilot_gunnery",true,false).text == "1.5", "Table separates frame hardware from pilot contribution")
+	check(screen.stats_column.find_child("Stat_gunnery",true,false).text == "2" and screen.stats_column.find_child("Stat_precision",true,false).text == "1", "Marksman profile updates shooting and precision totals")
+	check(screen.stats_column.find_child("Frame_gunnery",true,false).text == "0" and screen.stats_column.find_child("Pilot_gunnery",true,false).text == "2", "Table separates frame hardware from pilot contribution")
 	var original_base: FrameData = screen.base
 	screen.base = screen.base.duplicate(true)
 	screen.base.stat_max.gunnery = 1.0
@@ -65,12 +44,12 @@ func run() -> void:
 	check(screen.stats_column.find_child("Threshold_gunnery",true,false).text == "1" and screen.stats_column.find_child("Stat_gunnery",true,false).text == "1", "Total is capped by the displayed frame threshold")
 	screen.base = original_base
 	screen.refresh()
-	await capture("workshop-pilot-kestrel")
+	await capture("workshop-pilot-kestrel", 5)
 	find_button(screen.footer,"Discard").pressed.emit()
 	await frames()
 	check(screen.draft.pilot == "anchor" and screen.pilot_stats.gunnery == 1, "Discard restores both the pilot and stat display")
 	check(EquipmentSlot.RARITIES.standard == Color("67cd83") and EquipmentSlot.RARITIES.uncommon == Color("58a9f4") and EquipmentSlot.RARITIES.rare == Color("ee666d"), "Rarity palette is green, blue and red")
-	await capture("workshop-sheet")
+	await capture("workshop-sheet", 5)
 	var animation_choice := screen.find_child("AnimationChoice", true, false) as OptionButton
 	animation_choice.select(5)
 	find_button(screen, "Play").pressed.emit()
@@ -92,7 +71,7 @@ func run() -> void:
 	check(screen.preview.inspection_mode == "exploded" and screen.inspection_buttons.exploded.button_pressed, "Pilot and stat updates preserve exploded inspection")
 	screen.select_pilot("anchor")
 	region_roots = screen.preview.model.find_children("Region_*", "Node3D", true, false)
-	await capture("teamster-v2-exploded")
+	await capture("teamster-v2-exploded", 5)
 	screen.inspection_buttons.assembled.pressed.emit()
 	check(region_roots.all(func(n: Node3D) -> bool: return n.position.is_equal_approx(n.get_meta("rest_position"))), "Assembled button restores every region to its mounting point")
 	# Actual model picking uses the same camera projection and input handler as the bay.
@@ -110,7 +89,7 @@ func run() -> void:
 	check(screen.selected_region == "head", "Clicking the model selects the intersected component region")
 	screen.select_region("left_arm")
 	check(find_button(screen.footer, "Deploy").disabled == false, "Serviceable mech may deploy despite damage")
-	await capture("workshop-initial")
+	await capture("workshop-initial", 5)
 	find_button(screen.picker_content, "Repair ·").pressed.emit()
 	await frames()
 	check(screen.draft.repairs.size() == 1 and find_button(screen.footer, "Deploy").disabled, "Repair queues and blocks deploying an unapplied draft")
@@ -130,7 +109,7 @@ func run() -> void:
 	find_button(screen.picker_content, "Winter service").pressed.emit()
 	await frames()
 	check(screen.draft.finish == "winter", "Paint selection updates draft")
-	await capture("workshop-paint")
+	await capture("workshop-paint", 5)
 	# Commit to a test-only path, then rebuild the UI exactly as a returning session does.
 	find_button(screen.footer, "Apply refit").pressed.emit()
 	await frames()
@@ -147,7 +126,7 @@ func run() -> void:
 	screen.tool_buttons.weapons.pressed.emit()
 	await frames()
 	check(screen.preview.model.find_children("Hornet_12_cell_pod*", "", true, false).all(func(n: Node) -> bool: return not n.visible), "Recovery fit hides Hornet geometry")
-	await capture("workshop-recovery")
+	await capture("workshop-recovery", 5)
 	screen.select_region("head")
 	screen.show_incompatible = true
 	screen.refresh()
@@ -172,7 +151,7 @@ func run() -> void:
 		var material: Material = mesh.get_active_material(0)
 		return material is ShaderMaterial and (material.get_shader_parameter("paint") as Color).is_equal_approx(Color("ac9870"))
 	), "Custom finish changes the matching model component")
-	await capture("workshop-customised")
+	await capture("workshop-customised", 5)
 	screen.set_part_finish(custom_uid, "")
 	check(not icon.customised and not icon.is_processing(), "Factory finish removes the animated customisation marker")
 	screen.set_part_finish(custom_uid, "desert")
@@ -182,7 +161,7 @@ func run() -> void:
 		check(screen.selected_slot == region.slots[0].id, "Region navigation selects a valid slot: " + region.id)
 	root.size = Vector2i(1280,720)
 	screen.picker.hide()
-	await capture("workshop-720")
+	await capture("workshop-720", 5)
 	check(screen.footer.get_global_rect().end.y <= screen.get_viewport_rect().end.y, "Footer remains within the stretched viewport at 720p")
 	check(screen.preview.size.y >= 260, "Service bay retains a useful minimum height")
 	# Complete the real workshop -> battle -> workshop route with an isolated save.
@@ -212,7 +191,7 @@ func run() -> void:
 		check(game.actors["blue_teamster"].animation.player.current_animation == "fire_rifle", "Battle attack event triggers the matching firing animation")
 		check(JSON.stringify(game.manager.battle.to_dict()) == before_fire, "Firing presentation leaves authoritative combat state unchanged")
 		game.select_unit(mech)
-		await capture("workshop-deployed")
+		await capture("workshop-deployed", 5)
 		mech.structure -= 12
 		check(session.capture_result(game.manager.battle), "Result recording succeeds")
 		check(session.capture_result(game.manager.battle) and session.store.owned.hull_damage == 12, "Repeated capture is idempotent")
@@ -221,7 +200,7 @@ func run() -> void:
 		screen = current_scene as WorkshopUI
 		check(screen != null and not session.active, "Return opens the workshop and ends the sortie")
 		check(screen.store.owned.hull_damage == 12 and screen.store.owned.finish == "winter", "Return retains paint and records actual hull damage")
-		await capture("workshop-returned")
+		await capture("workshop-returned", 5)
 		screen.tool_buttons.weapons.pressed.emit()
 		await frames()
 		find_button(screen.picker_content, "Preview two-handed rifle kit").pressed.emit()
@@ -229,11 +208,10 @@ func run() -> void:
 		check(TeamsterParts.two_handed(screen.store.fit_parts(screen.draft)), "Weapons tab previews both components of the rifle kit together")
 		check(screen.preview.animator.two_handed, "Workshop model adopts paired weapon handling")
 		check(not find_button(screen.footer, "Apply refit").disabled, "Complete rifle-kit draft can be applied")
-		await capture("workshop-twohand-kit")
+		await capture("workshop-twohand-kit", 5)
 	screen.queue_free()
 	current_scene = null
 	await frames()
 	session.store = previous_store
 	DirAccess.remove_absolute("res://artifacts/workshop-ui-test.json")
-	print("WORKSHOP UI: %d checks, %d failures" % [checks, failures])
-	quit(1 if failures else 0)
+	finish()

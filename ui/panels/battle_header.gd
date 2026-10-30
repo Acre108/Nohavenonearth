@@ -82,7 +82,7 @@ func open_workshop() -> void:
 		return
 	var dialog := ConfirmationDialog.new()
 	dialog.title = "Return to service bay"
-	dialog.dialog_text = "End this skirmish and return to the workshop?" + (" The Teamster's current hull damage will be saved." if workshop_session.active else " This standalone demo does not affect your workshop mech.")
+	dialog.dialog_text = "End this skirmish and return to the workshop?" + (" The " + workshop_session.store.workshop_frame.display_name + "'s current hull damage will be saved." if workshop_session.active else " This standalone demo does not affect your workshop mech.")
 	dialog.ok_button_text = "Return to workshop"
 	add_child(dialog)
 	var was_paused := controller.manager.paused

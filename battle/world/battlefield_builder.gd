@@ -31,13 +31,12 @@ static func build_procedural(parent: Node3D, bounds: Rect2) -> void:
 	var center := bounds.get_center()
 	Primitives.box(parent, Vector3(bounds.size.x + 0.6, 0.4, bounds.size.y + 0.6), Vector3(center.x, -0.28, center.y), Color("111e2a"))
 	var surface := Primitives.box(parent, Vector3(bounds.size.x, 0.1, bounds.size.y), Vector3(center.x, -0.05, center.y), Color("35414a"))
-	var dock := ArtPalette.paint(Color("35414a"), true).duplicate() as ShaderMaterial
-	dock.set_shader_parameter("wet_ground", true)
+	var dock := ArtPalette.environment_texture(ArtPalette.DOCK_CONCRETE, 7.0, Color("e0e6ed"), true).duplicate() as ShaderMaterial
 	surface.material_override = dock
 	build_dock_lamps(parent, bounds)
 	# Muted painted deployment aprons, with no additional collision geometry.
 	for side in [-1.0, 1.0]:
-		Primitives.box(parent, Vector3(5.2, 0.012, bounds.size.y - 2.0), Vector3(center.x + side * bounds.size.x * 0.317, 0.008, center.y), Color("3e4850")).material_override = ArtPalette.paint(Color("3e4850"), true)
+		Primitives.box(parent, Vector3(5.2, 0.012, bounds.size.y - 2.0), Vector3(center.x + side * bounds.size.x * 0.317, 0.008, center.y), Color("3e4850")).material_override = ArtPalette.environment_texture(ArtPalette.DOCK_CONCRETE, 7.0, Color("edf0f2"), true).duplicate()
 		for z in range(int(bounds.position.y) + 2, int(bounds.end.y), 3):
 			Primitives.line(parent, PackedVector3Array([Vector3(center.x + side * bounds.size.x * 0.25, 0.025, z), Vector3(center.x + side * bounds.size.x * 0.375, 0.025, z)]), Color("46515a"), 0.025)
 	Primitives.line(parent, PackedVector3Array([Vector3(bounds.position.x, 0.01, bounds.position.y), Vector3(bounds.end.x, 0.01, bounds.position.y), Vector3(bounds.end.x, 0.01, bounds.end.y), Vector3(bounds.position.x, 0.01, bounds.end.y), Vector3(bounds.position.x, 0.01, bounds.position.y)]), Color("77939b"), 0.05)

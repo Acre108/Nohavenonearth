@@ -133,11 +133,11 @@ func show_stats(unit: UnitState) -> void:
 	body.add_child(grid)
 	for heading in ["Skill", "Pilot", "Frame bonus", "Frame max", "Total", "Each point"]:
 		label(grid, heading, 12, BLUE)
-	var meaning := {"gunnery": "+10% to hit with ranged weapons", "melee": "+10% to hit with melee weapons", "precision": "+10% crit chance (crits ignore armour)", "reflex": "−10% to be hit · moves and fires earlier", "guard": "−10% to be hit by melee", "systems": "Electronic attack (not in play yet)", "countermeasures": "Electronic defence (not in play yet)", "spirit": "+1 maximum Will"}
+	var meaning := {"gunnery": "+10% to hit with ranged weapons", "melee": "+10% to hit with melee weapons", "precision": "+10% crit chance (crits ignore armour)", "reflex": "−10% to be hit · moves and fires earlier", "systems": "Electronic attack (not in play yet)", "countermeasures": "Electronic defence (not in play yet)", "spirit": "+1 maximum Will"}
 	for stat in UnitState.STAT_NAMES:
 		label(grid, stat.capitalize(), 13)
 		label(grid, stat_text(float(unit.pilot_stats.get(stat, 0))), 13, MUTED)
-		label(grid, stat_text(float(unit.bonus_stats.get(stat, 0))), 13, MUTED)
+		label(grid, stat_text(float(unit.bonus_stats.get(stat, 0)) + float(unit.fraction_stats.get(stat, 0))), 13, MUTED)
 		label(grid, stat_text(unit.stat_max(stat)), 13, MUTED)
 		label(grid, stat_text(unit.stat(stat)), 13, GOLD)
 		label(grid, meaning.get(stat, ""), 12, MUTED)

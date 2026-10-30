@@ -1,4 +1,4 @@
-﻿{
+{
     "frame_id":  "m9_teamster",
     "regions":  [
                     {
@@ -300,7 +300,6 @@
                       "description":  "Reinforced forearm plating protects the drive and improves close defence.",
                       "bonuses":  {
                                       "structure":  3,
-                                      "guard":  0.25,
                                       "reflex":  -0.25
                                   },
                       "wear":  {
@@ -476,8 +475,7 @@
                       "family":  "m9_module",
                       "description":  "A bracing and recovery package replaces the Hornet carrier. Missile pod is stowed.",
                       "bonuses":  {
-                                      "structure":  5,
-                                      "guard":  0.25
+                                      "structure":  5
                                   },
                       "wear":  {
                                    "structure":  -2
@@ -552,8 +550,7 @@
                       "family":  "m9_arm_drive",
                       "description":  "A telescoping support actuator with a stabilising grip. Stows the stake driver so the left hand can support a two-handed weapon.",
                       "bonuses":  {
-                                      "melee":  -0.25,
-                                      "guard":  0.25
+                                      "melee":  -0.25
                                   },
                       "wear":  {
                                    "precision":  -0.25
@@ -595,7 +592,6 @@
                       "family":  "m9_arm_drive",
                       "description":  "A twin-barrel SG-12 breacher with a drum feed and a powered cycling slide. Replaces the stake driver.",
                       "bonuses":  {
-                                      "guard":  0.25
                                   },
                       "wear":  {
                                    "gunnery":  -0.25
@@ -639,6 +635,13 @@
                          "primary":  "6d8290",
                          "secondary":  "3b505c",
                          "marking":  "c9ba87"
+                     },
+                     {
+                         "id":  "halcyon",
+                         "name":  "Halcyon factory",
+                         "primary":  "263c56",
+                         "secondary":  "c9ceca",
+                         "marking":  "c47b3e"
                      }
                  ],
     "manufacturers":  {

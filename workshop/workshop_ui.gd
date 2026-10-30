@@ -25,7 +25,7 @@ const CLIPS := [["idle", "Idle"], ["walk", "Walk"], ["turn_left", "Turn left"], 
 const INSPECTION_MODES := [["assembled", "Assembled"], ["exploded", "Exploded"], ["isolated", "Isolate region"]]
 const STAT_LABELS := {"base_move":"Move", "energy_capacity":"Energy", "energy_recharge":"Recharge"}
 ## Stat table columns as [heading, tooltip].
-const TABLE_COLUMNS := [["STAT", ""], ["FRAME", "Frame includes equipment and wear."], ["PILOT", ""], ["TOTAL", "Frame + Pilot, rounded to quarters and capped at Threshold."], ["THRESHOLD", "Maximum allowed by this frame and the rules."]]
+const TABLE_COLUMNS := [["STAT", ""], ["FRAME", "Frame includes equipment and wear."], ["PILOT", ""], ["TOTAL", "Pilot + Frame in whole points (fractions count once they add up to a point), capped at Threshold."], ["THRESHOLD", "Maximum allowed by this frame."]]
 ## The two-handed rifle needs both arms; neither is legal alone.
 const RIFLE_KIT := {"right_arm.actuator":"arm_marksman", "left_arm.actuator":"arm_support"}
 const EXITS := {
@@ -68,12 +68,14 @@ var picker: PopupPanel
 var picker_scroll: ScrollContainer
 var picker_content: VBoxContainer
 var exit_dialog: ConfirmationDialog
+var frame_choice: OptionButton
+const WORKSHOP_FRAMES := ["m9_teamster", "hx7_kestrel"]
 
 func _ready() -> void:
 	RenderingServer.global_shader_parameter_set("sensor_mix", 0.0)
 	store = workshop_session.store
 	draft = store.draft()
-	base = catalogue.frames.m9_teamster
+	base = store.workshop_frame
 	pilot_stats = store.pilots.entries[draft.pilot].stats
 	message = workshop_session.notice
 	workshop_session.notice = ""
@@ -215,7 +217,13 @@ func build_header(page: Node) -> void:
 	titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(titles)
 	title_caption = label(titles, "", 12, ACCENT)
-	label(titles, "M9 Teamster", 28)
+	label(titles, base.display_name, 28)
+	frame_choice = OptionButton.new()
+	frame_choice.name = "FrameChoice"
+	for id in WORKSHOP_FRAMES: frame_choice.add_item(catalogue.frames[id].display_name)
+	frame_choice.select(WORKSHOP_FRAMES.find(store.frame_id))
+	frame_choice.item_selected.connect(select_frame)
+	top.add_child(frame_choice)
 	credits_label = label(top, "", 20, ACCENT)
 	button(top, "Battle demo", request_exit.bind("demo"))
 	button(top, "Main menu", request_exit.bind("menu"))
@@ -290,6 +298,8 @@ func build_model_view(bay: Node) -> void:
 	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bay.add_child(stack)
 	preview = WorkshopPreview.new()
+	preview.frame_id = store.frame_id
+	if store.frame_id == "hx7_kestrel": preview.zoom = 2.25
 	preview.highlight_selection = false
 	preview.region_selected.connect(select_region)
 	preview.custom_minimum_size = Vector2(240, 260)
@@ -306,7 +316,7 @@ func build_view_bar(parent: Node) -> void:
 	animation_choice = OptionButton.new()
 	animation_choice.name = "AnimationChoice"
 	animation_choice.tooltip_text = "Animation preview"
-	for clip in CLIPS:
+	for clip in animation_menu():
 		animation_choice.add_item(clip[1])
 	bar.add_child(animation_choice)
 	var playback := HBoxContainer.new()
@@ -318,7 +328,7 @@ func build_view_bar(parent: Node) -> void:
 	tools.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bar.add_child(tools)
 	tool_buttons.paint = button(tools, "Paint", open_picker.bind("paint"))
-	tool_buttons.weapons = button(tools, "Weapon kits", open_picker.bind("weapons"))
+	tool_buttons.weapons = button(tools, "Weapons" if store.frame_id == "hx7_kestrel" else "Weapon kits", open_picker.bind("weapons"))
 	for entry in tool_buttons.values():
 		entry.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
@@ -362,6 +372,8 @@ func build_exit_dialog() -> void:
 func refresh() -> void:
 	var pilot: Dictionary = store.pilots.entries[draft.pilot]
 	var pending := store.changed(draft)
+	frame_choice.disabled = pending
+	frame_choice.tooltip_text = "Apply or discard changes before switching frames." if pending else "Choose a workshop frame"
 	pilot_stats = pilot.stats
 	title_caption.text = "WORKSHOP  /  " + pilot.callsign
 	credits_label.text = "%s CR" % int(store.owned.credits)
@@ -371,7 +383,7 @@ func refresh() -> void:
 		refresh_slot(slot)
 	# The recovery module replaces the Hornet pod's geometry. The selected region
 	# is passed so isolated and exploded inspection keep it in view.
-	var show_recovery: bool = store.part_for("backpack.module", draft).get("weapon", "") != "hornet_pod"
+	var show_recovery: bool = store.frame_id == "m9_teamster" and store.part_for("backpack.module", draft).get("weapon", "") != "hornet_pod"
 	preview.show_fit(WorkshopAppearance.finish_by_id(draft.finish), selected_region, show_recovery, store.fit_parts(draft), store.fit_finishes(draft))
 	sync_inspection_buttons()
 	clear(picker_content)
@@ -583,7 +595,7 @@ func build_paint() -> void:
 
 func build_weapons() -> void:
 	popup_heading("Weapon kits")
-	button(picker_content, "Preview two-handed rifle kit", preview_marksman_kit)
+	if store.frame_id == "m9_teamster": button(picker_content, "Preview two-handed rifle kit", preview_marksman_kit)
 	for weapon_id in store.weapon_ids(draft):
 		var weapon: WeaponData = catalogue.weapons[weapon_id]
 		var card := panel(picker_content, CARD)
@@ -600,7 +612,7 @@ func build_stats() -> void:
 	var installed_fit := store.resolve(base, store.draft())
 	var proposed := store.resolve(base, draft)
 	var saved_pilot: Dictionary = store.pilots.entries[store.owned.get("pilot", WorkshopState.DEFAULT_PILOT)]
-	label(stats_column, store.pilots.entries[draft.pilot].callsign + " / M9 TEAMSTER", 11, MUTED)
+	label(stats_column, store.pilots.entries[draft.pilot].callsign + " / " + base.display_name.to_upper(), 11, MUTED)
 	build_frame_summary(proposed)
 	stats_column.add_child(HSeparator.new())
 	build_stat_table(proposed, installed_fit, saved_pilot.stats)
@@ -647,7 +659,7 @@ func build_stat_table(proposed: FrameData, installed_fit: FrameData, saved_stats
 		else:
 			caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	for key in UnitState.STAT_NAMES:
-		var frame_value: float = proposed.stat_bonuses.get(key, 0)
+		var frame_value: float = float(proposed.stat_bonuses.get(key, 0)) + float(proposed.stat_fractions.get(key, 0))
 		var pilot_value: float = pilot_stats.get(key, 0)
 		var total := resolved_stat(proposed, key)
 		var threshold := UnitState.stat_cap(key, proposed)
@@ -842,12 +854,12 @@ func toggle_pause() -> void:
 		preview.animator.set_paused(not preview.animator.paused)
 
 func play_animation() -> void:
-	var clip: String = CLIPS[animation_choice.selected][0]
+	var clip: String = animation_menu()[animation_choice.selected][0]
 	var two_handed := TeamsterParts.two_handed(store.fit_parts(draft))
 	if clip.begins_with("twohand_") and not two_handed:
 		show_message("Fit the two-handed rifle kit first.")
 		return
-	var required := TeamsterAnimator.weapon_for_clip(clip)
+	var required := preview.animator.weapon_for_animation(clip)
 	# With the rifle kit fitted, the BR-90 stands in for the stock rifle.
 	if clip == "fire_rifle" and two_handed:
 		required = "br90_rifle"
@@ -859,9 +871,17 @@ func play_animation() -> void:
 	build_footer()
 	preview.play_preview(clip)
 
+func animation_menu() -> Array:
+	return KestrelAnimator.MENU if store.frame_id == "hx7_kestrel" else CLIPS
+
 # --- Text formatting ---
 
 func short_slot(slot: String) -> String:
+	if store.frame_id == "hx7_kestrel":
+		if slot == "left_arm.actuator": return "Actuator"
+		if slot == "right_arm.actuator": return "Rifle arm"
+		if slot == "right_arm.armour": return "Knife shell"
+		if slot == "backpack.module": return "Wing stores"
 	if SLOT_TITLES.has(slot):
 		return SLOT_TITLES[slot]
 	match slot.get_slice(".", 1):
@@ -903,13 +923,31 @@ func number_text(value: float) -> String:
 ## Frame + pilot for one stat, resolved exactly as UnitState.stat() does in battle.
 func resolved_stat(frame: FrameData, key: String, stats: Dictionary = {}) -> float:
 	if stats.is_empty(): stats = pilot_stats
-	var total := float(stats.get(key, 0)) + float(frame.stat_bonuses.get(key, 0))
-	return UnitState.quarter_capped(total, UnitState.stat_cap(key, frame))
+	return UnitState.resolve_stat(key, float(stats.get(key, 0)), float(frame.stat_bonuses.get(key, 0)), float(frame.stat_fractions.get(key, 0)), frame)
 
 func is_worn(condition: int) -> bool:
 	return condition < WorkshopState.WORN_BELOW
 
 # --- Navigation ---
+
+func select_frame(index: int) -> void:
+	if store.changed(draft): return
+	workshop_session.select_frame(WORKSHOP_FRAMES[index])
+	store = workshop_session.store
+	draft = store.draft()
+	base = store.workshop_frame
+	selected_region = "torso"
+	selected_slot = "torso.armour"
+	picker_mode = "parts"
+	message = workshop_session.notice
+	workshop_session.notice = ""
+	clear(self)
+	inspection_buttons.clear()
+	slot_buttons.clear()
+	slot_condition_labels.clear()
+	tool_buttons.clear()
+	build()
+	refresh()
 
 func deploy() -> void:
 	if store.changed(draft) or not store.readiness(base, draft).is_empty():

@@ -28,6 +28,10 @@ static func validate(definitions: Dictionary, scenario: Dictionary) -> Array[Str
 	for pilot in definitions.pilots:
 		_check_references(pilot.get("abilities", []), ids.abilities, "Pilot %s abilities" % pilot.id, errors)
 		_check_stats(pilot.get("stats", {}), "Pilot %s stats" % pilot.id, errors)
+		for key in pilot.get("stats", {}):
+			var value: Variant = pilot.stats[key]
+			if key in UnitState.PILOT_CAPS and (value is float or value is int) and (value != roundf(value) or value > UnitState.PILOT_CAPS[key]):
+				errors.append("Pilot %s.%s must be a whole number up to %d." % [pilot.id, key, UnitState.PILOT_CAPS[key]])
 	for weapon in definitions.weapons:
 		if not (weapon.get("shots") is float or weapon.get("shots") is int) or weapon.shots < 1:
 			errors.append("Weapon %s requires at least one shot." % weapon.id)
@@ -37,10 +41,24 @@ static func validate(definitions: Dictionary, scenario: Dictionary) -> Array[Str
 			errors.append("Weapon %s has unknown damage_type: %s." % [weapon.id, str(weapon.get("damage_type"))])
 		if not SizeClass.valid(weapon.get("size", "medium")):
 			errors.append("Weapon %s has unknown size: %s." % [weapon.id, str(weapon.get("size"))])
+		# Hit chances move in d10 steps.
+		if fmod(float(weapon.get("aim_bonus", 0)), CombatRules.PER_POINT) != 0.0:
+			errors.append("Weapon %s aim_bonus must be a multiple of 10." % weapon.id)
 	for frame in definitions.frames:
 		_check_references(frame.get("manoeuvres", []), ids.manoeuvres, "Frame %s manoeuvres" % frame.id, errors)
 		_check_stats(frame.get("stat_bonuses", {}), "Frame %s stat_bonuses" % frame.id, errors)
 		_check_stats(frame.get("stat_max", {}), "Frame %s stat_max" % frame.id, errors)
+		# Thresholds are the only ceiling on a mech's totals, so none may be left out; pilot-only stats
+		# such as Spirit are the pilot's own, so frames may neither raise nor limit them.
+		for key in UnitState.STAT_NAMES:
+			for field in ["stat_max", "stat_bonuses"]:
+				var values: Variant = frame.get(field, {})
+				if not values is Dictionary:
+					continue
+				if key in UnitState.PILOT_ONLY and values.has(key):
+					errors.append("Frame %s %s cannot include %s, a pilot-only stat." % [frame.id, field, key])
+				elif field == "stat_max" and key not in UnitState.PILOT_ONLY and not values.has(key):
+					errors.append("Frame %s stat_max is missing %s." % [frame.id, key])
 		if not SizeClass.valid(frame.get("size_class", "medium")):
 			errors.append("Frame %s has unknown size_class: %s." % [frame.id, str(frame.get("size_class"))])
 		if frame.get("armour_type", "none") != "none" and frame.get("armour_type") not in WeaponData.DAMAGE_TYPES:

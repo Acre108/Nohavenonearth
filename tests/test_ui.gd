@@ -1,27 +1,6 @@
-extends SceneTree
+extends "res://tests/test_suite.gd"
 
-var checks: int = 0
-var failures: int = 0
 var game: BattleController
-
-func _initialize() -> void:
-	run.call_deferred()
-
-func check(condition: bool, message: String) -> void:
-	checks += 1
-	if not condition:
-		failures += 1
-		push_error("UI FAIL / " + message)
-
-func frames(count: int = 2) -> void:
-	for i in count:
-		await process_frame
-
-func capture(name: String) -> void:
-	await frames()
-	if DisplayServer.get_name() != "headless":
-		await RenderingServer.frame_post_draw
-		root.get_texture().get_image().save_png("res://artifacts/" + name + ".png")
 
 func command_text(from: Node = null) -> String:
 	var parts: PackedStringArray = []
@@ -54,20 +33,20 @@ func test_movement_gestures() -> void:
 	var ace := game.selected
 	var start := ace.position
 	click_world(Vector3(0, 0, 0))
-	await frames()
+	await frames(2)
 	check(not game.planning.choosing_facing and not game.planning.destination_fixed and ace.order == null, "Clicking an invalid destination never confirms or pins movement")
 	check(game.ui.commands.feedback.text.begins_with("INVALID"), "Invalid destination reason is shown")
 	game.select_unit(ace)
 	var destination := start + ace.forward() * 2
 	click_world(Vector3(destination.x, 0, destination.y))
-	await frames()
+	await frames(2)
 	check(game.planning.choosing_facing and ace.order == null, "Single click on a mech destination enters the aim step without ordering")
 	check(game.ui.commands.feedback.text.begins_with("AIM"), "Aim step is announced in the command panel")
 	check(command_text().contains("Aim · click to lock"), "Command panel shows the numbered order steps")
 	var pinned := game.planning.draft.destination
 	var enemy := game.manager.battle.units[3]
 	click_world(game.actors[enemy.loadout.id].body.global_position + Vector3.UP * 0.5)
-	await frames()
+	await frames(2)
 	check(ace.order == null and game.selected == enemy and not game.planning.choosing_facing, "Clicking another unit while aiming switches selection without confirming")
 	game.select_unit(ace)
 	check(game.planning.draft.destination.is_equal_approx(pinned), "Returning after aiming restores the pinned destination")
@@ -76,7 +55,7 @@ func test_movement_gestures() -> void:
 	var heading := ace.facing + deg_to_rad(30)
 	var aim := locked + Vector2(sin(heading), -cos(heading)) * 2.5
 	aim_world(Vector3(aim.x, 0.15 + game.planning.plan_altitude * 1.7, aim.y))
-	await frames()
+	await frames(2)
 	check(is_equal_approx(game.planning.plan_rotation, 30) and game.planning.draft.destination.is_equal_approx(locked), "Mouse rotates airborne preview without moving its destination")
 	check(ace.position == start, "Facing preview never moves authoritative unit state")
 	var overlay: TargetingOverlay
@@ -84,25 +63,25 @@ func test_movement_gestures() -> void:
 		if child is TargetingOverlay:
 			overlay = child
 	check(overlay != null and Vector2(overlay.position.x, overlay.position.z).is_equal_approx(locked), "Planned weapon range follows ghost destination")
-	await capture("qa-facing")
+	await capture("qa-facing", 2)
 	aim_world(Vector3(locked.x, 0.15 + game.planning.plan_altitude * 1.7, locked.y + 3))
-	await frames()
+	await frames(2)
 	check(is_equal_approx(game.planning.plan_rotation, 45), "Mouse facing clamps to Cruise turn limit")
 	var escape := InputEventKey.new()
 	escape.physical_keycode = KEY_ESCAPE
 	escape.pressed = true
 	root.push_input(escape, true)
-	await frames()
+	await frames(2)
 	check(not game.planning.choosing_facing and ace.order == null, "Escape returns to destination selection without ordering")
 	click_world(Vector3(destination.x, 0, destination.y))
 	aim_world(Vector3(aim.x, 0.15 + game.planning.plan_altitude * 1.7, aim.y))
 	click_world(Vector3(aim.x, 0.15 + game.planning.plan_altitude * 1.7, aim.y))
-	await frames()
+	await frames(2)
 	check(ace.order != null and ace.order.confirmed and is_equal_approx(rad_to_deg(ace.order.facing - ace.facing), 30), "Next left click locks cursor-facing order")
 	check(game.selected != ace and not game.planning.choosing_facing, "Facing confirmation selects the next unordered unit")
 	var fighter := game.manager.battle.units[2]
 	game.select_unit(fighter)
-	await frames()
+	await frames(2)
 	var options := MovementRules.available(game.manager.battle, fighter).size()
 	check(game.ui.flight_radial.radial_items.size() == options and game.planning.option_orders.size() == options, "Aircraft get a radial button and an order for every available flight path")
 	var preview: MovementPreview = game.drafts_root.get_child(0)
@@ -111,7 +90,7 @@ func test_movement_gestures() -> void:
 	check(path_lines >= options and ghost_models == 0, "Aircraft flight paths draw as lines only, with no ghost models")
 	var field := game.battle_input.field_point(game.camera.unproject_position(Vector3(fighter.position.x + 1, 0, fighter.position.y)))
 	click_world(Vector3(field.x, 0, field.y))
-	await frames()
+	await frames(2)
 	check(fighter.order == null and not game.planning.choosing_facing, "Field clicks never order an aircraft")
 	game.set_hover_option("bank_r")
 	check(game.planning.hover_option == "bank_r" and game.planning.manoeuvre_id != "bank_r", "Hovering a ring option highlights its ghost without selecting it")
@@ -119,14 +98,14 @@ func test_movement_gestures() -> void:
 	for item in game.ui.flight_radial.radial_items:
 		if item.order.manoeuvre_id == "bank_l":
 			bank_left = item.button
-	await frames()
+	await frames(2)
 	check(bank_left != null and game.ui.get_viewport().get_visible_rect().has_point(bank_left.position), "Radial buttons are laid out on screen around the aircraft")
-	await capture("qa-radial")
+	await capture("qa-radial", 2)
 	game.choose_option("bank_l")
 	check(game.planning.manoeuvre_id == "bank_l" and fighter.order == null, "First ring click selects a flight path")
-	await capture("qa-radial-selected")
+	await capture("qa-radial-selected", 2)
 	game.choose_option("bank_l")
-	await frames()
+	await frames(2)
 	check(fighter.order != null and not game.planning.choosing_facing and is_equal_approx(fighter.order.facing, fighter.facing - PI / 4), "Clicking the selected ring option again confirms its fixed heading")
 	game.select_unit(game.manager.battle.units[1])
 	game.suggest_move()
@@ -140,7 +119,7 @@ func test_movement_gestures() -> void:
 	game.manager.setup(20261017)
 	game.spawn_battle()
 	game.select_unit(game.manager.battle.units[0])
-	await frames()
+	await frames(2)
 
 ## Close view, the orthographic/perspective handoff, picking in perspective, and attack cinematics.
 func test_camera_modes() -> void:
@@ -162,7 +141,7 @@ func test_camera_modes() -> void:
 	check(picked != Vector2.INF and picked.distance_to(Vector2(ground.x, ground.z)) < 0.05, "Destination picking works in close view")
 	check(game.battle_input.raycast(camera.unproject_position(body.global_position + Vector3.UP * 0.5), 2).has("collider"), "Unit picking works in close view")
 	var caption: Label3D = game.actors[unit.loadout.id].caption
-	await frames()
+	await frames(2)
 	var caption_pixels := caption.font_size * caption.pixel_size * root.size.y / TacticalCamera.view_height(camera, caption.global_position)
 	check(absf(caption_pixels - caption.font_size) < 0.5, "Captions keep their pixel size in perspective")
 	camera.toggle_close()
@@ -223,7 +202,7 @@ func run() -> void:
 	game.spawn_battle()
 	game.select_unit(game.manager.battle.units[0])
 	game.manager.paused = true
-	await frames()
+	await frames(2)
 	check(game.actors.size() == 7, "Seven visual actors")
 	check(game.ui.root.size.x >= 1400, "HUD fills viewport")
 	check(game.planning.draft != null and game.planning.draft.valid, "Initial movement preview")
@@ -232,7 +211,7 @@ func run() -> void:
 	check(jargon.search(inspector) == null and inspector.contains("Full stats"), "Inspector uses plain language and offers a Full stats window")
 	check(command_text(game.ui.units_panel.roster).contains("NEEDS ORDER"), "Roster names each unit's order state in words")
 	game.ui.units_panel.show_stats(game.selected)
-	await frames()
+	await frames(2)
 	check(game.ui.units_panel.stats_window.visible and command_text(game.ui.units_panel.stats_window).contains("Each point"), "Full stats window opens with the detailed breakdown")
 	var terrain_text := game.terrain_root.find_children("*", "Label3D", true, false).map(func(node: Label3D) -> String: return node.text)
 	check(not terrain_text.is_empty() and terrain_text.all(func(text: String) -> bool: return text.ends_with("COVER")), "Terrain labels show only the cover they give")
@@ -259,7 +238,7 @@ func run() -> void:
 	var limits := shadow.sight_limits(shadow_battle, spotter, spotter.loadout.weapons[0].arc, 6.0)
 	check(limits[TargetingOverlay.SIGHT_RAYS / 2] < 2.0 and limits[0] > 5.0, "Firing preview stops at sight-blocking terrain and stays open elsewhere")
 	shadow.queue_free()
-	await capture("qa-stats")
+	await capture("qa-stats", 2)
 	game.ui.units_panel.stats_window.hide()
 	var coloured := game.ui.telemetry.log_bbcode(["01 / ACE fires LR-3 Linear Rifle at 04 / BULWARK.", "LR-3 Linear Rifle: 3 hits, 0 dodged → 6 damage. DESTROYED."])
 	check(coloured.contains("[color=#%s]01 / ACE" % BattleUI.BLUE.to_html(false)) and coloured.contains("[color=#%s]04 / BULWARK" % BattleUI.RED.to_html(false)) and coloured.contains("[b][color="), "Combat log colours callsigns by faction and emphasises kills")
@@ -293,18 +272,18 @@ func run() -> void:
 	game.toggle_threats()
 	check(game.threats_root.get_child_count() == 0, "Threat zones toggle off")
 	game.toggle_threats()
-	await capture("qa-planning")
+	await capture("qa-planning", 2)
 	game.ui.toggle_debug()
-	await frames()
+	await frames(2)
 	check(game.ui.sandbox.debug_window.visible, "Debug menu opens")
-	await capture("qa-debug")
+	await capture("qa-debug", 2)
 	game.ui.toggle_debug()
 	# Exercise the same UI commands players use, including automatic next selection.
 	for i in range(3):
 		game.suggest_move()
 		check(game.planning.draft != null and game.planning.draft.valid, "Suggestion produces legal movement")
 		game.confirm_move()
-		await frames()
+		await frames(2)
 	check(game.manager.can_commit() and not game.ui.commands.commit_button.disabled, "Commit button enables only after all three orders")
 	game.commit_orders()
 	check(game.manager.phase == TurnManager.Phase.REVEAL, "Commit callback reveals orders")
@@ -313,11 +292,11 @@ func run() -> void:
 	game.manager.paused = true
 	check(game.manager.phase == TurnManager.Phase.REVEAL, "Reveal waits for the player")
 	check(command_text().contains("RESOLVE MOVEMENT"), "Reveal offers a continue button")
-	await capture("qa-reveal")
+	await capture("qa-reveal", 2)
 	game.manager.advance()
 	for i in range(game.manager.battle.units.size() + 1):
 		game.manager.advance()
-		await frames()
+		await frames(2)
 	check(game.manager.phase == TurnManager.Phase.ACTION, "Movement transitions to actions")
 	check(game.manager.active == game.manager.battle.units[0], "Only units with a lock or power to use get an Action turn (Ace has Newtype)")
 	game.manager.rotate_ability(15)
@@ -326,7 +305,7 @@ func run() -> void:
 	while game.manager.phase in [TurnManager.Phase.ACTION, TurnManager.Phase.ATTACK] and guard < 12:
 		guard += 1
 		game.manager.advance()
-		await frames()
+		await frames(2)
 	check(game.manager.log_lines.any(func(line: String) -> bool: return line.contains(TurnManager.NO_ACTION_PREFIX)), "Skipped actions are reported in the log")
 	check(game.manager.phase == TurnManager.Phase.END, "Opening fire stage automatically skips every unit without a legal target")
 	# Stage a later close encounter so the firing UI is still tested after automatic skips.
@@ -353,7 +332,7 @@ func run() -> void:
 	game.refresh_all()
 	check(game.target != null, "Controller supplies the initial attack target")
 	game.choose_target(game.manager.battle.units[3])
-	await capture("qa-attack")
+	await capture("qa-attack", 2)
 	if game.blue_attacking():
 		var attacker := game.manager.active
 		game.choose_weapon(attacker.loadout.weapons.size() - 1)
@@ -389,7 +368,7 @@ func run() -> void:
 			game.fire_selected()
 			await frames(8)
 			check(game.fx_root.get_child_count() > 0, "Firing spawns a shot effect")
-			await capture("qa-fire")
+			await capture("qa-fire", 2)
 	# Complete a full battle through the renderer to catch UI and lifecycle errors.
 	game.manager.auto_blue = true
 	var steps := 0
@@ -406,16 +385,15 @@ func run() -> void:
 		await frames(1)
 	check(game.manager.phase == TurnManager.Phase.BATTLE_OVER, "Full battle through the rendered scene reaches victory")
 	check(is_instance_valid(game.ui.results.victory_panel), "Victory overlay appears")
-	await capture("qa-victory")
+	await capture("qa-victory", 2)
 	game.restart()
-	await frames()
+	await frames(2)
 	check(game.manager.phase == TurnManager.Phase.PLANNING and game.manager.battle.living().size() == 7, "Restart returns seven living units to round one")
 	check(not is_instance_valid(game.ui.results.victory_panel), "Restart dismisses victory overlay")
 	await test_melee_flow()
-	print("UI TESTS / %d checks / %d failures" % [checks, failures])
 	game.queue_free()
-	await frames()
-	quit(0 if failures == 0 else 1)
+	await frames(2)
+	finish()
 
 ## Plan blue units that still need orders, commit, and step until the given phase (Blue passes everything).
 func play_until(phase: TurnManager.Phase, stop_on: UnitState = null) -> void:
@@ -451,23 +429,23 @@ func test_melee_flow() -> void:
 	game.refresh_all()
 	game.select_unit(teamster)
 	game.choose_manoeuvre("charge")
-	await frames()
+	await frames(2)
 	check(game.planning.draft != null and game.planning.draft.valid and game.planning.draft.target_id == "red_medved", "Choosing Charge aims at the nearest reachable enemy")
 	check(game.actors["red_medved"].target_ring.visible, "Chargeable enemies carry the target crosshair")
 	check(command_text().contains("CHARGE /") and command_text().contains("Click an enemy to charge"), "Command panel explains the charge steps")
-	await capture("qa-charge-plan")
+	await capture("qa-charge-plan", 2)
 	click_world(medved.world_position() + Vector3.UP * 0.5)
-	await frames()
+	await frames(2)
 	check(teamster.order != null and teamster.order.target_id == "red_medved", "Clicking the charge target again confirms the charge")
 	await play_until(TurnManager.Phase.ACTION, teamster)
 	check(MeleeRules.engaged_with(teamster, medved), "The charge connects and engages both units")
 	check(game.actors["blue_teamster"].caption.text.contains("MELEE"), "Engaged units are tagged on the field")
 	check(command_text().contains("ENGAGED /") and command_text().contains("BREAK OFF"), "Action panel offers Break Off to an engaged unit")
-	await capture("qa-melee")
+	await capture("qa-melee", 2)
 	# Stay and trade blows; next round the unit has nothing to plan.
 	await play_until(TurnManager.Phase.PLANNING)
 	game.select_unit(teamster)
-	await frames()
+	await frames(2)
 	check(MeleeRules.is_engaged(battle, teamster) and command_text().contains("ENGAGED /") and game.planning.draft == null, "Engaged units show their lock instead of movement controls")
 	await play_until(TurnManager.Phase.ACTION, teamster)
 	var lock_held := MeleeRules.is_engaged(battle, teamster)

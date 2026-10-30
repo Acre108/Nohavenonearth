@@ -1,11 +1,63 @@
 # Gen 2 demo models
 
+## Kestrel revision 4
+
+The Kestrel uses `art/models/build_kestrel.py`, built through the live Blender MCP
+add-on on 23 October 2026. Its chest, canopy, shoulders, thighs, forearms, calf
+nacelles and insteps use elliptical loft sections with smooth side normals. The
+wing planforms and rifle retain their aircraft and machined profiles. This follows
+the technical profile in `output/imagegen/01-hx-7-kestrel-technical-profile.png`,
+with the requested curved armour taking precedence over the earlier box-built model.
+
+The head revision replaces the oval helmet with a cambered, forward-projecting
+wedge crown, a recessed wraparound amber slit, separate white cheek plates,
+pointed face chines, temple pivots, cheek vents and an aft-swept antenna. The neck
+is narrower and exposes a pitch axle and cables. Close-up before/after front,
+side and three-quarter renders are in `artifacts/kestrel-head/`.
+
+The proportions pass raises the hip axle from 0.67 to 0.81 and the knee from
+0.425 to 0.47 at the same overall height. It narrows the chest, hips and limb
+fairings, reduces the feet, opens the waist, and reshapes the canopy into a
+projecting nose with a connected pressure housing. The LR-3 has a slimmer receiver
+and stock, vertically paired rails with an open channel, and narrow muzzle braces.
+Component mounts, sockets and fittings follow the same coordinate map as their
+geometry. Before/after body renders are in `artifacts/kestrel-proportions/`.
+
+It has 14,596 triangles, 278 rigid meshes, six semantic materials, baked vertex
+tones, eight region roots and fourteen component pivots. Its budget is 20,000
+triangles, matching the detailed Teamster. The existing game asset path remains
+`art/models/hx7_kestrel.glb`; the editable source is `art/source/hx7_kestrel.blend`.
+Independent region exports are in `art/models/kestrel_regions/` in shared assembly
+coordinates. The workshop now supports the standard Kestrel fit, region inspection,
+painting, repairs and deployment; see [the workshop QA](kestrel-workshop-qa.md).
+It also has nineteen mechanical animation clips, with a 19-bone Blender control
+rig and 27 rigid joints; see [animation and editing notes](kestrel-animation.md).
+There is no alternate equipment geometry or aircraft transformation.
+
+Equipment includes the LR-3 twin-rail rifle, exactly four AGM-M missiles on separate
+wing hardpoints, a stowed right-forearm VB-2 seam, QX battery modules and lifting
+handles, flank intake vanes, heel fan stators, calf pistons and small toe claws.
+The geometry retains the existing tabletop height and ground-centred origin.
+
+```powershell
+& 'C:\Program Files\Blender Foundation\Blender 3.2\blender.exe' --background --factory-startup --python art/models/build_kestrel.py
+```
+
+The full `build_gen2.py` rebuild also uses this revision. Rebuilding replaces manual
+edits, so save hand-edited versions separately. Review renders and the geometry
+manifest are `artifacts/gen2/hx7_kestrel_*`; the prior asset backup and MCP build
+response are in `artifacts/kestrel-v2/`.
+
+Validation: Godot reimport completed; the rendered `tests/test_art.gd` suite passed
+84 checks with zero failures. Front, side, rear and in-game lineup renders were
+visually reviewed. Godot emitted its existing OS certificate-store warning.
+
 ## Teamster revision 2
 
 The Teamster now uses `art/models/build_teamster.py`, with shared helpers from the original
 builder. It has 13,690 triangles and 251 rigid meshes, with eight explicit region roots and
 fourteen component pivots matching the workshop. Its dedicated budget is 20,000 triangles;
-the other models retain their 8,000-triangle budgets. Named region GLBs are exported into
+the Medved and Tieshan retain their 8,000-triangle budgets. Named region GLBs are exported into
 `art/models/teamster_regions/` in assembly coordinates. The full GLB and editable Blender file
 retain the same paths used by battle rendering.
 
@@ -18,8 +70,8 @@ The Teamster now also contains eighteen mechanical animation clips, baked from a
 Blender control rig into 26 rigid joint nodes. Its region/component roots remain available to
 the workshop. See [animation notes](teamster-animation.md) for playback, source editing and limits.
 
-The remaining notes describe the original four-model pass; the earlier Teamster triangle counts
-and source-build description are superseded by this revision.
+The remaining notes describe the original four-model pass; the earlier Kestrel and Teamster
+triangle counts and source-build descriptions are superseded by the revisions above.
 
 The four demo mechs now load their own Blender-built GLBs through
 `units/presentation/unit_model_factory.gd`. The two fighter aircraft keep their

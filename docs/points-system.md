@@ -21,6 +21,7 @@ A mech's target cost covers frame, hands and weapons; the pilot is priced separa
 | Gen 1 | 75 |
 | Gen 2 | 100 |
 | Gen 3 | 130 (placeholder) |
+| Gen 4 (prototypes) | Not priced yet |
 
 | Tier | Multiplier | Meaning |
 | --- | ---: | --- |
@@ -38,9 +39,9 @@ A mech's target cost covers frame, hands and weapons; the pilot is priced separa
 | Size class | Small +5, Medium 0, Large −5, Super heavy −10 (hit modifier only; carrying is paid for through weapons) |
 | Move | 4 per unit; flying mech +8; aircraft +4; 1 per extra manoeuvre |
 | Energy | 1 per capacity, 3 per recharge |
-| Frame stat bonus | 5 per Gunnery or Reflex, 3 per Melee or Precision, 2 per Guard or Spirit, 1 per Systems or Countermeasures |
+| Frame stat bonus | 5 per Gunnery or Reflex, 3 per Melee or Precision, 1 per Systems or Countermeasures (frames cannot raise Spirit) |
 | Weapon | 2 × expected damage per attack against a reference target (Reflex 1, Armour 2, Medium), × range factor (0.6 + 0.1 × max range − 0.05 × min range; melee 0.8) × arc factor (90° 1.0 → 360° 1.2), − 1 per Energy |
-| Pilot | 3 per Gunnery or Reflex, 2 per Melee or Precision, 1 per Guard or Spirit, 0.5 per Systems or Countermeasures; Newtype +4, I Can See It +4 |
+| Pilot | 3 per Gunnery or Reflex, 2 per Melee or Precision, 1 per Spirit, 0.5 per Systems or Countermeasures; Newtype +4, I Can See It +4 |
 
 These are first-pass weights. They are what the matchup runs calibrate.
 

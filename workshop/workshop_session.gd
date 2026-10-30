@@ -8,6 +8,21 @@ var active: bool = false
 var battle_id: String = ""
 var notice: String = ""
 var save_available: bool = true
+var stores: Dictionary = {}
+
+func select_frame(frame_id: String) -> void:
+	stores[store.frame_id] = store
+	if stores.has(frame_id):
+		store = stores[frame_id]
+	else:
+		var path := WorkshopState.SAVE_PATH if frame_id == "m9_teamster" else "user://kestrel_workshop_v1.json"
+		store = WorkshopState.new(path, frame_id)
+		stores[frame_id] = store
+	save_available = store.load_save()
+	notice = "" if save_available else store.error + " Saving is blocked to protect it."
+
+func unit_id() -> String:
+	return "blue_kestrel" if store.frame_id == "hx7_kestrel" else "blue_teamster"
 
 func _ready() -> void:
 	save_available = store.load_save()
@@ -26,7 +41,7 @@ func configure(catalogue: Catalogue) -> void:
 		return
 	var edit := store.draft()
 	for loadout in catalogue.loadouts:
-		if loadout.id != "blue_teamster":
+		if loadout.id != unit_id():
 			continue
 		loadout.frame = store.resolve(loadout.frame, edit)
 		loadout.pilot = store.pilots.pilot(edit.pilot)
@@ -43,7 +58,7 @@ func configure(catalogue: Catalogue) -> void:
 func capture_result(battle: BattleState) -> bool:
 	if not active or store.owned.last_result == battle_id:
 		return true
-	var mech := battle.unit_by_id("blue_teamster")
+	var mech := battle.unit_by_id(unit_id())
 	if mech == null:
 		return true
 	var damage := mech.loadout.frame.structure - maxi(0, mech.structure)

@@ -8,7 +8,7 @@ Double-click **Play.cmd** or press **F5** in Godot to open the **landing screen*
 
 ### Teamster workshop
 
-The M9 Teamster is the example owned frame: eight regions, fourteen components, and a hard limit of **two components per region**, with no deeper nesting. Equipment icons flank the central model. One right-hand panel lists hull, power and movement, then a **Frame / Pilot / Total / Threshold** table and equipped weapon profiles. Frame includes fitted hardware and wear; Total applies quarter-point rounding and the frame's Threshold. Click a slot or the model to open its equipment picker; select a spare icon to inspect its stats and choose **Equip**. Drag the model to rotate and scroll to zoom. **All parts** includes incompatible equipment for the selected mount, with its fitting restriction shown.
+The M9 Teamster is the example owned frame: eight regions, fourteen components, and a hard limit of **two components per region**, with no deeper nesting. Equipment icons flank the central model. One right-hand panel lists hull, power and movement, then a **Frame / Pilot / Total / Threshold** table and equipped weapon profiles. Frame includes fitted hardware and wear; Total is pilot + whole hardware points (part fractions count once they add up to a point), capped at the frame's Threshold. Click a slot or the model to open its equipment picker; select a spare icon to inspect its stats and choose **Equip**. Drag the model to rotate and scroll to zoom. **All parts** includes incompatible equipment for the selected mount, with its fitting restriction shown.
 
 The bottom bar offers three illustrated pilots: **Anchor** (brawler), **Kestrel** (marksman), and **Rook** (skirmisher). Clicking a portrait previews the pilot's contribution immediately; **Apply refit** saves the assignment and **Discard** restores it. The selected pilot and callsign carry into deployment. All three have the same five-point base stat budget and Push ability. See the [pilot roster and portrait sources](docs/workshop-pilots.md).
 
@@ -19,6 +19,12 @@ Components carry a manufacturer tag and size class. The medium Brannock-Hale Tea
 The revised Teamster has explicit region and component assemblies, more detailed mechanical fittings, and separate region exports. The visible **Assembled**, **Exploded**, and **Isolate region** buttons above the model switch inspection modes. Exploded inspection stays selected while changing pilot, parts or paint. Playing an animation returns the model to Assembled.
 
 The Teamster is animated: idle, walk, left/right turns, weapon ready, rifle bursts, missile launches, stake-driver firing and melee. Choose a clip in the workshop's animation dropdown and use **Play**, **Pause**, or **Rest**. Movement and attacks select animations automatically in battle. See [animation and Blender rig notes](docs/teamster-animation.md) for the editable skeleton, rebuilding and current flat-ground gait limits.
+
+The workshop's frame selector also opens the **HX-7 Kestrel**, with its own saved
+fit and nineteen animations: ground locomotion, weapon handling, folding knife,
+hover/flight, takeoff/landing and evasive banks. Its Blender control rig is editable,
+and battle movement and weapon events select the matching clips. See
+[Kestrel animation notes and previews](docs/kestrel-animation.md).
 
 The demonstration starts with 1,800 repair credits, 14 hull damage and a worn left-arm actuator. Repair the hull or a component individually, or queue **Repair all**. Below 60% condition, components apply the displayed wear penalties; zero condition or a destroyed hull blocks deployment. Replacements cost 40 credits to fit and return the old component to stores. Inventory items are unique: the same spare cannot occupy both arms.
 
@@ -113,11 +119,11 @@ Battles averaged about 17 rounds. These are AI-vs-AI results; a human Blue playe
 ### Core rules
 
 - Six phases plus battle-over, seeded random initiative ties, and a replaceable tactical AI that chooses its hidden orders before Blue plans.
-- Six pilot stats — Gunnery, Melee, Precision, Guard, Reflex, Spirit — each total pilot + frame/part bonus, kept to quarter points and capped. Every point has one fixed effect, and no stat opens or closes a manoeuvre. The **Full stats…** window (beside the unit name in the inspector) shows pilot, bonus and total with the per-point effect; the inspector itself shows only what is needed to play; debug overrides never change the source definitions.
+- Seven pilot stats — Gunnery, Melee, Precision, Reflex, Systems, Countermeasures, Spirit. The first six are each a whole-point total: pilot rating + the whole points of frame/part bonuses, with part fractions counting once they add up to a point, capped at the frame's threshold. Spirit is the pilot's own: no frame adds to it or limits it. Every roll is a d10 shown as a percentage, so each point is 10%. Every point has one fixed effect, and no stat opens or closes a manoeuvre. The **Full stats…** window (beside the unit name in the inspector) shows pilot, bonus and total with the per-point effect; the inspector itself shows only what is needed to play; debug overrides never change the source definitions.
 - Ground destination movement, forward-cone flying-mech vectors, lateral and reverse thrust, takeoff/landing, and eight sampled aircraft curves. Frame support, Energy, altitude, obstacles, and endpoint collisions are checked centrally. Reflex adds 0.5 per point to free moves and aircraft path length.
 - Ground movement passes through friendlies but not enemies or blocking terrain. Units at different altitude bands can overlap horizontally. Revealed endpoint conflicts stop the later mover immediately before contact, without damage.
 - Range, 90/120/180/360-degree arcs, centre-to-centre LOS, directional nearby low/heavy cover, and three altitude bands.
-- One roll per shot at 50% + 10% × (Gunnery or Melee − Evade − cover − Guard vs melee), clamped 10–90%. Each hit deals weapon damage minus Armour (never below 0). Precision gives 10% per point for a hit to crit, ignoring Armour. Heavy weapons turn a miss within 20% of the hit chance into a glancing hit for half damage, then Armour. Melee range is measured base edge to base edge.
+- One d10 roll per shot at 50% + 10% × (Gunnery or Melee − target Reflex − cover), clamped 10–90%. Reflex defends against ranged and melee alike. Each hit deals weapon damage minus Armour (never below 0). Precision gives 10% per point for a hit to crit, ignoring Armour. Heavy weapons turn a miss within 20% of the hit chance into a glancing hit for half damage, then Armour. Melee range is measured base edge to base edge.
 - Energy spending for advanced manoeuvres and weapons; capped Energy recharge; persistent non-regenerating Will.
 - **Melee (prototype)** — `combat/rules/melee_rules.gd`:
   - **Charge** (Ground mechs at Ground altitude, 1 Energy): pick Charge, then click an enemy that is inside the ±60° cone ahead and within move + 1 + Reflex bonus. Click it again or press **CONFIRM MOVE**. Reachable enemies show ivory crosshairs.
@@ -181,7 +187,9 @@ Rules use `RefCounted` state and `Resource` definitions, not model transforms or
 
 ## Verification
 
-Run **`powershell -ExecutionPolicy Bypass -File .\Test.ps1 -WithUI`** from this directory. It imports the project, runs deterministic rules tests, then runs the native renderer through a complete battle and restart. Omit `-WithUI` for headless rules only. Logs and screenshots are written to ignored `artifacts/`.
+Run **`powershell -ExecutionPolicy Bypass -File .\Test.ps1 -WithUI`** from this directory. It imports the project, runs deterministic rules tests, then runs the native renderer through a complete battle and restart. Omit `-WithUI` for headless rules, workshop, animation and variant checks. Logs and screenshots are written to ignored `artifacts/`.
+
+Standalone suites share assertion, frame-wait, screenshot and exit handling in `tests/test_suite.gd`. GPU checks, including the wet/dry lighting regression, live in `tests/test_ova_rendering.gd`. Each suite can still be run individually.
 
 Direct commands:
 
@@ -191,6 +199,6 @@ Direct commands:
 & 'C:\Program Files (x86)\Godot\Godot.exe' --path . --script res://tests/test_ui.gd
 ```
 
-The rules suite covers stat totals, quarter points, caps and data isolation, initiative direction, all movement families, Energy gates, collisions, altitude overlap, withdrawal, terrain/LOS/cover, arcs/range, hit chance, crits, glancing hits, armour, melee reach, exact forecasts, one attack per activation, destroyed-unit exclusion, locks, Will abilities, recharge, and eight seeded battles reaching victory. The UI suite exercises rendered actors, picking, camera reset, debug, planning/confirm/commit, every phase, abilities, full-battle resolution, victory, and restart.
+The rules suite covers stat totals, hardware fractions, thresholds and data isolation, initiative direction, all movement families, Energy gates, collisions, altitude overlap, withdrawal, terrain/LOS/cover, arcs/range, hit chance, crits, glancing hits, armour, melee reach, exact forecasts, one attack per activation, destroyed-unit exclusion, locks, Will abilities, recharge, and eight seeded battles reaching victory. The UI suite exercises rendered actors, picking, camera reset, debug, planning/confirm/commit, every phase, abilities, full-battle resolution, victory, and restart.
 
 Godot may print `Failed to read the root certificate store` in this restricted Windows environment. The prototype is offline; this engine-level diagnostic does not affect play or the tests.

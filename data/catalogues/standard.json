@@ -493,8 +493,7 @@
                                      "gunnery":  2,
                                      "melee":  2,
                                      "precision":  2,
-                                     "reflex":  1,
-                                     "guard":  1,
+                                     "reflex":  2,
                                      "systems":  1,
                                      "countermeasures":  1,
                                      "spirit":  4
@@ -512,8 +511,7 @@
                                      "gunnery":  1,
                                      "melee":  1,
                                      "precision":  0,
-                                     "reflex":  0,
-                                     "guard":  1,
+                                     "reflex":  1,
                                      "systems":  0,
                                      "countermeasures":  0,
                                      "spirit":  2
@@ -530,7 +528,6 @@
                                      "melee":  0,
                                      "precision":  1,
                                      "reflex":  1,
-                                     "guard":  0,
                                      "systems":  1,
                                      "countermeasures":  0,
                                      "spirit":  2
@@ -546,8 +543,7 @@
                                      "gunnery":  1,
                                      "melee":  0,
                                      "precision":  1,
-                                     "reflex":  0,
-                                     "guard":  2,
+                                     "reflex":  2,
                                      "systems":  0,
                                      "countermeasures":  1,
                                      "spirit":  2
@@ -563,8 +559,7 @@
                                      "gunnery":  1,
                                      "melee":  1,
                                      "precision":  2,
-                                     "reflex":  0,
-                                     "guard":  1,
+                                     "reflex":  1,
                                      "systems":  2,
                                      "countermeasures":  1,
                                      "spirit":  3
@@ -581,7 +576,6 @@
                                      "melee":  0,
                                      "precision":  1,
                                      "reflex":  1,
-                                     "guard":  0,
                                      "systems":  0,
                                      "countermeasures":  1,
                                      "spirit":  2
@@ -598,7 +592,6 @@
                                      "melee":  0,
                                      "precision":  0,
                                      "reflex":  0,
-                                     "guard":  0,
                                      "systems":  0,
                                      "countermeasures":  0,
                                      "spirit":  2
@@ -628,10 +621,8 @@
                                         "melee":  0,
                                         "precision":  2,
                                         "reflex":  1,
-                                        "guard":  0,
                                         "systems":  2,
-                                        "countermeasures":  2,
-                                        "spirit":  6
+                                        "countermeasures":  2
                                     },
                        "altitude_access":  [
                                                0
@@ -665,10 +656,8 @@
                                         "melee":  4,
                                         "precision":  4,
                                         "reflex":  4,
-                                        "guard":  3,
                                         "systems":  3,
-                                        "countermeasures":  3,
-                                        "spirit":  6
+                                        "countermeasures":  3
                                     },
                        "default_melee":  "hands_medium",
                        "altitude_access":  [
@@ -708,10 +697,8 @@
                                         "melee":  3,
                                         "precision":  3,
                                         "reflex":  2,
-                                        "guard":  3,
                                         "systems":  2,
-                                        "countermeasures":  2,
-                                        "spirit":  6
+                                        "countermeasures":  2
                                     },
                        "default_melee":  "hands_medium",
                        "altitude_access":  [
@@ -744,10 +731,8 @@
                                         "melee":  0,
                                         "precision":  3,
                                         "reflex":  4,
-                                        "guard":  0,
                                         "systems":  3,
-                                        "countermeasures":  3,
-                                        "spirit":  6
+                                        "countermeasures":  3
                                     },
                        "altitude_access":  [
                                                1,
@@ -787,10 +772,8 @@
                                         "melee":  3,
                                         "precision":  3,
                                         "reflex":  1,
-                                        "guard":  4,
                                         "systems":  2,
-                                        "countermeasures":  3,
-                                        "spirit":  6
+                                        "countermeasures":  3
                                     },
                        "default_melee":  "hands_large",
                        "altitude_access":  [
@@ -825,10 +808,8 @@
                                         "melee":  3,
                                         "precision":  4,
                                         "reflex":  2,
-                                        "guard":  3,
                                         "systems":  3,
-                                        "countermeasures":  2,
-                                        "spirit":  6
+                                        "countermeasures":  2
                                     },
                        "default_melee":  "hands_large",
                        "altitude_access":  [

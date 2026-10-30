@@ -473,6 +473,10 @@ if __name__ == '__main__':
     import sys
     sys.modules['build_gen2'] = sys.modules[__name__]
     for frame,builder in [('hx7_kestrel',kestrel),('m9_teamster',teamster),('ob12_medved',medved),('type09_tieshan',tieshan)]:
+        if frame == 'hx7_kestrel':
+            from build_kestrel import build as build_kestrel
+            build_kestrel()
+            continue
         if frame == 'm9_teamster':
             from build_teamster import teamster_v2
             builder = teamster_v2

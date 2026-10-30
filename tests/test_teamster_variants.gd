@@ -1,16 +1,5 @@
-extends SceneTree
+extends "res://tests/test_suite.gd"
 const SAVE := "res://artifacts/variants-test-save.json"
-var checks := 0
-var failures := 0
-
-func _initialize() -> void:
-	run.call_deferred()
-
-func check(condition: bool, message: String) -> void:
-	checks += 1
-	if not condition:
-		failures += 1
-		push_error("VARIANT FAIL / " + message)
 
 func make_model(fit: Dictionary) -> Node3D:
 	var model := Node3D.new()
@@ -107,5 +96,4 @@ func run() -> void:
 	check(loaded.load_save() and loaded.owned.credits == old.credits and loaded.owned.installed == old.installed, "Content migration preserves funds and installed equipment")
 	check(loaded.owned.inventory.has("spare_arm_marksman") and loaded.owned.inventory.has("spare_arm_support"), "Content migration provides the new demo kit")
 	DirAccess.remove_absolute(SAVE)
-	print("VARIANTS: %d checks, %d failures" % [checks, failures])
-	quit(1 if failures else 0)
+	finish()

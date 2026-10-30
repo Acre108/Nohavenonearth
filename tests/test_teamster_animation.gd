@@ -1,18 +1,7 @@
-extends SceneTree
+extends "res://tests/test_suite.gd"
 
-var checks := 0
-var failures := 0
 var holder: Node3D
 var animator: TeamsterAnimator
-
-func _initialize() -> void:
-	run.call_deferred()
-
-func check(condition: bool, message: String) -> void:
-	checks += 1
-	if not condition:
-		failures += 1
-		push_error("ANIMATION FAIL / " + message)
 
 func sample(clip: String, at: float) -> void:
 	animator.play(clip, 0)
@@ -76,5 +65,4 @@ func run() -> void:
 	animator.rest()
 	check(not animator.player.is_playing(), "Rest freezes a neutral inspection pose")
 	holder.free()
-	print("ANIMATION: %d checks, %d failures" % [checks, failures])
-	quit(1 if failures else 0)
+	finish()

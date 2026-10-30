@@ -1,26 +1,6 @@
-extends SceneTree
+extends "res://tests/test_suite.gd"
 
-var checks: int = 0
-var failures: int = 0
 var game: BattleController
-
-func _initialize() -> void:
-	run.call_deferred()
-
-func check(condition: bool, message: String) -> void:
-	checks += 1
-	if not condition:
-		failures += 1
-		push_error("ART FAIL / " + message)
-
-func frames(count: int = 3) -> void:
-	for i in count:
-		await process_frame
-
-func capture(name: String) -> void:
-	await frames()
-	await RenderingServer.frame_post_draw
-	root.get_texture().get_image().save_png("res://artifacts/" + name + ".png")
 
 func run() -> void:
 	root.size = Vector2i(1920, 1080)
@@ -52,7 +32,7 @@ func run() -> void:
 				vertex_colors = vertex_colors and colors.size() == vertices.size()
 				for vertex in vertices:
 					ground = minf(ground, (mesh.global_transform * vertex).y)
-		var triangle_budget := 20000 if frame_id == "m9_teamster" else 8000
+		var triangle_budget := 20000 if frame_id in ["m9_teamster", "hx7_kestrel"] else 8000
 		check(triangles >= 3000 and triangles <= triangle_budget, frame_id + " stays in its authored triangle budget after import")
 		check(vertex_colors, frame_id + " preserves baked vertex tones through glTF import")
 		check(absf(ground) < 0.002, frame_id + " stands on the ground after coordinate conversion")
@@ -170,5 +150,4 @@ func run() -> void:
 	await capture("art-style-silhouettes")
 	style.queue_free()
 	await frames()
-	print("ART TESTS / %d checks / %d failures" % [checks, failures])
-	quit(0 if failures == 0 else 1)
+	finish()

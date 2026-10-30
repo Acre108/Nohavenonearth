@@ -10,7 +10,7 @@ func _init() -> void:
 		assert(not entries.has(entry.id), "Duplicate workshop pilot")
 		for key in UnitState.STAT_NAMES:
 			var value: float = entry.stats.get(key, 0)
-			assert(value >= 0 and value <= UnitState.STAT_CAPS[key] and is_equal_approx(value * 4, roundf(value * 4)), "Invalid pilot stat")
+			assert(value >= 0 and value <= UnitState.PILOT_CAPS[key] and is_equal_approx(value, roundf(value)), "Invalid pilot stat")
 		entries[entry.id] = entry
 
 func pilot(id: String) -> PilotData:

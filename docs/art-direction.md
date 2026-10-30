@@ -1,18 +1,20 @@
-# No Haven on Earth — Art Direction: Sensor Feed × OVA Cinematic — 17 October 2026
+# No Haven on Earth ? Art Direction: OVA Battlefield ? updated 23 October 2026
 
 This is the canonical art direction for the project. It replaces the online draft (claude.ai artifact), which agents cannot open.
 
-**23 October rendering update:** [OVA rendering setup](ova-rendering.md) records the implemented desktop Forward+ path, masked depth/normal ink, painterly wet dock, film stack, held animation and remaining UV/lightmap work. Its implementation details supersede the earlier notes below.
+**23 October direction update:** Sensor View is retired from the player-facing battle flow. Orders, targeting and resolution share the full-colour OVA battlefield. Tactical overview and cinematic shots change camera and information density, not the world's rendering style. This document specifies the intended direction; existing sensor shaders and runtime transitions have not been removed by this documentation update.
+
+[OVA rendering setup](ova-rendering.md) records the implemented render path. Its Sensor View references describe legacy behaviour; the unified direction here takes precedence.
 
 ## Vision and pillars
 
-The player plans on a cockpit sensor display and watches the results play out as a 1996 OVA. Two visual modes share one battlefield. **Sensor View** is where every decision is made: it is quiet, monochrome and built only for reading. **Cinematic** is where those decisions pay off: cel-shaded, humid, heavy and loud.
+The player gives orders and watches the results on the same full-colour, cel-shaded battlefield, like a 1996 OVA. Tactical overview keeps the camera stable and information clear; cinematic playback brings the camera close for weight and drama. Painted terrain, military colours and unit materials remain consistent throughout.
 
 The touchstone is *Mobile Suit Gundam: The 08th MS Team*. We take its grounded field-war tone, its jungle and monsoon settings, its hovertruck sound-sensor scenes, and mobile suits that read as worn military equipment, not heroes. The factions and machines are our own; only the tone and the technology level come from the One Year War.
 
 **Pillars**
 
-1. **Readability first.** If a choice between mood and clarity comes up during planning, clarity wins. Mood belongs to Cinematic.
+1. **Readability first.** If a choice between mood and clarity comes up during planning, clarity wins. Keep the OVA atmosphere while reducing effects that obscure decisions.
 2. **Grounded weight.** Mechs are heavy machines. They sink into the ground, splash, throw up dust and shake the camera. Nothing floats unless it is flying.
 3. **Sensors as drama.** Information arrives the way it does for a field crew: pings, sweeps, contacts resolving out of noise. Reveals are events.
 4. **90s OVA heart.** Hand-drawn values, hard sunsets, painted skies, film grain. It should look like a cel, not a modern anime game.
@@ -29,87 +31,42 @@ Two original factions fight with One Year War-level technology. No Gundam design
 **What the tech level means for the art**
 
 - **Beam weapons are rare.** Only the ace and a few elite units carry them, so beams should look exceptional. Most fire is solid ammunition: machine guns, bazookas, cannons, railguns and missiles. Effects lean on tracers, muzzle smoke, shell casings and ricochet sparks.
-- **Radar is unreliable.** Interference keeps fights short-range and visual. Sensors work by sound and heat, which is exactly what Sensor View shows: sound-sensor sweeps and heat contacts, not a clean modern radar.
+- **Radar is unreliable.** Interference keeps fights short-range and visual. Sensors work by sound and heat, represented by brief sound-sensor sweeps and contact cues over the battlefield rather than a separate display mode.
 - **Early-generation machinery.** Exposed hydraulics and joints, visible bolts and hatches, cockpit hatches in the chest, and dated CRT cockpit displays.
 - **Nothing later than the era.** No transforming mechs, remote weapons or psychic-tech glow. Newtype effects stay subtle (see Transitions, cues and HUD).
 - **Support vehicles match the era too:** hovertrucks, tanks, jeeps and chunky jet fighters.
 
-## The two modes
+## One battlefield, two camera contexts
 
-The rule is simple: **Sensor View while the player is giving orders, Cinematic for everything else.** Planning, the Action phase (locks and Newtype rotation) and choosing attacks are orders. Movement, every attack (the player's and the enemy's), enemy actions and round end play in Cinematic. Mode switches always use the same two effects.
+**The OVA battlefield stays visible throughout the round.** Planning, locks, Newtype rotation and attack selection use the tactical overview with full-colour terrain, textured units and clear overlays. Movement, attacks, enemy actions and round end may use short cinematic shots with the same materials and palette.
 
-One round, top to bottom. Arrows that cross between the two groups are mode switches.
+1. Plan hidden movement, altitude and facing in tactical overview.
+2. Commit and reveal with a brief sensor-ping cue over the painted world.
+3. Play movement in short cinematic cuts, lowest Reflex first.
+4. Return to the saved tactical camera for locks, rotation and attack selection.
+5. FIRE plays the attack shot, then returns to overview for the next choice. Consecutive enemy actions can share one cinematic sequence.
+6. Round end shows recharge over the final shot, then returns to planning.
 
-```mermaid
-flowchart TB
-    subgraph SENSOR["Sensor View: give orders"]
-        PLAN["Plan orders<br/>Hidden moves, altitude and facing; Suggest"]
-        REVEAL["Commit and reveal<br/>Sensor-ping sweep is the exit beat"]
-        ACTION["Action phase<br/>Target locks and Newtype rotation"]
-        CHOOSE["Choose attack<br/>Weapon, target, I Can See It, then FIRE"]
-    end
-    subgraph CINE["Cinematic: everything else"]
-        MOVE["Movement plays out<br/>Lowest Reflex first, in short cel-shaded cuts"]
-        ATTACK["Attacks resolve<br/>Yours and the enemy's; held frame on a kill"]
-        END["Round end<br/>Energy recharge readout over the last shot"]
-    end
-    PLAN --> REVEAL
-    REVEAL -- "static cut" --> MOVE
-    MOVE -- "scan-line wipe" --> ACTION
-    ACTION --> CHOOSE
-    CHOOSE -- "static cut" --> ATTACK
-    ATTACK --> END
-    END -- "scan-line wipe" --> PLAN
-```
+Camera changes preserve colour, textures and lighting. Return to the saved overview position and zoom. Offer skip and tactical-camera-only playback; both retain the OVA world rendering. Reveal cues must respect the rules for hidden units and orders.
 
-- **The reveal is the bridge.** Committing orders is the last thing the player does. The sensor-ping reveal plays on Sensor View as the exit beat, then cuts straight into Cinematic movement.
-- **No flicker.** Consecutive activations that need no player input play as one Cinematic sequence. Enemy actions, such as a lock-on, appear as a short reticle shot inside that sequence rather than a separate switch.
-- **Attacks alternate.** Each player FIRE cuts to Cinematic for that shot and returns to Sensor View for the next choice. Enemy attacks between player activations join the same sequence.
-- **Round end is Cinematic.** Energy recharge plays as a readout over the last shot, then the scan-line wipe returns to planning.
-- **Opt-out.** The player can turn Cinematic off. The game then resolves on Sensor View, with the overlays animating instead.
+## Tactical overview and orders
 
-## Sensor View
+A stable overview presents the painted battlefield with the complete order HUD. Readability comes from value separation, silhouettes, bases and restrained overlays.
 
-Sensor View is a tactical display drawn on a dark phosphor screen. The world is reduced to geometry, and only units and orders carry colour. It should feel like the hovertruck's monitor, cleaned up enough to play on for an hour.
-
-**Screen and post-processing**
-
-- Background: near-black with a green-grey cast, never pure black.
-- Base ink: one phosphor green for terrain and grid, at low intensity.
-- Subtle scanlines and a slight vignette. Turn both off at high zoom and keep them under 5% contrast so they never cross a label.
-- No film grain, bloom or depth of field in this mode. The image must be sharp.
-- Optional faint noise that "settles" when a contact is revealed. Off by default once the player is familiar with it.
-
-**Terrain**
-
-- Ground is a contour surface: thin contour lines at every rule-height step, a faint coordinate grid at 1 rule unit, and a bolder line every 5 units.
-- Buildings and hard cover are extruded wireframe blocks with a dim solid fill. Tall cover gets a brighter top edge than low cover, so cover height reads from above.
-- Forest is a hatched area with a dotted outline, not individual trees.
-- Water is a horizontal hatch, as on a map.
-- Terrain never uses the faction or overlay colours.
-
-**Units**
-
-- Units render as the same 3D model, with a flat unlit fill and a bright outline in their faction colour. No textures, no shading ramp.
-- Every unit sits on its base disc, which carries a facing chevron, the faction ring and the status pips (see Units and models).
-- Airborne units keep their vertical tether and a ground marker that shrinks with altitude band.
-- Unrevealed enemy orders show as a pulsing contact blip at the last known position, not as a model.
-
-**Overlays**
-
-- The existing colour meanings stay: amber for the current draft, cyan for confirmed Blue orders, salmon for revealed Red orders, gold for selection, red for legal targets. (See the colour clashes below for the hues that change.)
-- Arcs and ranges are drawn as a sensor sweep: a thin bright edge with a soft fill under 15% opacity.
-- Out-of-arc targets show the angle needed, for example "+15°", and a Newtype icon when Will can bring them in. This answers point 1 of [mock-battle-feedback.md](mock-battle-feedback.md).
-- Line of sight is a dashed line that breaks and turns grey where it is blocked.
-
-**Limits**
-
-- No more than four saturated hues on screen at once, overlays included.
+- Keep cel-shaded unit materials, painted environmental textures and the map's lighting preset during orders.
+- Keep terrain muted and low contrast beneath units. Do not replace it with contour-only or wireframe geometry.
+- Reduce rain, fog, grain and bloom when they obscure units, labels, paths or cover. No depth of field during orders; keep HUD pixels sharp.
+- No scanline wipe, static burst or world-shader transition when entering or leaving orders.
+- Keep base discs, facing chevrons, faction rings and status pips fully readable during orders. Airborne units retain tethers, altitude ticks and ground markers.
+- Keep order meanings: amber draft, cyan confirmed Blue orders, salmon revealed Red orders, pale gold selection and distinct legal-target rings.
+- Arcs and ranges use a thin bright edge and soft fill under 15% opacity. Show only relevant overlays; limit simultaneous saturated overlay hues to four where possible.
+- Out-of-arc targets show the angle needed, such as "+15?", and a Newtype icon when Will can bring them in. See [mock-battle-feedback.md](mock-battle-feedback.md).
+- Line of sight is dashed and breaks or turns grey where blocked. Preserve terrain occlusion cues.
 - No text smaller than 12 px at 1080p.
 
 ## Cinematic mode
 
-Cinematic is a 1990s OVA cel brought into 3D: flat colour, crisp ink, painted skies and a hard key light. It plays whenever the rules are resolving, so it can trade some clarity for mood. The overlays still appear here, but quieter.
+The shared world style is a 1990s OVA cel brought into 3D: flat colour, crisp ink, painted skies and a hard key light. Cinematic playback changes framing and reduces HUD density while the rules resolve. The shading below also applies during orders.
 
 **Shading**
 
@@ -149,11 +106,11 @@ Cinematic is a 1990s OVA cel brought into 3D: flat colour, crisp ink, painted sk
 
 ## Colour and value system
 
-Each colour carries one meaning in both modes, and the brightest values are reserved for what the player acts on. In order from quietest to loudest: terrain, then unit paint, then faction marks, then overlays.
+Each colour carries one meaning throughout battle, and the brightest values are reserved for what the player acts on. In order from quietest to loudest: terrain, then unit paint, then faction marks, then overlays.
 
 **Value rules**
 
-- Terrain sits in the middle of the value range with low saturation in both modes.
+- Terrain sits in the middle of the value range with low saturation throughout battle.
 - Unit paint has more contrast than terrain but stays below overlay saturation.
 - Only overlays and faction marks are fully saturated.
 - Test every screen in greyscale. Units must separate from terrain and overlays must separate from units.
@@ -162,33 +119,31 @@ Each colour carries one meaning in both modes, and the brightest values are rese
 
 | Token | Meaning | Current | Proposed | Where |
 | --- | --- | --- | --- | --- |
-| `sensor.bg` | Sensor screen background | `09121f` | `0a120e` | Sensor |
-| `sensor.ink` | Terrain lines, grid | various greys | `3f7a5a` at 40–70% | Sensor |
-| `faction.blue` | Blue faction units, confirmed orders | `57d5ef` / `63d8ed` | `57d5ef` (unify) | Both |
-| `faction.red` | Red faction units, revealed orders | `f48478` | `e8735f` | Both |
-| `overlay.draft` | Current draft path and ghost | `f3c378` | `f3c378` | Both |
-| `overlay.select` | Selected unit | `f3c378` | `fff1c9` (pale gold, thicker ring) | Both |
-| `overlay.target` | Legal target ring | `f48478` | `ff4fa3` (magenta) | Both |
-| `overlay.invalid` | Illegal move | `ff586b` | `ff3b3b` with a hatched pattern | Both |
-| `overlay.arc` | Weapon arc and range | `66d9f2` approx. | `d8ffe8` (sensor white-green) | Both |
-| `paint.blue` | Blue faction armour | — | off-white `d9d4c4`, blue-grey `5b6d82`, red accent `a8483a` | Cinematic |
-| `paint.red` | Red faction armour | — | olive `5f6e3f`, dark green `3b4630`, purple-grey accent `5a4f63` | Cinematic |
+| `faction.blue` | Blue faction units, confirmed orders | `57d5ef` / `63d8ed` | `57d5ef` (unify) | All battle views |
+| `faction.red` | Red faction units, revealed orders | `f48478` | `e8735f` | All battle views |
+| `overlay.draft` | Current draft path and ghost | `f3c378` | `f3c378` | All battle views |
+| `overlay.select` | Selected unit | `f3c378` | `fff1c9` (pale gold, thicker ring) | All battle views |
+| `overlay.target` | Legal target ring | `f48478` | `ff4fa3` (magenta) | All battle views |
+| `overlay.invalid` | Illegal move | `ff586b` | `ff3b3b` with a hatched pattern | All battle views |
+| `overlay.arc` | Weapon arc and range | `66d9f2` approx. | `d8ffe8` (pale white-green) | All battle views |
+| `paint.blue` | Blue faction armour | — | off-white `d9d4c4`, blue-grey `5b6d82`, red accent `a8483a` | All battle views |
+| `paint.red` | Red faction armour | — | olive `5f6e3f`, dark green `3b4630`, purple-grey accent `5a4f63` | All battle views |
 
 Where the current values live: faction colours in [units/presentation/unit_actor.gd](../units/presentation/unit_actor.gd) (line 26), [movement/presentation/movement_preview.gd](../movement/presentation/movement_preview.gd) (line 5) and [ui/battle_ui.gd](../ui/battle_ui.gd) (lines 4–7); selection and target rings in `units/presentation/unit_actor.gd` (lines 39–40); draft and invalid colours in `movement/presentation/movement_preview.gd` (line 7); arc colours in [combat/presentation/targeting_overlay.gd](../combat/presentation/targeting_overlay.gd) (lines 22–28); background in [battle/interaction/battle_controller.gd](../battle/interaction/battle_controller.gd) (line 56).
 
 **Clashes in the current build**
 
 - The Red faction colour and the legal-target ring are the same `f48478`. A targeted Red unit looks no different from an untargeted one. The target ring needs its own hue; magenta is proposed.
-- The arc overlay is close to the Blue faction cyan, so a Blue unit's arc and a Blue order read as the same thing. Arcs move to a neutral sensor white-green.
+- The arc overlay is close to the Blue faction cyan, so a Blue unit's arc and a Blue order read as the same thing. Arcs move to a neutral pale white-green.
 - Draft and selection share the same gold. Selection becomes paler and thicker.
 
-**Faction paint in Cinematic**
+**Faction paint throughout battle**
 
 Unit armour uses muted military paint, not the faction marks. The Blue faction is off-white and blue-grey; the Red faction is olive and dark green. The saturated cyan and red stay on the base rings and the overlays. This keeps the 08th look and stops the jungle turning into a colour soup.
 
 ## Units and models
 
-One model per unit serves both modes. Sensor View swaps its material, while the mesh, silhouette and base stay the same, so the player never has to re-identify a unit after a mode switch.
+One model and material treatment per unit serve every battle camera. Keep mesh, silhouette, paint and base consistent between orders and playback.
 
 **Silhouette**
 
@@ -199,13 +154,13 @@ One model per unit serves both modes. Sensor View swaps its material, while the 
 
 **Bases**
 
-The base disc is the information panel. It is always visible and identical in both modes.
+The base disc is the information panel. It remains consistent between overview and playback.
 
 - Outer ring in the faction colour.
 - A facing chevron at the front edge, larger than you think it needs to be.
 - Status pips around the rim for Structure, Energy and Will. Locks show as a small reticle icon.
 - Selection and target rings sit outside the faction ring so they never cover it.
-- In Cinematic the base fades to about 30% opacity, and back to full when the camera returns to tactical.
+- During cinematic playback the base fades to about 30% opacity, and back to full when the camera returns to tactical.
 
 **Altitude**
 
@@ -251,7 +206,7 @@ Terrain is a stage, not a character: it supports the units and must never compet
 **Cover readability**
 
 - Low cover (walls, wrecks, rubble) stays below mech waist height. Heavy cover (buildings, rock spires) is clearly taller than a mech.
-- In Cinematic, cover keeps its silhouette clean: no foliage hanging over the top edge of blocking terrain.
+- In every view, cover keeps its silhouette clean: no foliage hanging over the top edge of blocking terrain.
 - Wrecks get a scorched decal and the existing "+1 cover" label.
 - Decorative props that have no rules effect stay small and low and never match the shape of cover.
 
@@ -265,51 +220,39 @@ Terrain is a stage, not a character: it supports the units and must never compet
 - Hand-painted ground textures with large, simple shapes: mud, grass, gravel, puddles. No noisy photo textures.
 - Mechs leave footprints and wet tracks during Cinematic; they fade after a round.
 
+**Demo battlefield: wet industrial dock**
+
+- Muted slate concrete paving, warm-grey concrete cover and weathered blue-grey steel. Keep broad painted wear below unit and overlay contrast.
+- The generated [demo dock texture set](../art/textures/demo-dock/README.md) supplies albedo assets and repeat-scale guidance. Wetness, reflections and lamp lighting remain shader-driven.
+- The runtime environment shader and saved dock use these assets with world-scale projection: 7 units for paving, 3.5 for concrete cover and 2.5 for steel roofs. Both prebuilt and procedural dock paths retain shader-driven wetness and lamp reflections.
+
 ## Transitions, cues and HUD
 
-A mode switch takes no more than 0.4 seconds and is always the same effect, so the player learns it once and stops noticing it.
-
-**Switching effects**
-
-- **Into Sensor View:** a horizontal scan line wipes across the screen. Colour drains behind it and the contour lines draw on.
-- **Into Cinematic:** a brief burst of static, then a hard cut to the first camera shot.
-- The tactical camera position is shared, so returning to Sensor View lands exactly where the player left it.
+Camera transitions are short and preserve spatial orientation. Return to the exact saved tactical framing after a shot. The world retains its colour, textures and lighting; no Sensor View scanline or static transition is required.
 
 **Signature cues**
 
-- **Order reveal (the sound-sensor ping):** a radial sweep ring expands from each Blue unit. Hidden enemy contacts resolve into their models and orders as the ring passes them, with a sonar ping for each. This turns the existing reveal step into the 08th sensor moment.
+- **Order reveal (the sound-sensor ping):** a radial sweep ring expands from each Blue unit. Hidden enemy contacts resolve into their models and orders as the ring passes them, with a sonar ping for each. This cue plays over the full-colour battlefield without changing its materials.
 - **Lock acquired:** a reticle closes on the target with a short two-tone beep.
 - **Newtype Reflexes:** a single white flash outline on the ace and a short, high chime, used only for Will powers.
-- **Unit destroyed:** in Cinematic, a held frame on the explosion; in Sensor View, the contact breaks into noise and leaves a static "LOST" marker.
+- **Unit destroyed:** a held frame on the explosion during cinematic playback; in tactical-camera-only playback, keep the impact and wreck readable in place.
 
 **HUD**
 
-- The HUD is the field crew's monitor bezel in both modes: dark panels, monospaced labels in capitals, thin rules, and small status lamps.
-- In Sensor View the HUD is fully visible. In Cinematic it shrinks to the initiative bar and a one-line telemetry ticker, so the shots have room.
+- The HUD is the field crew's monitor bezel throughout battle: dark panels, monospaced labels in capitals, thin rules, and small status lamps.
+- During orders the HUD is fully visible. During cinematic playback it shrinks to the initiative bar and a one-line telemetry ticker, so the shots have room.
 - Dice results appear as a printed readout strip, like a teleprinter, with rerolled dice marked as now.
 - Fonts: a condensed monospace for numbers and labels, and a plain sans for longer text. All UI text at least 12 px at 1080p.
 
 ## Godot 4 implementation notes
 
-One global shader parameter, `sensor_mix` (0 = Cinematic, 1 = Sensor), drives both modes. Every unit and terrain shader reads it, so a mode switch is a single tween with no material swapping and no scene reload.
+These notes specify the intended unified presentation. See [OVA rendering setup](ova-rendering.md) for the current render path and buffer reservations.
 
-**Mode switch**
-
-- Register `sensor_mix` as a global shader uniform in Project Settings, and set it with `RenderingServer.global_shader_parameter_set()`.
-- Swap the `WorldEnvironment` between two `Environment` resources: Cinematic (sky, fog, glow, tonemap) and Sensor (flat background, no fog or glow).
-- Screen effects (scanlines, vignette, grain, static) are one full-screen `ColorRect` on a `CanvasLayer`, with a canvas shader that also reads `sensor_mix`.
-
-**Unit shader (spatial)**
-
-- Cel shading in the `light()` function: step the N·L term into two or three bands, tint the shadow band toward a cool colour uniform, and add a rim term from the view angle.
-- Outlines with the inverted-hull method: a `next_pass` material with `cull_front` that pushes vertices out along their normals. It is cheap and works on the existing primitive models. A screen-space edge pass using the Godot 4.3+ `Compositor` is the upgrade path if hull outlines look patchy.
-- With `sensor_mix` at 1, skip lighting and output a flat dark fill, and set the outline to the faction colour.
-
-**Terrain shader**
-
-- Contour lines from world height: `fract(world_y / step)` and a screen-space derivative (`fwidth`) for even line thickness at any zoom.
-- Grid lines from world X and Z the same way, with a bolder line every 5 units.
-- Blend from the painted ground texture (Cinematic) to contour and grid ink (Sensor) by `sensor_mix`.
+- Orders and playback use the same unit shaders, environment textures and map lighting. Camera context may change effect intensity and HUD density.
+- The existing `sensor_mix` path is legacy. The intended order flow retains the full-colour endpoint (`sensor_mix = 0`). Removing runtime callers is a separate implementation task.
+- Keep hard cel bands and cool shadow fill on units, with silhouette hulls and masked interior ink as recorded in the rendering setup.
+- Environment textures use broad painted albedo shapes. Preserve environment roughness 0.18?0.88; avoid normal maps, metallic noise and baked directional lighting.
+- Grid, path and range information belongs to optional tactical overlays, without replacing terrain textures or changing the world shader.
 
 **Render order and layers**
 
@@ -319,7 +262,7 @@ One global shader parameter, `sensor_mix` (0 = Cinematic, 1 = Sensor), drives bo
 **Performance targets**
 
 - 60 fps at 1080p on a mid-range GPU with six units, one map and rain on.
-- Keep the inverted hull to units only. Terrain edges come from the contour shader instead.
+- Keep the inverted hull to units only. Environment shapes and textures stay soft and free of unit-style ink.
 
 ## Readability checklist and next steps
 
@@ -332,7 +275,7 @@ Run this checklist on every new unit, map and overlay before it ships.
 - [ ] Altitude band reads without the caption (tether ticks plus shadow size).
 - [ ] The screen passes a greyscale test: terrain < units < overlays.
 - [ ] No terrain or paint uses a reserved overlay or faction colour.
-- [ ] No more than four saturated hues on screen in Sensor View.
+- [ ] Relevant overlays remain distinct over the full-colour battlefield.
 - [ ] All text is at least 12 px at 1080p.
 - [ ] Cinematic playback can be skipped, and the tactical-only setting works.
 
@@ -349,16 +292,13 @@ Run this checklist on every new unit, map and overlay before it ships.
 
 **Next steps**
 
-1. Build a style-test scene: one existing unit with the cel and sensor shaders, one contour-shaded terrain patch, and the `sensor_mix` toggle.
-2. Fix the colour clashes in the current build (target ring, arc colour, selection gold). These are cheap and help now.
-3. Add the base chevron and the altitude tether ticks to the primitive models.
-4. Prototype the sensor-ping reveal on the existing commit-orders step.
-5. Write the first Blender build script with Codex for one Blue line mech. It sets the template for every later model: material slots, origin, facing and the automated silhouette renders.
-6. Name the two factions and write a one-page design-language sheet for each, based on Setting and tech level.
+1. Update runtime orders to retain OVA materials and retire sensor-mode transitions.
+2. Validate targets, paths, facing, altitude and cover over the textured battlefield at default tactical zoom.
+3. Extend the integrated demo dock texture set to new environment props with consistent world scale and restrained contrast.
+4. Verify skip and tactical-camera-only playback retain the full-colour world and readable HUD.
 
-**Decisions (answered 17 Oct 2026, reflected above)**
+**Decisions**
 
-- **Does Cinematic play every round, or only for attacks and destroyed units?** Cinematic mode is used whenever you're not giving orders.
-- **Should the Action phase (locks and Newtype rotation) stay in Sensor View, or cut briefly to Cinematic for Newtype?** Sensor View, as it involves giving orders.
-- **Is the setting strictly the One Year War, or our own original factions with 08th-style design?** Original factions, but the setting is One Year War level of tech.
-- **Who builds the models, and in which tool?** Models built in Blender by Codex.
+- **23 October 2026: Sensor View removed from orders.** Planning, locks, Newtype rotation and attack choice all use the full-colour OVA battlefield. Cinematic shots are camera changes within that style.
+- **Original setting:** Original factions with One Year War-level technology and the grounded tone of 08th MS Team.
+- **Model production:** Models built in Blender by Codex.

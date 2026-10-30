@@ -17,7 +17,7 @@ const DAMAGE_TYPES: Array[String] = ["ballistic", "energy", "explosive"]
 @export var size: String = "medium"
 ## Heavy weapons turn a near miss into a glancing hit.
 @export var heavy: bool = false
-## Melee uses Melee and Guard, and measures range from base edge to base edge.
+## Melee uses the Melee stat, and measures range from base edge to base edge.
 @export var melee: bool = false
 @export var range_min: float = 0.0
 @export var range_max: float = 4.0

@@ -1,48 +1,93 @@
-# Stat system — 18 October 2026
+# Stat system — 18 October 2026, revised 26 October 2026
 
 Every stat has one effect, and every point of it does the same amount. No stat opens or closes a
 movement option: a frame's manoeuvre list is always available, and Energy cost is the only limit.
-The rules live in `units/unit_state.gd` (totals and caps) and `combat/rules/combat_rules.gd`
+The rules live in `units/unit_state.gd` (totals and thresholds) and `combat/rules/combat_rules.gd`
 (attack resolution). Numbers live in `data/catalogues/standard.json`.
+
+**23 October 2026: every roll is a d10.** Hit, crit and glance chances stay in percent for the UI
+and forecasts, but every modifier is a multiple of 10. Shots roll a d10, so 60% hits on 1–6. The
+[tabletop rules](tabletop-d10-system.md) use the same dice, as whole-number targets (60% is a
+target of 6). They play on a hex map, and convert the game's distances and angles to hexes.
 
 ## Pilot stats
 
-Total = pilot + bonus (frame `stat_bonuses`; workshop parts add to the same place), rounded to
-quarter points and capped. Quarter-point rounding stops float error from losing a step when
-fractional parts are added together.
+Totals are whole points:
 
-| Stat | Each point | Cap |
+1. Take the pilot rating, a whole number.
+2. Add the whole points of the frame and its parts (`stat_bonuses`).
+3. Add the fractions on parts, summed separately in `stat_fractions`. They count only in whole
+   points, rounded toward zero, for bonuses and penalties alike. A matched set of four +0.25 parts
+   gives +1; four −0.25 parts cost 1. A part's −0.25 never eats a frame's whole bonus.
+4. Cap the result at the frame's threshold (`stat_max`).
+
+Thresholds are the only ceiling on a mech's totals, and every frame must list one for each stat
+except Spirit. The old global caps remain as **pilot limits** on the pilot's own rating.
+
+**Spirit is pilot-only** (`UnitState.PILOT_ONLY`): frames have no Spirit bonus or threshold, so it is
+the pilot rating, capped at the pilot limit of 6.
+
+There is no Guard (removed 23 October 2026): Reflex defends against melee and ranged attacks alike.
+Pilots' Guard points moved into Reflex.
+
+| Stat | Each point | Pilot limit |
 | --- | --- | ---: |
 | Gunnery | +10% to hit with ranged weapons | 4 |
 | Melee | +10% to hit with melee weapons | 4 |
 | Precision | +10% chance that a hit is a crit | 5 |
-| Guard | −10% to be hit by melee | 4 |
-| Reflex | +0.5 move; moves and fires earlier | 4 |
-| Spirit | +1 maximum Will (whole points only) | 6 |
+| Reflex | −10% to be hit by any attack, ranged or melee; moves and fires earlier | 4 |
+| Systems | +10% to Protocol and Target Lock rolls | 4 |
+| Countermeasures | −10% to hostile Protocols and lock rolls against you; Purge rolls on it | 4 |
+| Spirit | +1 maximum Will; pilot-only | 6 |
 
-Fractions apply directly to every stat except Spirit: +0.25 Gunnery is +2.5% to hit.
+**Systems and Countermeasures are agreed but not yet built.** The game stores them, but
+`UnitState.RESERVED_STATS` still marks them reserved, and the workshop shows "no combat rule yet".
+Their rules are in the [tabletop rules](tabletop-d10-system.md) (§9 Target Lock, §10 Protocols) and the
+[Protocols plan](protocols-plan.md). Lock and Protocol rolls use the same scale as attacks:
+50% + 10% × (Systems − target Countermeasures), with a difficulty modifier for Protocols.
 
 ## Frame stats
 
 | Stat | Effect |
 | --- | --- |
-| Structure | HP |
+| Structure | HP. At 0 the unit is destroyed. A destroyed mech or tank leaves a wreck (+1 cover, does not block movement); aircraft leave nothing |
 | Armour | Subtracted from every hit's damage, never below 0; crits ignore it |
-| Evade | −10% per point to be hit by any attack |
-| Move | Base distance for free moves and base flight-path length |
-| Energy / recharge | Pays for advanced manoeuvres and some weapons |
+| Armour type | +2 Armour against weapons of the matching damage type |
+| Thresholds | The frame's ceiling on each pilot stat total |
+| Move | Base distance for free moves and base flight-path length; Reflex does not add to it |
+| Energy / recharge | Pays for advanced manoeuvres, Charge and some weapons. Usable capacity is the rated capacity minus installed reservations |
 
 ## Attack resolution
 
-1. **Hit chance** = 50% + 10% × (Gunnery or Melee − Evade − cover − Guard if melee), +20% when
-   Pushed, clamped to 10–90%.
-2. **One roll per shot.** Each hit deals `damage − Armour`.
-3. **Crit**: each hit has Precision × 10% to crit, dealing full damage that ignores Armour.
+1. **Hit chance** = 50% + 10% × (Gunnery or Melee − target Reflex − cover) + aim +
+   size, +20% when Pushed, +20% for a melee attack after a Charge that connected this round,
+   clamped to 10–90%. A d10 roll of 1 always hits and a 10 always misses. Cover is 1 or 2.
+2. **One d10 per shot.** Each hit deals `damage − effective Armour`, where effective Armour is
+   Armour, +2 if the armour type matches, minus armour piercing, never below 0.
+3. **Crit**: each hit rolls a d10 and crits at or below Precision. A crit deals full damage that
+   ignores Armour.
 4. **Glancing hit** (heavy weapons only): a miss within 20 points of the hit chance deals
    `floor(damage / 2) − Armour`. It cannot crit.
 5. **Rerolls** apply to misses only: a target lock gives one; I Can See It gives up to two.
 6. **Melee range** is measured base edge to base edge, so melee can reach adjacent units but not
    another altitude band.
+
+## Melee
+
+The rules live in `combat/rules/melee_rules.gd`.
+
+- **Charge** is a movement order:
+  - It costs 1 Energy and reaches Move + 1.
+  - The target must be an enemy on the Ground, inside the ±60° cone ahead, and not an aircraft.
+  - The charge homes on where the target is when the charger moves.
+  - If it ends in base contact, both units are **engaged**, and the charger gets +20% on melee
+    against that target for the rest of the round.
+- **Engaged units** cannot move, and can attack only the units they are engaged with. Melee against
+  an engaged foe ignores the weapon's arc.
+- **Breaking off** uses the action:
+  - Every engaged foe with a melee weapon that has not yet attacked makes its attack now, as a
+    **parting strike** at +20% that does not stack with its Charge bonus.
+  - Then the unit backs away up to 1.5, keeping its facing.
 
 Many small shots are consistent but are stopped by Armour; one big shot gets through Armour but is
 swingy. Glancing hits soften that swing. Precision is how volume weapons beat Armour.
@@ -55,21 +100,32 @@ by at least 10 points, or adds a quarter of the target's remaining Structure in 
 
 ## Roster
 
-| Pilot | Frame | Gunnery | Melee | Precision | Guard | Reflex | Spirit |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| ACE | HX-7 Kestrel | 2 | 2 | 2 | 1 | 3 | 4 |
-| ANCHOR | M9 Teamster | 1 | 1 | 0 | 1 | 1 | 2 |
-| KITE | F-12 Peregrine | 1 | 0 | 1 | 0 | 2 | 2 |
-| BULWARK | OB-12 Medved | 1 | 0 | 1 | 2 | 0 | 2 |
-| WRAITH | Type-09 Tieshan | 1 | 1 | 2 | 1 | 1 | 3 |
-| RAZOR | F-12 Peregrine | 0 | 0 | 1 | 0 | 2 | 2 |
-| ANVIL | Type-99 Tank | 1 | 0 | 0 | 0 | 1 | 2 |
+Pilot ratings, before frame bonuses:
 
-| Frame | Structure | Armour | Evade | Move | Energy |
+| Pilot | Frame | Gunnery | Melee | Precision | Reflex | Systems | Countermeasures | Spirit |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| ACE | HX-7 Kestrel | 2 | 2 | 2 | 2 | 1 | 1 | 4 |
+| ANCHOR | M9 Teamster | 1 | 1 | 0 | 1 | 0 | 0 | 2 |
+| KITE | F-12 Peregrine | 1 | 0 | 1 | 1 | 1 | 0 | 2 |
+| BULWARK | OB-12 Medved | 1 | 0 | 1 | 2 | 0 | 1 | 2 |
+| WRAITH | Type-09 Tieshan | 1 | 1 | 2 | 1 | 2 | 1 | 3 |
+| RAZOR | F-12 Peregrine | 0 | 0 | 1 | 1 | 0 | 1 | 2 |
+| ANVIL | Type-99 Tank | 1 | 0 | 0 | 0 | 0 | 0 | 2 |
+
+The workshop has its own three pilots, in `data/catalogues/workshop_pilots.json`, on a seven-point
+budget (raised from five on 26 October 2026 to give them Systems and Countermeasures):
+
+| Pilot | Role | Gunnery | Melee | Precision | Reflex | Systems | Countermeasures | Spirit |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Sol / ANCHOR | Brawler | 1 | 1 | 0 | 1 | 0 | 2 | 2 |
+| Mara / KESTREL | Marksman | 2 | 0 | 1 | 0 | 2 | 0 | 2 |
+| Vale / ROOK | Skirmisher | 1 | 0 | 0 | 2 | 1 | 1 | 2 |
+
+| Frame | Structure | Armour | Reflex bonus | Move | Energy |
 | --- | ---: | ---: | ---: | ---: | --- |
 | HX-7 Kestrel | 60 | 1 | 2 | 4 | 5 / +2 |
 | M9 Teamster | 72 | 2 | 1 | 3 | 3 / +1 |
-| F-12 Peregrine | 14 | 0 | 3 | 5 | 3 / +1 |
+| F-12 Peregrine | 14 | 0 | 2 | 5 | 3 / +1 |
 | OB-12 Medved | 90 | 3 | 0 | 2.5 | 4 / +2 |
 | Type-09 Tieshan | 72 | 2 | 1 | 2.5 | 3 / +1 |
 | Type-99 Tank | 20 | 3 | 0 | 3 | 2 / +1 |
@@ -90,6 +146,12 @@ by at least 10 points, or adds a quarter of the target's remaining Structure in 
 | Coaxial Machine Gun | 8 × 2 | 0–3.5 | 360° | 0 | — |
 | Nose Autocannon | 5 × 3 | 0–5 | 90° | 0 | — |
 | Guided Missiles | 2 × 6 | 2–6 | 120° | 1 | — |
+| Molot Hydraulic Ram | 2 × 10 | edge 0.5 | 90° | 0 | heavy, melee |
+| Type-11 Dao Blade | 3 × 6 | edge 0.5 | 90° | 0 | melee |
+| BR-90 Two-Handed Marksman Rifle | 2 × 11 | 2–8 | 90° | 1 | heavy |
+| AC-30 Rotary Cannon | 6 × 4 | 0–4.5 | 120° | 1 | — |
+| SG-12 Breaching Shotgun | 5 × 4 | 0–2.5 | 120° | 0 | — |
+| Hands (small / medium / large / super heavy) | 2 × 3 / 4 / 5 / 7 | edge 0.5 | 90° | 0 | melee |
 
 ## Tuning log
 
@@ -117,9 +179,8 @@ At typical hit chances, one point of each stat is worth about:
 | --- | --- |
 | Gunnery / Melee | +20% damage from every weapon of that type |
 | Precision | +10% of hits ignore Armour; worth most for volume weapons against heavy Armour |
-| Evade / Guard | −10 points on every incoming (melee) hit chance |
+| Reflex | −10 points on every incoming hit chance, ranged or melee; also sets initiative |
 | Armour | −1 damage per incoming hit; large against volume fire, small against heavy guns |
 | Structure | 1 damage absorbed; parts should give +3 to +5 to be noticeable |
-| Reflex | 0.5 move and initiative order |
 
-Melee is rarer than ranged fire, so Melee and Guard parts should be cheaper than Gunnery parts.
+Melee is rarer than ranged fire, so Melee parts should be cheaper than Gunnery parts.

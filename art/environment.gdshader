@@ -3,6 +3,9 @@ render_mode cull_back, diffuse_lambert, specular_schlick_ggx;
 
 global uniform float sensor_mix;
 uniform vec4 paint : source_color = vec4(0.3, 0.34, 0.39, 1.0);
+uniform bool use_albedo_texture = false;
+uniform sampler2D albedo_texture : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform float texture_world_size = 4.0;
 uniform bool wet_ground = false;
 uniform float emission_strength = 0.0;
 uniform vec3 lamp_positions[4];
@@ -10,17 +13,32 @@ uniform int lamp_count = 0;
 uniform vec4 lamp_color : source_color = vec4(1.0, 0.8, 0.545, 1.0);
 uniform float reflection_strength = 0.18;
 varying vec3 world_position;
+varying vec3 world_normal;
 
 float wash(vec2 p) {
 	return sin(p.x * 1.7 + sin(p.y * 0.8)) * sin(p.y * 1.4 + cos(p.x * 0.6));
 }
 
-void vertex() { world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+void vertex() {
+	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	world_normal = normalize(MODEL_NORMAL_MATRIX * NORMAL);
+}
 
 void fragment() {
 	// Broad brush washes, no surface normals or metallic noise.
 	float brush = floor(wash(world_position.xz * 0.55 + world_position.y) * 3.0) / 3.0;
 	vec3 background = paint.rgb * (0.95 + brush * 0.08);
+	if (use_albedo_texture) {
+		// World projection keeps box walls and roofs at the same physical scale.
+		vec3 axis = abs(normalize(world_normal));
+		vec2 surface_uv = world_position.xz;
+		if (axis.x > axis.y && axis.x > axis.z) {
+			surface_uv = world_position.zy;
+		} else if (axis.z > axis.y) {
+			surface_uv = world_position.xy;
+		}
+		background *= texture(albedo_texture, surface_uv / max(texture_world_size, 0.01)).rgb;
+	}
 	float puddle = wet_ground ? smoothstep(0.12, 0.42, wash(world_position.xz * 0.46)) : 0.0;
 	background = mix(background, background * vec3(0.62, 0.66, 0.84), puddle * 0.55);
 	float value = dot(paint.rgb, vec3(0.2126, 0.7152, 0.0722));
