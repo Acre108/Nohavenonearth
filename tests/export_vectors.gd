@@ -1,11 +1,11 @@
 extends SceneTree
 ## Exports test vectors for the tabletop rules bot: inputs plus the exact results the Godot rules give.
 ## Run: Godot --headless --path . --script res://tests/export_vectors.gd
-## Writes tabletop/vectors/attacks.json and tabletop/vectors/stats.json. Every case is one line, so a
+## Writes tabletop/vectors/legacy/attacks.json and tabletop/vectors/legacy/stats.json (old stat scale; kept for history). Every case is one line, so a
 ## rules change shows up as a readable diff. Range, arc and line of sight are not exported: the tabletop
 ## measures them on hexes, so a case gives cover directly and assumes the attack is legal.
 
-const OUT_DIR := "res://tabletop/vectors/"
+const OUT_DIR := "res://tabletop/vectors/legacy/"
 const SITUATIONS: Array[String] = ["base", "cover", "locked", "push", "reroll", "all_powers", "charged", "wounded"]
 const WOUNDED_STRUCTURE := 10
 

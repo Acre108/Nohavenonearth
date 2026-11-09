@@ -1,25 +1,32 @@
 # Plan: No Haven on Earth as a Discord tabletop RPG
 
-**Status: Phases 0 and 1 started, 30 October 2026.** Decided: the bot and tools are Python; the
-rulebook is three shared Google Docs (this repo keeps a markdown archive); how Godot is used later is
-decided once the tabletop rules settle. Game development is paused. This plan turns the
-[tabletop d10 rules](tabletop-d10-system.md) and the Godot combat sandbox into a roleplaying game a
-group can run on Discord, with a GM, a rules bot and the [atlas](atlas/) as the setting.
+**Status: Phase 1 drafted, Phase 2 being prepared, 9 November 2026.** Decided: the bot and tools
+are Python; the rulebook is the four shared documents listed in the [rulebook index](rulebook/README.md);
+frame, weapon and Protocol numbers come from the Frames and Weapons sheet through
+[`tabletop/sheet_export.py`](../tabletop/sheet_export.py); how Godot is used later is decided once the
+tabletop rules settle. Game development is paused. This plan turns the Player's Guide and the combat
+sandbox into a roleplaying game a group can run on Discord, with a GM, a rules bot and the
+[atlas](atlas/) as the setting.
 
 ## 1. What each existing piece becomes
 
 | Piece | Today | Role from now on |
 | --- | --- | --- |
-| [tabletop-d10-system.md](tabletop-d10-system.md) | Playtest rules draft, combat only | **The rulebook's combat chapter.** Players and the GM read it; the bot implements it. |
-| `combat_rules.gd`, `melee_rules.gd`, `movement_rules.gd`, `unit_state.gd` | Godot rules code with ~18,700 passing checks | **Reference implementation.** Answers "what exactly happens?" and produces test vectors the bot must match. Not extended with new features. |
-| [Combat sandbox](https://claude.ai/artifact/JgqktsdJAv71A8j6XkpviL) (hex map, Gen 1 and Gen 2 frames, playtest squads) | claude.ai artifact used for the October playtests | **Rules lab and stand-in for the bot.** Its frame and weapon tables are the source for the Player's Guide; the GM runs fights in it until the bot exists, and settles disputed geometry with it. Godot's F3 debug menu does the same for the continuous game. |
-| `standard.json`, `costs.json`, workshop catalogues | Game data | **The bot's data**, loaded directly, validated strictly (unknown keys are errors). |
+| [Player's Guide](https://docs.google.com/document/d/1IJHlpCCz_T-9L6Z7k2ux4K3wROiuft49nsZz6LCm01M/edit) | Playtest rulebook, all rules | **What the bot implements.** Where it and anything else disagree, the guide wins. |
+| [tabletop-d10-system.md](tabletop-d10-system.md) | First rules draft, combat only | **Superseded** by the Player's Guide, which it was written into. Old stat scale. |
+| `combat_rules.gd`, `melee_rules.gd`, `movement_rules.gd`, `unit_state.gd` | Godot rules code with ~18,700 passing checks | **Historical reference.** Its formulas match the guide once stats are shifted (+5), but it lacks stances, the Declare step and the current numbers. Not extended. |
+| [Combat sandbox](https://claude.ai/artifact/JgqktsdJAv71A8j6XkpviL) (hex map, Gen 1 and Gen 2 frames, playtest squads) | claude.ai artifact used for the October playtests | **Rules lab and stand-in for the bot.** The GM runs fights in it until the bot exists, and settles disputed geometry with it. Since 9 November it carries the sheet's numbers, the 1–14 pilots, brace and evade, the planted bonus, the full-Move reroll and the unlimited crit and Brace rolls; it does not run secret orders, the Declare step, strict attack order or withdrawal. Godot's F3 debug menu does the same for the continuous game. |
+| [Frames and Weapons sheet](https://docs.google.com/spreadsheets/d/1-5qpooUhSsjcMrzQWp6DiSxTNM7Y1OZav0AaZKeT00E/edit) | Every tabletop number, with IDs, Protocol lists and tags since 9 November | **The bot's data.** `tabletop/sheet_export.py` checks it strictly and writes `tabletop/data/catalogue.json`. |
+| `standard.json`, `costs.json`, workshop catalogues | Game data, older numbers | **Not used by the bot.** `catalogue_check.py` still checks them for the Godot prototype. |
 | Teamster and Kestrel workshops | Mech fitting UI | **Model for the mech sheet:** regions, two components per region, Frame / Pilot / Total / Threshold. |
 | Atlas and NPPL briefs | Lore | **The setting chapter** and campaign hooks. |
 
 One limit matters: Protocols, the automatic Target Lock, ammunition and evade/brace are agreed but
-**not built in Godot**. For those four, the rulebook is the source of truth and the sandbox cannot
-check them. Test vectors for them are written by hand from the worked examples in §14 of the rules.
+**not built in Godot**, and the Phase 0 vectors use the old stat scale and the old numbers. The bot's
+vectors were rebuilt on 9 November ([plan and record](test-vector-rebuild.md),
+[files](../tabletop/vectors/README.md)): a reference engine written from the Player's Guide,
+hand-worked anchors and dice scripts, the old cases moved to the new scale, and generated cases for
+the sheet's weapons, locks, Protocols and stats.
 
 ## 2. Phases
 
@@ -52,8 +59,8 @@ Fill the gaps listed in §15 of the rules, smallest first:
 
 1. **Rulings already owed** by the prototype review: melee reach is measured edge to edge; decide
    what withdrawal costs.
-2. **Pilot creation:** the seven-point budget from the workshop pilots, background and bloc, one
-   pilot ability. ANCHOR, KESTREL and ROOK become the pregenerated characters.
+2. **Pilot creation:** eight stats on the 1–14 scale, every stat from 4 with 15 points, background
+   and bloc. ANCHOR, KESTREL, ROOK, KITE, BULWARK and RAZOR are the pregenerated Regulars.
 3. **Pilot injury and ejection** when a mech is destroyed.
 4. **Between missions:** repair, refit and Will recovery, using the workshop's repair funds as the
    model for campaign income.
@@ -72,28 +79,40 @@ asking the GM how a rule works.
 guide already existed as the Roleplaying Setting Claude Doc, which stays where it is and is linked
 from both guides. Next: play one fight from the guides and settle the proposed rules.
 
+*Status, 9 November:* items 1–6 are all drafted, along with the 1–14 stat scale, brace and evade,
+the Declare step and on-foot rules. Solo playtests ran on 4 November. The rulings the bot needed
+(unlimited crit and Brace rolls, Countered wording, attacks one at a time, aircraft stance,
+initiative timing and others) went into the guides as Proposed on 9 November.
+
 ### Phase 2 — Bot, minimum playable (3–4 weeks)
 
 Build order, each step usable at the table on its own:
 
-1. **Dice:** `!roll`, `!check <rating> <difficulty>` with the 1-always/10-never limits.
-2. **Sheets:** `!pilot` and `!mech` create and show units from the catalogues; ids everywhere.
-3. **Attacks:** `!forecast` and `!fire` ported from `CombatRules.forecast` and `resolve`; Push and
-   Will; Armour, crits, glances and rerolls. Must reproduce every Phase 0 vector.
-4. **The round:** initiative by Reflex with random ties, phase tracking, secret orders by DM, then
-   reveal; Energy recharge and effect countdown at end of round.
-5. **Resources and effects:** Structure, Energy, Will, magazines and spares, Protocol effects,
-   engagements and Charge bonuses, stance.
-6. **Protocols and Target Lock** from the hand-written vectors.
+1. **Dice:** `/roll`, `/check <stat> <difficulty>` with the 1-always/10-never limits (crit and
+   Brace rolls excepted).
+2. **Sheets:** `/pilot` and `/mech` create and show units from `tabletop/data/catalogue.json`; IDs
+   everywhere, with autocomplete on frame, weapon and target names.
+3. **Attacks:** `/forecast` and `/fire`, following the Player's Guide; Push and Will; Armour, crits,
+   glances, rerolls, brace halving, the planted bonus and the full-Move reroll. Before stances are
+   revealed, the forecast shows evade, full-Move evade and brace side by side. Must reproduce every
+   rebuilt vector.
+4. **The round:** initiative by Reflex set at the start of the round, random ties, phase tracking,
+   two secret steps by DM (movement order with stance and hexes moved, then the Declare step), then
+   reveal; attacks one at a time; Energy recharge and effect countdown at end of round.
+5. **Resources and effects:** Structure, Energy, Will (none for unnamed enemies), magazines and
+   spares, Protocol effects, engagements and Charge bonuses, stance, and the frame and weapon tags.
+6. **Protocols and Target Lock** from the Protocols tab and the hand-written vectors.
 
 Range, arc, line of sight and cover come from the command in this phase
-(`!fire ar40 at BULWARK range 4 cover 1`), with the GM keeping the map in a shared image or a
-virtual tabletop.
+(`/fire ar40_longhorn_rifle at BULWARK range 4 cover 1`; range includes altitude), with the GM
+keeping the map in a shared image or a virtual tabletop. Orders carry the hexes moved, and the GM
+confirms them after collisions, because the full-Move reroll, the bracing move limit and the
+planted bonus depend on it.
 
 Technical choices (recommended):
 
-- **Python with discord.py.** GDScript reads like Python, so porting the rules code is close to
-  line-for-line.
+- **Python with discord.py, slash commands and buttons.** Slash commands give autocomplete and need
+  no privileged Message Content intent; buttons and select menus collect secret orders by DM.
 - **SQLite** for persistence. It gives the atomic writes the workshop save lacked.
 - **Validate, then announce:** an action is checked for legality before any ability hook or message
   fires (the `before_attack` ordering bug in the review).

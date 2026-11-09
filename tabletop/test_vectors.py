@@ -1,104 +1,163 @@
-"""The exported test vectors are complete: every closed-form target in them follows from the case's own
-inputs and the catalogue, using the tabletop formulas in docs/tabletop-d10-system.md §7.
+"""Test vectors against the reference rules engine (tabletop/rules_ref.py).
 
-Regenerate the vectors with: Godot --headless --path . --script res://tests/export_vectors.gd
+- anchors.json and dice.json are worked by hand from the Player's Guide: they check the engine.
+- converted.json holds the Godot prototype's own results: an independent check of the engine.
+- catalogue_attacks.json, protocols.json and stats.json are built by build_vectors.py: they must
+  match a fresh build, so a rules or sheet change shows up as a reviewable diff.
 """
 
 import json
-import math
 import unittest
+from fractions import Fraction
 from pathlib import Path
 
-from catalogue_check import CATALOGUE_DIR
+import build_vectors
+import rules_ref as rr
 
 VECTORS = Path(__file__).resolve().parent / "vectors"
-SIZE_ADJUSTMENT = {"small": -1, "medium": 0, "large": 1, "super_heavy": 2}
-CHARGE_BONUS = 2
-LOCK_REROLLS = 1
-GLANCE_WINDOW = 2
+
+DEFAULTS = {
+    "weapon": {"ap": 0, "aim": 0, "heavy": False, "melee": False, "damage_type": "Ballistic", "on_hit": None,
+               "ignore_cover": 0, "kneel_only": False},
+    "defender": {"armour_type": "None", "size": "Medium", "brace": 5, "stance": "evade", "full_move": False},
+    "situation": {"cover": 0, "lock": "roll", "push": False, "see_it": False, "planted": False, "charged": False,
+                  "modifier": 0},
+}
 
 
-def load(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
+def load(name):
+    return json.loads((VECTORS / name).read_text(encoding="utf-8"))
 
 
-def quarter(value: float) -> float:
-    # Half away from zero, as Godot's roundf; Python's round() would round half to even.
-    return math.copysign(math.floor(abs(value) * 4 + 0.5), value) / 4
+def with_defaults(case):
+    out = dict(case)
+    for part, defaults in DEFAULTS.items():
+        out[part] = {**defaults, **case.get(part, {})}
+    return out
 
 
-def toward_zero(value: float) -> float:
-    stepped = quarter(value)
-    return math.copysign(math.floor(abs(stepped)), stepped)
+def forecast(case):
+    attack = rr.Attack.from_case(with_defaults(case))
+    try:
+        return {k: (float(v) if isinstance(v, Fraction) else v) for k, v in attack.forecast().items()}
+    except rr.IllegalAttack as err:
+        return {"illegal": str(err).split(":")[0]}
 
 
-def resolve_stat(pilot: float, bonus: float, fractions: float, cap: float) -> int:
-    whole = toward_zero(bonus)
-    spare = quarter(bonus) - whole + quarter(fractions)
-    return int(min(max(math.floor(quarter(pilot)) + whole + toward_zero(spare), 0), cap))
+class Anchors(unittest.TestCase):
+    data = load("anchors.json")
+
+    def check_fields(self, got, expected, cid, tol=1e-9):
+        for key, want in expected.items():
+            self.assertIn(key, got, f"{cid}: no {key}")
+            if isinstance(want, float) and got[key] is not None:
+                self.assertAlmostEqual(got[key], want, delta=tol, msg=f"{cid}: {key}")
+            else:
+                self.assertEqual(got[key], want, f"{cid}: {key}")
+
+    def test_attacks(self):
+        for case in self.data["attacks"]:
+            with self.subTest(case["id"]):
+                self.check_fields(forecast(case), case["expected"], case["id"])
+
+    def test_locks(self):
+        for case in self.data["locks"]:
+            t, countered = rr.lock_targets(case["systems"], case["countermeasures"])
+            got = {"lock_target": t, "lock_countered_to": countered,
+                   "results": [rr.lock_result(r, case["systems"], case["countermeasures"]) for r in range(1, 11)]}
+            self.check_fields(got, case["expected"], case["id"])
+
+    def test_protocols(self):
+        for case in self.data["protocols"]:
+            success, countered = rr.protocol_targets(case["systems"], case["modifier"], case["hostile"],
+                                                     case.get("target_cm"), case["push"])
+            got = {"target": success, "countered_to": countered}
+            got.update({f"roll_{r}": rr.protocol_result(r, success, countered) for r in range(1, 11)})
+            self.check_fields(got, case["expected"], case["id"])
+
+    def test_purges(self):
+        for case in self.data["purges"]:
+            t = rr.purge_target(case["countermeasures"], case["strength"], case["modifier"], case["push"])
+            self.assertEqual(t, case["expected"]["target"], case["id"])
+
+    def test_stats(self):
+        for case in self.data["stats"]:
+            got = rr.resolve_stat(case["pilot"], case["whole"], Fraction(case["fractions"]), case["limit"])
+            self.assertEqual(got, case["expected"], case["id"])
+
+    def test_tasks(self):
+        for case in self.data["tasks"]:
+            got = rr.task_target(case["stat"], case["modifier"], case["push"], case["help"])
+            self.assertEqual(got, case["expected"], case["id"])
 
 
-class VectorTest(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        standard = load(CATALOGUE_DIR / "standard.json")
-        cls.weapons = {weapon["id"]: weapon for weapon in standard["weapons"]}
-        cls.abilities = {ability["id"]: ability for ability in standard["abilities"]}
-        cls.attacks = load(VECTORS / "attacks.json")["cases"]
-        cls.stats = load(VECTORS / "stats.json")["cases"]
+class Dice(unittest.TestCase):
+    def test_scripted_attacks(self):
+        for case in load("dice.json")["cases"]:
+            with self.subTest(case["id"]):
+                attack = rr.Attack.from_case(with_defaults(case))
+                res = attack.resolve(case["dice"])
+                got = {"lock": res["lock"], "results": [s["result"] for s in res["shots"]],
+                       "damage": [s["damage"] for s in res["shots"]], "total": res["total"],
+                       "will_see_it": res["will_see_it"], "on_hit": res["on_hit"], "destroyed": res["destroyed"]}
+                for key, want in case["expected"].items():
+                    self.assertEqual(got[key], want, f"{case['id']}: {key}")
 
-    def test_cases_are_unique_and_known(self):
-        ids = [case["id"] for case in self.attacks]
-        self.assertEqual(len(ids), len(set(ids)))
-        self.assertGreater(len(ids), 400)
-        for case in self.attacks:
-            self.assertIn(case["weapon"], self.weapons, case["id"])
+    def test_dice_must_all_be_used(self):
+        case = with_defaults(load("dice.json")["cases"][0])
+        attack = rr.Attack.from_case(case)
+        with self.assertRaises(ValueError):
+            attack.resolve(case["dice"] + [5])
+        with self.assertRaises(ValueError):
+            attack.resolve(case["dice"][:-1])
 
-    def test_situations_are_covered(self):
-        cases = self.attacks
-        self.assertTrue(any(c["situation"]["cover"] for c in cases))
+
+class Converted(unittest.TestCase):
+    def test_engine_matches_prototype(self):
+        cases = load("converted.json")["cases"]
+        self.assertEqual(len(cases), 505)
+        exact = ("hit_target", "glance_to", "crit_target", "effective_armour", "hit_damage", "crit_damage",
+                 "glance_damage")
+        for case in cases:
+            got = forecast(case)
+            for key in exact:
+                self.assertEqual(got[key], case["expected"][key], f"{case['id']}: {key}")
+            for key in ("expected_damage", "p_damage", "p_destroy"):
+                self.assertAlmostEqual(got[key], case["expected"][key], delta=0.006, msg=f"{case['id']}: {key}")
+
+
+class Built(unittest.TestCase):
+    def test_converted_is_current(self):
+        self.assertEqual(load("converted.json")["cases"],
+                         json.loads(json.dumps(build_vectors.converted_cases())))
+
+    def test_catalogue_is_current(self):
+        fresh = json.loads(json.dumps(build_vectors.catalogue_cases()))
+        self.assertEqual(load("catalogue_attacks.json")["cases"], fresh,
+                         "run py tabletop/build_vectors.py after a sheet export or rules change")
+
+    def test_protocols_are_current(self):
+        data = load("protocols.json")
+        fresh = json.loads(json.dumps(build_vectors.protocol_sections()))
+        for key in ("locks", "protocols", "purges"):
+            self.assertEqual(data[key], fresh[key], key)
+
+    def test_stats_are_current(self):
+        self.assertEqual(load("stats.json")["cases"], json.loads(json.dumps(build_vectors.stat_cases())))
+
+    def test_catalogue_coverage(self):
+        cases = load("catalogue_attacks.json")["cases"]
+        catalogue = json.loads(build_vectors.CATALOGUE.read_text(encoding="utf-8"))
+        self.assertEqual({c["weapon_id"] for c in cases}, {w["id"] for w in catalogue["weapons"]})
+        self.assertTrue(any(c["defender"]["stance"] == "brace" for c in cases))
+        self.assertTrue(any(c["defender"]["full_move"] for c in cases))
+        self.assertTrue(any(c["situation"]["see_it"] for c in cases))
+        self.assertTrue(any(c["situation"]["planted"] for c in cases))
+        self.assertTrue(any(c["situation"]["push"] for c in cases))
         self.assertTrue(any(c["situation"]["charged"] for c in cases))
-        self.assertTrue(any(c["situation"]["locked"] and c["situation"]["use_will"] for c in cases))
-        self.assertTrue(any(c["expected"]["hit_target"] == 9 for c in cases), "upper limit")
-        self.assertTrue(any(c["expected"]["hit_target"] == 1 for c in cases), "lower limit")
-        self.assertTrue(any(0 < c["expected"]["p_destroy"] < 1 for c in cases))
-
-    def test_targets_follow_from_inputs(self):
-        for case in self.attacks:
-            weapon = self.weapons[case["weapon"]]
-            attacker, defender, situation, expected = case["attacker"], case["defender"], case["situation"], case["expected"]
-            will = attacker["will"]
-            push = 0
-            if situation["push"] and "push" in attacker["abilities"] and will >= self.abilities["push"]["will_cost"]:
-                push = self.abilities["push"]["amount"] // 10
-                will -= self.abilities["push"]["will_cost"]
-            raw = (5 + attacker["attack_rating"] - defender["reflex"] - situation["cover"] + weapon.get("aim_bonus", 0) // 10
-                   + SIZE_ADJUSTMENT[defender["size_class"]] + (CHARGE_BONUS if situation["charged"] else 0) + push)
-            hit = min(max(raw, 1), 9)
-            self.assertEqual(expected["hit_target"], hit, case["id"])
-            self.assertEqual(expected["pushed"], push > 0, case["id"])
-            self.assertEqual(expected["crit_target"], attacker["precision"], case["id"])
-            glance = hit + min(GLANCE_WINDOW, 10 - hit) if weapon.get("heavy") else None
-            self.assertEqual(expected["glance_target"], glance, case["id"])
-            matched = 2 if defender["armour_type"] == weapon.get("damage_type", "ballistic") else 0
-            armour = max(0, defender["armour"] + matched - weapon.get("armour_piercing", 0))
-            self.assertEqual(expected["armour"], armour, case["id"])
-            self.assertEqual(expected["hit_damage"], max(0, weapon["damage"] - armour), case["id"])
-            self.assertEqual(expected["crit_damage"], weapon["damage"], case["id"])
-            self.assertEqual(expected["glance_damage"], max(0, weapon["damage"] // 2 - armour), case["id"])
-            rerolls = LOCK_REROLLS if situation["locked"] else 0
-            see_it = self.abilities["see_it"]
-            if situation["use_will"] and "see_it" in attacker["abilities"] and will >= see_it["will_cost"]:
-                rerolls += see_it["amount"]
-            self.assertEqual(expected["rerolls"], rerolls, case["id"])
-            for key in ["p_damage", "p_destroy"]:
-                self.assertTrue(0 <= expected[key] <= 1, case["id"])
-            self.assertLessEqual(expected["expected_damage"], weapon["shots"] * weapon["damage"] + 1e-6, case["id"])
-
-    def test_stat_resolution(self):
-        for case in self.stats:
-            total = resolve_stat(case["pilot"], case["bonus"], case["fractions"], case["cap"])
-            self.assertEqual(case["total"], total, case)
+        self.assertTrue(any(c["expected"].get("p_on_hit") is not None for c in cases))
+        self.assertTrue(any(0 < c["expected"].get("p_destroy", 0) < 1 for c in cases))
+        self.assertFalse(any("illegal" in c["expected"] for c in cases))
 
 
 if __name__ == "__main__":
