@@ -166,6 +166,27 @@ td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-nume
 .screencover .box { max-width: 440px; width: 100%; }
 .screencover h2 { font-size: 28px; text-transform: uppercase; }
 .screenbar { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; padding: 4px 10px; border-radius: 4px; background: var(--accent-soft); }
+/* Terse card: resource strip, stat row, forecast grid, chips and kept-open details. */
+.res { display: flex; flex-wrap: wrap; gap: 3px 12px; font-size: 12.5px; color: var(--muted); align-items: center; }
+.res b { color: var(--ink); font-family: var(--font-mono); font-weight: 600; }
+.res span[title], .fc > div[title], b[title], h2[title] { cursor: help; }
+.statrow b.up { color: var(--good); } .statrow b.down { color: var(--bad); }
+.pill.warnpill { border-color: var(--warn); color: var(--warn); }
+.fc { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
+.fc > div { background: var(--panel); border-radius: 4px; padding: 4px 6px; font-size: 12px; }
+.fc > div.wide { grid-column: span 2; }
+.fc b { font-family: var(--font-mono); font-size: 15px; }
+.fc b.big { display: block; font-size: 28px; }
+.fc .label { display: block; }
+.opt.dim { opacity: 0.55; }
+[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+.opt .pill, .res .pill, td .pill { font-size: 10.5px; }
+details { border: 1px solid var(--line); border-radius: 4px; background: var(--raised); }
+details > summary { cursor: pointer; padding: 6px 10px; font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; color: var(--muted); }
+details > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+details .detbody { padding: 4px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
+img.art { display: block; width: 100%; height: auto; border-radius: 3px; }
+.dtab td.likely, .dtab th.likely { box-shadow: inset 0 0 0 1px var(--accent); }
 .cols3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .cols3 > div { background: var(--panel); border-radius: 4px; padding: 5px 6px; font-size: 12px; }
 .cols3 b.big2 { display: block; font-family: var(--font-mono); font-size: 20px; }
@@ -213,7 +234,7 @@ td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-nume
 
 <div class="app">
   <header class="top">
-    <div class="brand"><h1>No Haven Combat Sandbox</h1><span>Player's Guide d10 rules, playtest edition · revised 9 November 2026 · numbers from the Frames and Weapons sheet</span></div>
+    <div class="brand"><h1>No Haven Combat Sandbox</h1><span title="Player's Guide d10 rules, playtest edition, revised 9 November 2026; numbers from the Frames and Weapons sheet">Playtest rules · sheet 9 Nov 2026</span></div>
     <div class="phases" id="phases"></div>
     <div class="tools" id="tools"></div>
   </header>
@@ -222,15 +243,15 @@ td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-nume
     <section class="board">
       <div class="mapwrap"><svg id="map" role="img" aria-label="Hex battle map"></svg></div>
       <div class="legend">
-        <span><i style="background:var(--cover-1)"></i>Light cover (1)</span>
-        <span><i style="background:var(--cover-2)"></i>Heavy cover (2)</span>
-        <span><i style="background:var(--cover-2);border-color:var(--obs-low);border-width:2px"></i>Tall cover (2, GROUND and LOW)</span>
+        <span><i style="background:var(--cover-1)"></i>Light cover 1</span>
+        <span><i style="background:var(--cover-2)"></i>Heavy cover 2</span>
+        <span title="Tall cover: 2, at GROUND and LOW"><i style="background:var(--cover-2);border-color:var(--obs-low);border-width:2px"></i>Tall cover 2</span>
         <span><i style="background:var(--obs-low)"></i>Low obstacle</span>
         <span><i style="background:var(--obs-tall)"></i>Tall obstacle</span>
-        <span><i style="background:var(--wreck)"></i>Wreck (light cover)</span>
-        <span><b style="color:var(--ink)">L / H</b> badge: LOW / HIGH band</span>
-        <span><i style="background:var(--range-soft);border-color:var(--good)"></i>Weapon reach, in sight</span>
-        <span><i style="background:none;border:1px dashed var(--bad)"></i>Weapon reach, out of sight</span>
+        <span title="Wreck: light cover"><i style="background:var(--wreck)"></i>Wreck</span>
+        <span title="Counter badge: LOW or HIGH band"><b style="color:var(--ink)">L/H</b> band</span>
+        <span title="Selected weapon's reach, in sight"><i style="background:var(--range-soft);border-color:var(--good)"></i>Reach</span>
+        <span title="Selected weapon's reach, out of sight"><i style="background:none;border:1px dashed var(--bad)"></i>Reach, unseen</span>
       </div>
       <div class="log" id="log"></div>
     </section>
@@ -633,46 +654,48 @@ function applyOnHit(a, d, w, shots, killed, dice = d10) {
 // The unit card's notes for its tags, and the tags the page does not apply.
 function specialNotes(u) {
   const f = fr(u), t = f.tags || {}, notes = [], gaps = [];
+  // Each note is [short chip label, full sentence]; the unit card shows the label with the sentence as its tooltip.
   const FN = {
-    point_defence: n => `Point defence ${n}: explosive ranged attacks against it, or an ally within ${n}, are −2.`,
-    front_cover: n => `Front cover: +${n} cover against attacks from its Front arc.`,
-    dug_in_cover: n => `Dug in: +${n} cover if it has not moved this round${u.moved ? ' (it has moved)' : ''}.`,
-    shelter_cover: n => `Shelter: +${n} cover to allies within 1 behind it.`,
-    damage_floor: n => `Damage floor: hits of ${n} damage or less after Armour deal none.`,
-    charge_reach: n => `Charge reaches Move + ${n} = ${moveOf(u) + n}.`,
-    still_stealth_range: n => `Still stealth: while it has not moved this round it cannot be targeted beyond ${n}${u.moved ? ' (it has moved)' : ''}.`,
-    stealth_range: n => `Silent running: cannot be targeted beyond ${n} until it attacks${u.revealed ? ' (it has attacked)' : ''}.`,
-    shoot_and_scoot: n => `Shoot and scoot: after its attack it may move ${n} hex${n > 1 ? 'es' : ''}, unless it charged.`,
-    extra_spare: n => `${n} extra spare magazine${n > 1 ? 's' : ''} for its first ranged weapon.`,
-    limits_off: () => 'Limits off: in Planning, 1 Will for +1 Reflex this round.',
-    linked_fire: () => `Linked fire: ${(f.twins || []).map(w => W[w].name).join(', ') || 'a twin weapon'} fires as one attack, double shots.`,
-    anchor: () => 'Anchor: its ranged weapons fire only if it did not move this round.',
-    rattletrap: () => `Rattletrap: d10 at mission start, on a 1 −1 Move for the mission${u.rattled ? '. <b>Rolled a 1: −1 Move.</b>' : ' (rolled fine)'}.`,
-    augmented_only: () => `Augmented pilots only: an unaugmented pilot's Reflex counts as 5${u.augmented ? '' : ' (applied)'}.`,
-    unarmed: () => 'Unarmed apart from its hands.',
-    space_only: () => 'Space only (the sandbox map is a ground map).',
-    swap_pit: () => 'Needs a swap pit between missions.',
+    point_defence: n => [`Point defence ${n}`, `Point defence ${n}: explosive ranged attacks against it, or an ally within ${n}, are −2.`],
+    front_cover: n => [`Front cover +${n}`, `Front cover: +${n} cover against attacks from its Front arc.`],
+    dug_in_cover: n => [`Dug in +${n}${u.moved ? ' (moved)' : ''}`, `Dug in: +${n} cover if it has not moved this round${u.moved ? ' (it has moved)' : ''}.`],
+    shelter_cover: n => [`Shelter +${n}`, `Shelter: +${n} cover to allies within 1 behind it.`],
+    damage_floor: n => [`Damage floor ${n}`, `Damage floor: hits of ${n} damage or less after Armour deal none.`],
+    charge_reach: n => [`Charge reach ${moveOf(u) + n}`, `Charge reaches Move + ${n} = ${moveOf(u) + n}.`],
+    still_stealth_range: n => [`Still stealth ${n}${u.moved ? ' (moved)' : ''}`, `Still stealth: while it has not moved this round it cannot be targeted beyond ${n}${u.moved ? ' (it has moved)' : ''}.`],
+    stealth_range: n => [`Silent ${n}${u.revealed ? ' (revealed)' : ''}`, `Silent running: cannot be targeted beyond ${n} until it attacks${u.revealed ? ' (it has attacked)' : ''}.`],
+    shoot_and_scoot: n => [`Scoot ${n}`, `Shoot and scoot: after its attack it may move ${n} hex${n > 1 ? 'es' : ''}, unless it charged.`],
+    extra_spare: n => [`+${n} spare`, `${n} extra spare magazine${n > 1 ? 's' : ''} for its first ranged weapon.`],
+    limits_off: () => ['Limits off', 'Limits off: in Planning, 1 Will for +1 Reflex this round.'],
+    linked_fire: () => ['Linked fire', `Linked fire: ${(f.twins || []).map(w => W[w].name).join(', ') || 'a twin weapon'} fires as one attack, double shots.`],
+    anchor: () => ['Anchor', 'Anchor: its ranged weapons fire only if it did not move this round.'],
+    rattletrap: () => [u.rattled ? 'Rattletrap: −1 Move' : 'Rattletrap', `Rattletrap: d10 at mission start, on a 1 −1 Move for the mission${u.rattled ? '. Rolled a 1: −1 Move.' : ' (rolled fine)'}.`],
+    augmented_only: () => ['Augmented only', `Augmented pilots only: an unaugmented pilot's Reflex counts as 5${u.augmented ? '' : ' (applied)'}.`],
+    unarmed: () => ['Unarmed', 'Unarmed apart from its hands.'],
+    space_only: () => ['Space only', 'Space only (the sandbox map is a ground map).'],
+    swap_pit: () => ['Swap pit', 'Needs a swap pit between missions.'],
+    transform_no_attack: () => ['Slow transform', 'Transforming takes a full round: it cannot attack in a round it changes band.'],
   };
   for (const [k, v] of Object.entries(t)) {
     if (!TAG_SUPPORT.frame[k]) gaps.push(k);
-    else if (FN[k]) notes.push(FN[k](v === true ? 1 : v));
+    else if (FN[k]) { const [s, txt] = FN[k](v === true ? 1 : v); notes.push({ k, s, t: txt }); }
   }
   const WN = {
-    ignore_cover: (w, n) => `${w.name} ignores ${n} cover.`,
-    reach: (w, n) => `${w.name} reaches ${n} hexes in melee.`,
-    vs_protocol_user: (w, n) => `${w.name}: +${n} to hit a unit that used a Protocol this round.`,
-    cooldown: (w, n, wid) => `${w.name}: after two attacks it cools down for ${n} rounds${coolingUntil(u, wid) >= S.round ? ` (cooling until the end of round ${coolingUntil(u, wid)})` : u.cool && u.cool[wid] && u.cool[wid].count ? ' (1 attack made)' : ''}.`,
-    gm_issue: w => `${w.name}: issued only when the GM allows.`,
-    indirect: w => `${w.name}: may fire without line of sight if an ally can see the target.`,
-    needs_generator: w => `${w.name}: needs its generator (the GM checks it).`,
-    anchor: w => `${w.name}: fires only if the unit did not move this round.`,
-    on_hit: (w, v) => ON_HIT_SUPPORTED.includes(v) ? `${w.name}: ${v} on a hit.` : null,
+    ignore_cover: (w, n) => [`ignores cover ${n}`, `${w.name} ignores ${n} cover.`],
+    reach: (w, n) => [`reach ${n}`, `${w.name} reaches ${n} hexes in melee.`],
+    vs_protocol_user: (w, n) => [`+${n} vs Protocol user`, `${w.name}: +${n} to hit a unit that used a Protocol this round.`],
+    cooldown: (w, n, wid) => [`cooldown ${n}${coolingUntil(u, wid) >= S.round ? `: cooling to R${coolingUntil(u, wid)}` : u.cool && u.cool[wid] && u.cool[wid].count ? ': 1 attack made' : ''}`, `${w.name}: after two attacks it cools down for ${n} rounds.`],
+    gm_issue: w => ['GM issue', `${w.name}: issued only when the GM allows.`],
+    indirect: w => ['indirect', `${w.name}: may fire without line of sight if an ally can see the target.`],
+    needs_generator: w => ['generator', `${w.name}: needs its generator (the GM checks it).`],
+    anchor: w => ['anchor', `${w.name}: fires only if the unit did not move this round.`],
+    on_hit: (w, v) => ON_HIT_SUPPORTED.includes(v) ? [`${v[0].toUpperCase()}${v.slice(1)} on hit`, `${w.name}: ${v} on a hit.`] : null,
   };
   for (const wid of u.weapons) {
     const w = W[wid];
     for (const [k, v] of Object.entries(w.tags || {})) {
       if (!TAG_SUPPORT.weapon[k] || (k === 'on_hit' && !ON_HIT_SUPPORTED.includes(v))) gaps.push(k === 'on_hit' ? `on_hit:${v}` : k);
-      else if (WN[k]) { const s = WN[k](w, v === true ? 1 : v, wid); if (s) notes.push(s); }
+      else if (WN[k]) { const r = WN[k](w, v === true ? 1 : v, wid); if (r) notes.push({ k, wid, s: r[0], t: r[1] }); }
     }
   }
   return { notes, gaps: [...new Set(gaps)] };
@@ -2467,188 +2490,267 @@ function renderMap() {
   $('layer').innerHTML = parts.join('');
 }
 
+// ---------- Rendering helpers: tooltips, chips and <details> that stay open across re-renders ----------
+// The side panel shows numbers and controls; occasional detail lives in title tooltips or closed <details>, and rules
+// explanations live in the Player's Guide.
+const tip = s => String(s ?? '').replace(/<[^>]+>/g, '').replace(/&(?![a-z#0-9]+;)/gi, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const chip = (s, t, cls = '') => `<span class="pill ${cls}"${t ? ` title="${tip(t)}"` : ''}>${s}</span>`;
+const OPEN = new Set();
+const det = (id, summary, body, title) => `<details data-keep="${id}"${OPEN.has(id) ? ' open' : ''}><summary${title ? ` title="${tip(title)}"` : ''}>${summary}</summary><div class="detbody">${body}</div></details>`;
+// A button that cannot be used now: still focusable, with the reason as its tooltip (onClick ignores it).
+const disTip = (why, desc) => why ? ` aria-disabled="true" title="${tip(desc ? `${why}. ${desc}` : why)}"` : desc ? ` title="${tip(desc)}"` : '';
+const wShort = w => w.name.split(' ')[0];
+const wStats = w => `${w.shots}×${w.dmg}${w.ap ? ` AP${w.ap}` : ''}`;
+function ammoTxt(u, wid) { const w = W[wid], am = u.ammo[wid]; return [am ? `${am.mag}/${w.mag}+${am.spares}` : '', w.energy ? `${w.energy} En` : ''].filter(Boolean).join(' · ') || '—'; }
+function shortSpecial(s) { const first = s.replace(/^Proposed\.\s*/, '').split(/[:.]/)[0].trim(), ws = first.split(/\s+/); return ws.length > 3 ? ws.slice(0, 2).join(' ') + '…' : first; }
+function weaponChips(u, wid, notes) {
+  const w = W[wid], out = [];
+  if (w.heavy) out.push(chip('heavy', 'Heavy: a miss by 1–2 is a glance'));
+  if (w.kneel) out.push(chip('kneel', w.special));
+  if (w.aim) out.push(chip(`aim ${w.aim > 0 ? '+' : '−'}${Math.abs(w.aim)}`, 'Aim: added to the hit target'));
+  const mine = notes.filter(n => n.wid === wid);
+  for (const n of mine) out.push(chip(n.s, w.special ? `${w.special}.` : n.t));
+  if (!mine.length && w.special && !w.kneel && !(/^Powered/.test(w.special) && w.energy)) out.push(chip(shortSpecial(w.special), w.special));
+  return out.join(' ');
+}
+const PRESET_GROUPS = [
+  ['Gen 2', { contact: 'Contact (8 hexes)', skirmish: 'Skirmish' }],
+  ['Gen 1', { gen1: 'All nine frames', g1_us_ep: 'US v Pact', g1_cu_ep: 'Union v Pact', g1_us_cu: 'US v Union' }],
+  ['October loadouts', { oct_us_ep: 'Oct: US v Pact', oct_cu_ep: 'Oct: Union v Pact', oct_us_cu: 'Oct: US v Union' }],
+];
+function presetOptions(sel) {
+  const named = new Set(PRESET_GROUPS.flatMap(([, g]) => Object.keys(g)));
+  const opt = (k, n) => `<option value="${k}" ${sel === k ? 'selected' : ''} title="${tip(PRESETS[k].name)}">${n}</option>`;
+  const rest = Object.keys(PRESETS).filter(k => !named.has(k));
+  return PRESET_GROUPS.map(([g, ks]) => `<optgroup label="${g}">${Object.entries(ks).filter(([k]) => PRESETS[k]).map(([k, n]) => opt(k, n)).join('')}</optgroup>`).join('')
+    + (rest.length ? `<optgroup label="Other">${rest.map(k => opt(k, PRESETS[k].name)).join('')}</optgroup>` : '');
+}
+
 function renderHeader() {
   const ph = [['plan', 'Plan & move'], ['action', 'Action'], ...(S.screen ? [['declare', 'Declare']] : []), ['attack', 'Attack']];
   $('phases').innerHTML = `<div class="round">Round ${S.round}</div>` + ph.map(([k, n]) => `<div class="${S.phase === k ? 'cur' : ''}">${n}</div>`).join('');
   const next = S.screen ? { plan: 'Hide and pass', action: 'Go to Declare', declare: 'Hide and pass', attack: 'End round' }[S.phase] : { plan: 'Resolve movement', action: 'Go to attacks', attack: 'End round' }[S.phase];
   $('tools').innerHTML = `
     <button class="primary" data-act="advance">${next}</button>
-    <select id="preset" aria-label="Scenario">${Object.entries(PRESETS).map(([k, p]) => `<option value="${k}" ${S.preset === k ? 'selected' : ''}>${p.name}</option>`).join('')}</select>
+    <select id="preset" aria-label="Scenario">${presetOptions(S.preset)}</select>
     <button data-act="reset">Reset</button>
-    <button data-act="allprotos" class="${S.allProtos ? 'on' : ''}" title="Give every mech all 11 starter Protocols">Every Protocol</button>
-    <button data-act="gm" class="${S.gm ? 'on' : ''}" title="Move, turn and edit units freely">GM tools</button>
-    <button data-scr="toggle" class="${S.screen ? 'on' : ''}" title="Hidden orders: each side enters its orders and declares its attacks behind a cover panel">GM screen</button>${screenBar()}`;
+    <button data-act="allprotos" class="${S.allProtos ? 'on' : ''}" aria-pressed="${!!S.allProtos}" title="Give every mech all 11 starter Protocols">Every Protocol</button>
+    <button data-act="gm" class="${S.gm ? 'on' : ''}" aria-pressed="${!!S.gm}" title="Move, turn and edit units freely">GM tools</button>
+    <button data-scr="toggle" class="${S.screen ? 'on' : ''}" aria-pressed="${!!S.screen}" title="Hidden orders: each side enters its orders and declares its attacks behind a cover panel">GM screen</button>${screenBar()}`;
 }
 function renderInit() {
   const order = initiative();
   const done = u => (S.phase === 'plan' && (u.order || isEngaged(u))) || (S.phase === 'action' && u.acted) || (S.phase === 'declare' && u.decl) || (S.phase === 'attack' && (u.attacked || atkDone(u)));
   const turn = attackTurn();
-  $('init').innerHTML = `<span class="label">Initiative</span>` + order.map(u => `<button class="chip ${S.sel === u.id ? 'sel' : ''} ${done(u) ? 'done' : ''}" data-sel="${u.id}" title="${pl(u).role}: ${pl(u).plays}"><span class="dot ${sideCls(u)}"></span>${turn === u ? '▶ ' : ''}${u.cs} <span class="note">${pl(u).role}</span> <span class="mono">${initRef(u)}</span></button>`).join('')
-    + S.units.filter(u => !alive(u)).map(u => `<span class="chip gone"><span class="dot ${sideCls(u)}"></span>${u.cs} ${u.withdrawn ? '(withdrew)' : '(destroyed)'}</span>`).join('');
+  $('init').innerHTML = `<span class="label">Initiative</span>` + order.map(u => `<button class="chip ${S.sel === u.id ? 'sel' : ''} ${done(u) ? 'done' : ''}" data-sel="${u.id}" title="${tip(`${pl(u).role} · Reflex ${initRef(u)}: ${pl(u).plays}`)}"><span class="dot ${sideCls(u)}"></span>${turn === u ? '▶ ' : ''}${u.cs} <span class="mono">${initRef(u)}</span></button>`).join('')
+    + S.units.filter(u => !alive(u)).map(u => `<span class="chip gone" title="${u.withdrawn ? 'Withdrew' : 'Destroyed'}"><span class="dot ${sideCls(u)}"></span>${u.cs}</span>`).join('');
 }
 function renderLog() {
-  $('log').innerHTML = `<div class="log-head"><span class="label">Dice log</span><span class="note">Newest first</span></div>` + S.log.map(e => `<div class="entry"><span class="when">${e.when}</span>${e.html}</div>`).join('');
+  $('log').innerHTML = `<div class="log-head" title="Newest first"><span class="label">Dice log</span></div>` + S.log.map(e => `<div class="entry"><span class="when">${e.when}</span>${e.html}</div>`).join('');
 }
 const pct = p => (p * 100).toFixed(p > 0 && p < 0.01 ? 1 : 0) + '%';
-function rangeTxt(w) { return w.melee ? 'adjacent' : `${Math.ceil(w.rmin)}–${Math.floor(w.rmax)}`; }
+function rangeTxt(w) { return w.melee ? 'adj.' : `${Math.ceil(w.rmin)}–${Math.floor(w.rmax)}`; }
 
-function unitSheet(u) {
-  const f = fr(u), p = pl(u);
+// ---------- The unit card: header, resources, stats and chips; the phase box; then closed details ----------
+const STAT_ABBR = { gunnery: 'Gun', melee: 'Mel', precision: 'Pre', reflex: 'Ref', systems: 'Sys', countermeasures: 'CM', brace: 'Bra', spirit: 'Spi' };
+function unitTop(u, sn) {
+  const f = fr(u), p = pl(u), fs = fieldSource(u), foes = engagedFoes(u).map(o => o.cs).join(', ');
+  const bt = braceTarget(u);
+  const stance = !stanceShown(u) ? chip('Stance hidden', 'Shown at Reveal stances') : bracing(u)
+    ? chip(`Brace${bt >= 1 ? ` ≤${bt}` : ''}`, `Bracing: damaging hits halved on ${bt >= 1 ? `${bt} or less` : 'a target of 0, so never'}; moves at most ${moveCap(u)}`) : chip('Evade');
+  const res = [
+    `<span title="Structure">Str <b>${u.structure}/${f.structure}</b></span>`,
+    `<span title="Energy, +${f.recharge} a round">En <b>${u.energy}/${f.energy}</b> +${f.recharge}</span>`,
+    `<span title="${tip(`Will (max = Spirit). ${p.abilities.map(a => ABILITY[a]).join(', ')}`)}">Will <b>${u.will}/${p.stats.spirit}</b></span>`,
+    stance, `<b>${BANDS[u.band]}</b>`, `<b title="Facing">${ARROWS[u.facing]}</b>`,
+    `<span>Move <b>${moveOf(u)}</b></span>`,
+    `<span title="${tip(`Armour type ${f.armourType}${u.shred ? `; Shred −${u.shred}` : ''}`)}">Armour <b>${armourNow(u)}</b>${u.shred ? ` (−${u.shred})` : ''}</span>`,
+  ].join('');
+  const stats = STATS.map(s => {
+    const pil = pilotStat(u, s), eff = s === 'spirit' ? 0 : effectSum(u, s);
+    const t = s === 'spirit' ? `Spirit ${pil} (max Will)` : `${STAT_NAME[s]}: pilot ${pil} + hardware ${hwOf(f, s)} + effects ${eff} = ${stat(u, s)}; threshold ${thOf(f, s)}`;
+    return `<span title="${tip(t)}">${STAT_ABBR[s]} <b class="${eff > 0 ? 'up' : eff < 0 ? 'down' : ''}">${stat(u, s)}</b></span>`;
+  }).join('');
+  // Chips: live state first, then frame specials (each once), the effects, and one "not applied" warning.
+  const chips = [];
+  if (fullMove(u) && stanceShown(u)) chips.push(chip('Full move', 'Attackers reroll their first hit'));
+  if (foes) chips.push(chip(`Engaged: ${foes}`, '', 'debuff'));
+  if (u.jammed) chips.push(chip(`${wShort(W[u.jammed])} jammed`, `${W[u.jammed].name} is jammed until repaired`, 'debuff'));
+  if (u.field) chips.push(chip(`CM field ${u.field}`));
+  if (fs) chips.push(chip(`In ${fs.cs}'s field`, `Countermeasures ${stat(fs, 'countermeasures')}`));
+  const frameNotes = sn.notes.filter(n => !n.wid && !(n.k === 'limits_off' && alive(u)));
+  for (const n of frameNotes) chips.push(chip(n.s, n.t));
+  if (f.special && !frameNotes.length) chips.push(chip('Special', f.special));
+  for (const e of u.effects) chips.push(chip(`${e.name} R${e.expires}`, `${e.name}: strength ${e.strength}, ends round ${e.expires}`, e.kind));
+  if (sn.gaps.length) chips.push(chip(`Not applied: ${sn.gaps.join(', ')}`, 'The page does not apply this; the GM handles it', 'warnpill'));
+  const ctl = [];
+  if (ftag(u, 'augmented_only')) ctl.push(`<label><input type="checkbox" id="augmented" ${u.augmented ? 'checked' : ''}> Augmented pilot</label>`);
+  if (ftag(u, 'limits_off') && alive(u)) {
+    const on = u.effects.some(e => e.pid === 'limits_off');
+    if (S.phase === 'plan') ctl.push(`<button data-special="limits" class="${on ? 'on' : ''}" aria-pressed="${on}"${disTip(!on && u.will < 1 ? 'Needs 1 Will' : '', 'Limits off: 1 Will for +1 Reflex this round')}>Limits off</button>`);
+  }
+  if (u.scoot && alive(u) && S.phase === 'attack') ctl.push(`<span class="note">${scootEnds(u).size ? `Scoot: click a hex (≤${u.scoot}).` : 'Scoot: no hex.'}</span><button data-special="noscoot">Stay</button>`);
+  return `<div class="sheet-head"><span class="dot ${sideCls(u)}" style="width:12px;height:12px;border-radius:50%;display:inline-block"></span><h2 title="${tip(`${p.name} · ${p.role}: ${p.plays}`)}">${u.cs}</h2><span class="sub">${u.faction && FACTION[u.faction] ? FACTION[u.faction].name + ' ' : ''}${f.name} · Gen ${f.gen} · ${SIDE_NAME[u.side]}</span></div>
+  ${aftermathNote(u)}
+  <div class="bar"><span style="width:${100 * u.structure / f.structure}%"></span></div>
+  <div class="res">${res}</div>
+  <div class="res statrow">${stats}</div>
+  ${chips.length || ctl.length ? `<div class="row">${chips.join('')}${ctl.join('')}</div>` : ''}`;
+}
+function weaponTable(u, sn) {
+  const rows = u.weapons.map(wid => { const w = W[wid];
+    return `<tr><td title="${tip([w.special, w.note].filter(Boolean).join(' · '))}">${w.name} ${weaponChips(u, wid, sn.notes)}</td><td class="n">${wStats(w)}</td><td class="n">${rangeTxt(w)}</td><td>${ARC_NAME[ARC_HEX[w.arc]]}</td><td class="n">${ammoTxt(u, wid)}</td></tr>`; }).join('');
+  return `<div class="tablewrap"><table><thead><tr><th>Weapon</th><th class="n">Shots</th><th class="n">Range</th><th>Arc</th><th class="n">Ammo</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function unitDetails(u, extra) {
+  const f = fr(u), p = pl(u), art = ART[u.frame];
   const rows = STATS.map(s => {
     const pil = pilotStat(u, s), frm = s === 'spirit' ? '' : hwOf(f, s), eff = s === 'spirit' ? '' : effectSum(u, s);
-    const max = s === 'spirit' ? '—' : thOf(f, s);
-    return `<tr><td>${STAT_NAME[s]}</td><td class="n">${pil}</td><td class="n">${frm === '' ? '—' : (frm > 0 ? '+' : '') + frm}</td><td class="n">${eff === '' || eff === 0 ? '—' : (eff > 0 ? '+' : '') + eff}</td><td class="n"><b>${stat(u, s)}</b></td><td class="n">${max}</td></tr>`;
+    return `<tr><td>${STAT_NAME[s]}</td><td class="n">${pil}</td><td class="n">${frm === '' ? '—' : (frm > 0 ? '+' : '') + frm}</td><td class="n">${eff === '' || eff === 0 ? '—' : (eff > 0 ? '+' : '') + eff}</td><td class="n"><b>${stat(u, s)}</b></td><td class="n">${s === 'spirit' ? '—' : thOf(f, s)}</td></tr>`;
   }).join('');
-  const weapons = u.weapons.map(wid => { const w = W[wid], am = u.ammo[wid];
-    return `<tr><td title="${w.note || ''}">${w.name}${w.heavy ? ' <span class="pill">heavy</span>' : ''}${w.kneel ? ' <span class="pill">kneel</span>' : ''}${w.aim ? ` <span class="pill">aim ${w.aim > 0 ? '+' : '−'}${Math.abs(w.aim)}</span>` : ''}${w.special ? `<br><span class="note">${w.special}</span>` : ''}</td><td class="n">${w.shots}×${w.dmg}${w.ap ? ` AP${w.ap}` : ''}</td><td class="n">${rangeTxt(w)}</td><td>${ARC_NAME[ARC_HEX[w.arc]]}</td><td class="n">${am ? `${am.mag}/${w.mag} +${am.spares}` : w.energy ? `${w.energy} En` : '—'}</td></tr>`; }).join('');
-  const effects = u.effects.map(e => `<span class="pill ${e.kind}" title="Strength ${e.strength}">${e.name} · ends R${e.expires}</span>`).join(' ') || '<span class="note">None</span>';
-  const foes = engagedFoes(u).map(o => o.cs).join(', ');
-  const fs = fieldSource(u);
-  const art = ART[u.frame];
-  return `
-  ${art ? `<div class="banner"><img src="data:image/jpeg;base64,${art.scene}" alt="${f.name} concept art"><span>${f.name} · Gen ${f.gen}</span></div>` : ''}
-  <div class="sheet-head"><span class="dot ${sideCls(u)}" style="width:12px;height:12px;border-radius:50%;display:inline-block"></span><h2>${u.cs}</h2><span class="role">${p.role}</span><span class="sub">${p.name} · ${u.faction && FACTION[u.faction] ? FACTION[u.faction].name + ' ' : ''}${f.name}</span></div>
-  <p class="note">${p.plays}. <i>${f.lore || ''}</i></p>
-  ${f.special ? `<p class="note"><b>Special:</b> ${f.special}</p>` : ''}
-  ${specialsBox(u)}
-  ${u.jammed ? `<p class="prov">${W[u.jammed].name} is jammed until repaired.</p>` : ''}
-  ${aftermathNote(u)}
-  <div class="meters">
-    <div class="meter"><span class="label">Structure</span><b>${u.structure}/${f.structure}</b><div class="bar"><span style="width:${100 * u.structure / f.structure}%"></span></div></div>
-    <div class="meter"><span class="label">Energy</span><b>${u.energy}/${f.energy}</b><span class="note">+${f.recharge} a round</span></div>
-    <div class="meter"><span class="label">Will</span><b>${u.will}/${p.stats.spirit}</b><span class="note">${p.abilities.map(a => ABILITY[a]).join(', ')}</span></div>
-  </div>
-  <div class="facts"><span>Stance <b>${!stanceShown(u) ? 'hidden until Reveal stances' : bracing(u) ? `Brace (${braceTarget(u) >= 1 ? `halves on ${braceTarget(u)}` : 'never halves'}, moves ≤ ${moveCap(u)})` : 'Evade'}</b>${fullMove(u) && stanceShown(u) ? ' · <b>full-Move reroll</b>' : ''}</span><span>Band <b>${BANDS[u.band]}</b></span><span>Facing <b>${ARROWS[u.facing]}</b></span><span>Move <b>${moveOf(u)}</b></span><span>Armour <b>${armourNow(u)}</b>${u.shred ? ` (Shred −${u.shred})` : ''}${f.armourType !== 'none' ? ` (${f.armourType})` : ''}</span><span>Size <b>${f.size}</b></span>${u.field ? `<span>CM field <b>${u.field}</b></span>` : ''}${fs ? `<span>Covered by <b>${fs.cs}</b>'s field (CM ${stat(fs, 'countermeasures')})</span>` : ''}${foes ? `<span>Engaged with <b>${foes}</b></span>` : ''}</div>
-  <div class="tablewrap"><table><thead><tr><th>Stat</th><th class="n">Pilot</th><th class="n">Hardware</th><th class="n">Effects</th><th class="n">Total</th><th class="n">Threshold</th></tr></thead><tbody>${rows}</tbody></table></div>
-  <p class="note">Total = pilot + hardware + effects, limited to 1 up to the frame's threshold. Max Will = Spirit.</p>
-  <div class="tablewrap"><table><thead><tr><th>Weapon</th><th class="n">Shots</th><th class="n">Range</th><th>Arc</th><th class="n">Ammo</th></tr></thead><tbody>${weapons}</tbody></table></div>
-  <div><span class="label">Effects</span><div class="row" style="margin-top:4px">${effects}</div></div>`;
+  return det('unit', 'Unit details', `${art ? `<img class="art" src="data:image/jpeg;base64,${art.scene}" alt="${f.name} concept art">` : ''}
+    <p class="note"><b>${p.name}</b> · ${p.role}: ${p.plays}.</p>
+    <p class="note"><i>${f.lore || ''}</i> Size ${f.size}, ${f.armourType} armour.</p>
+    ${f.special ? `<p class="note"><b>Special:</b> ${f.special}</p>` : ''}
+    ${extra || ''}
+    <div class="tablewrap"><table><thead><tr><th>Stat</th><th class="n">Pilot</th><th class="n">Hardware</th><th class="n">Effects</th><th class="n">Total</th><th class="n">Threshold</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="note">Total = pilot + hardware + effects, limited to 1 up to the frame's threshold. Max Will = Spirit.</p>`);
 }
 
 function stanceBox(u) {
-  if (isAir(u)) return `<div class="box"><h3>Stance</h3><p class="note">Aircraft always evade. Attackers reroll their first hit on an aircraft unless it flew a High-G turn this round.</p></div>`;
-  const bt = braceTarget(u), rf = stat(u, 'reflex'), cap = moveCap(u);
-  const halve = bt >= 1 ? `${bt} or less (${clamp(bt, 0, 10) * 10}%)` : 'a target of 0, so never';
-  return `<div class="box"><h3>Stance</h3><div class="row">
-    <button data-stance="evade" class="${bracing(u) ? '' : 'on'}">Evade</button>
-    <button data-stance="brace" class="${bracing(u) ? 'on' : ''}">Brace</button></div>
-    <p class="note">${bracing(u) ? `Bracing: attacks treat Reflex ${rf} as ${rf - 2}. Moves at most ${cap} hex${cap === 1 ? '' : 'es'} and cannot Charge. Each hit or glance that would damage it is halved on ${halve}. If it does not move, it is planted: +1 on its own attacks.`
-      : `Evading: Reflex ${rf} counts fully. A move of the full ${moveOf(u)} hexes by Ground Move${fr(u).manos.includes('cruise') ? ' or Cruise' : ''} makes each attacker reroll its first hit. Bracing (Brace ${stat(u, 'brace')}) would halve damaging hits on ${halve}.`} Chosen in secret with the movement order and shown at the Declare step; ${S.screen ? 'the GM screen hides it from the other side until Reveal stances' : 'turn on GM screen to keep it hidden'}.</p></div>`;
+  if (isAir(u)) return '';
+  const bt = braceTarget(u), rf = stat(u, 'reflex'), cap = Math.floor(moveOf(u) / 2);
+  const halve = bt >= 1 ? `halves on ≤${bt} (${clamp(bt, 0, 10) * 10}%)` : 'never halves';
+  return `<div class="box"><h3>Stance</h3><div class="list">
+    <button class="opt ${bracing(u) ? '' : 'on'}" data-stance="evade" aria-pressed="${!bracing(u)}" title="Evade: Reflex counts fully; a full move by Ground Move or Cruise makes each attacker reroll its first hit"><span>Evade <small>Reflex ${rf}; full move (${moveOf(u)}) → attackers reroll first hit</small></span></button>
+    <button class="opt ${bracing(u) ? 'on' : ''}" data-stance="brace" aria-pressed="${bracing(u)}" title="Brace: attacks treat Reflex as 2 lower; each damaging hit or glance halved on d10 ≤ Brace − 2; moves at most half Move, no Charge; planted (no move) +1 on its own attacks"><span>Brace <small>Reflex ${rf - 2}, ${halve}, move ≤${cap}</small></span></button></div></div>`;
 }
 function planBox(u) {
-  if (isEngaged(u)) return stanceBox(u) + `<div class="box"><h3>Movement</h3><p class="warn">Engaged with ${engagedFoes(u).map(o => o.cs).join(', ')}. Engaged units cannot move; break off in the Action phase.</p></div>`;
-  const opts = fr(u).manos.map(m => {
-    const err = manoError(u, m), M = MANO[m];
-    return `<button class="opt ${S.ui.m === m ? 'on' : ''}" data-mano="${m}" ${err ? 'disabled' : ''}><span>${M.name}${M.cost ? ` · ${M.cost} En` : ''}<br><small>${err ? `<span class="why">${err}</span>` : M.text || M.seq.replace(/F/g, '·').replace(/L/g, '↺').replace(/R/g, '↻')}</small></span></button>`;
+  if (isEngaged(u)) return stanceBox(u) + `<div class="box"><h3>Move</h3><p class="warn">Engaged with ${engagedFoes(u).map(o => o.cs).join(', ')}: cannot move. Break off in Action.</p></div>`;
+  // Only the manoeuvres for this band; others that cannot be used now are shown disabled, the reason in the tooltip.
+  const btns = fr(u).manos.filter(m => manoError(u, m) !== 'Needs the GROUND band').map(m => {
+    const err = manoError(u, m), M = MANO[m], desc = M.text || M.seq.replace(/F/g, '·').replace(/L/g, '↺').replace(/R/g, '↻');
+    return `<button class="${S.ui.m === m ? 'on' : ''}" data-mano="${m}" aria-pressed="${S.ui.m === m}"${disTip(err, desc)}>${M.name}${M.cost ? ` · ${M.cost} En` : ''}</button>`;
   }).join('');
   let extra = '';
   if (S.ui.m && S.ui.m !== 'charge') {
     const bands = bandsFor(u, S.ui.m);
-    if (bands.length > 1) extra += `<div class="row"><span class="label">End band</span>${bands.map(b => `<button class="${(S.ui.band ?? u.band) === b ? 'on' : ''}" data-band="${b}">${BANDS[b]}</button>`).join('')}</div>`;
-    const ends = currentEnds();
-    extra += `<p class="note">${ends && ends.size ? `${ends.size} reachable hexes are highlighted. Click one to set the order.` : 'No legal destination for this manoeuvre.'}</p>`;
-    if (u.order && u.order.m === S.ui.m && ends) extra += facingPicker(u, ends);
+    if (bands.length > 1) extra += `<div class="row"><span class="label">Band</span>${bands.map(b => `<button class="${(S.ui.band ?? u.band) === b ? 'on' : ''}" data-band="${b}">${BANDS[b]}</button>`).join('')}</div>`;
   }
-  if (!S.ui.m) {
-    const ends = currentEnds();
-    extra += `<p class="note">${ends && ends.size ? `Click a highlighted hex to move there. The cheapest manoeuvre that reaches it is used${fr(u).bands.length > 1 ? '; pick one below to change band' : ''}, or pick Charge.` : 'No hex is reachable in this band; pick a manoeuvre below.'}</p>`;
-    if (u.order && u.order.path && ends) extra += facingPicker(u, ends);
-  }
-  if (S.ui.m === 'charge') extra += `<p class="note">Click a highlighted enemy to charge it. Reach is Move + ${chargeReach(u) - moveOf(u)} = ${chargeReach(u)}.</p>`;
-  const cur = u.order ? `<p class="note">Order: <b>${MANO[u.order.m].name}</b>${u.order.m === 'charge' ? ` at ${U(u.order.target).cs}` : ` → ${BANDS[u.order.band]}, facing ${ARROWS[u.order.facing]}${u.order.leaves ? ', leaves the map' : ''}`}. <button data-act="clearorder">Clear</button></p>`
-    : mustMove(u) ? `<p class="warn">No order. ${isAir(u) ? 'Aircraft' : 'A Kestrel off the ground'} cannot hover, so it will fly straight on if you leave it.</p>` : `<p class="note">No order: holds position.</p>`;
-  return stanceBox(u) + `<div class="box"><h3>Movement order</h3>${cur}<div class="list">${opts}</div>${extra}</div>`;
+  const ends = S.ui.m === 'charge' ? null : currentEnds();
+  const hint = S.ui.m === 'charge' ? `Click an enemy to charge (reach ${chargeReach(u)}).` : ends && ends.size ? 'Click a hex to move.' : S.ui.m ? 'No legal destination.' : 'No hex in reach: pick a manoeuvre.';
+  if (u.order && ends && (S.ui.m ? u.order.m === S.ui.m : u.order.path)) extra += facingPicker(u, ends);
+  let cur;
+  if (u.order) cur = `<div class="row"><span>Order: <b>${MANO[u.order.m].name}</b>${u.order.m === 'charge' ? ` → ${U(u.order.target).cs}` : ` → ${BANDS[u.order.band]} ${ARROWS[u.order.facing]}${u.order.leaves ? ', leaves the map' : ''}`}</span><button data-act="clearorder">Clear</button></div>`;
+  else if (mustMove(u)) { const d = defaultOrder(u); cur = `<p class="warn">No order: will ${d ? MANO[d.m].name + (d.m === 'cruise' ? ' straight on' : '') : 'move straight on'}.</p>`; }
+  else cur = '<p class="note">No order: holds.</p>';
+  const air = isAir(u) ? '<p class="note" title="Aircraft always evade. Attackers reroll their first hit on an aircraft unless it flew a High-G turn this round.">Stance: Evade (aircraft)</p>' : '';
+  return stanceBox(u) + `<div class="box"><h3>Move</h3>${air}${cur}<div class="row">${btns}</div><p class="note">${hint}</p>${extra}</div>`;
 }
-
 function facingPicker(u, ends) {
   const list = ends.get(key(u.order.path[u.order.path.length - 1])) || [];
   if (list.length < 2) return '';
-  return `<div><span class="label">Final facing</span><div class="facing">${[0, 1, 2, 3, 4, 5].map(f => `<button data-face="${f}" class="${u.order.facing === f ? 'on' : ''}" ${list.some(o => o.facing === f) ? '' : 'disabled'} aria-label="Facing ${f}">${ARROWS[f]}</button>`).join('')}</div></div>`;
+  return `<div><span class="label">Facing</span><div class="facing">${[0, 1, 2, 3, 4, 5].map(f => `<button data-face="${f}" class="${u.order.facing === f ? 'on' : ''}" ${list.some(o => o.facing === f) ? '' : 'disabled'} aria-label="Facing ${f}">${ARROWS[f]}</button>`).join('')}</div></div>`;
 }
 function actionBox(u) {
-  const parts = [];
-  const protos = protosOf(u);
+  const parts = [], protos = protosOf(u);
   if (protos.length) {
-    const list = protos.map(pid => { const p = PROTOS[pid], err = protoError(u, pid);
-      return `<button class="opt ${S.ui.p === pid ? 'on' : ''}" data-proto="${pid}" ${err ? 'disabled' : ''}><span>${p.name} <small>${p.kind} · ${p.diff} · ${p.energy} En · ${p.self ? 'self' : 'range ' + p.range}</small><br><small>${err ? `<span class="why">${err}</span>` : p.text}</small></span></button>`; }).join('');
-    parts.push(`<div class="list">${list}</div>`);
+    parts.push(`<div class="row">${protos.map(pid => { const p = PROTOS[pid], err = protoError(u, pid);
+      return `<button class="${S.ui.p === pid ? 'on' : ''}" data-proto="${pid}" aria-pressed="${S.ui.p === pid}"${disTip(err, `${p.text} (${p.kind}, ${p.diff}, ${p.self ? 'self' : 'range ' + p.range})`)}>${p.name} · ${p.energy} En</button>`; }).join('')}</div>`);
     if (S.ui.p) {
       const p = PROTOS[S.ui.p], t = S.ui.target && U(S.ui.target);
-      if (!t) parts.push(`<p class="note">Click a highlighted unit to target ${p.name}.</p>`);
+      if (!t) parts.push(`<p class="note">Click a target.</p>`);
       else {
-        const effIdx = S.ui.eff || 0;
-        const info = protoRoll(u, S.ui.p, t, S.ui.ppush, t.effects[effIdx]);
+        const effIdx = S.ui.eff || 0, info = protoRoll(u, S.ui.p, t, S.ui.ppush, t.effects[effIdx]);
         const hostile = p.kind === 'debuff' || p.kind === 'damage';
-        let pick = '';
-        if (p.kind === 'dispel') pick = `<div class="row"><span class="label">Effect</span>${t.effects.map((e, i) => `<button class="${i === effIdx ? 'on' : ''}" data-eff="${i}">${e.name} (str ${e.strength})</button>`).join('')}</div>`;
+        const pick = p.kind === 'dispel' ? `<div class="row"><span class="label">Effect</span>${t.effects.map((e, i) => `<button class="${i === effIdx ? 'on' : ''}" data-eff="${i}">${e.name} (str ${e.strength})</button>`).join('')}</div>` : '';
         const ps = info.t / 10, pc = hostile ? Math.max(0, info.tu - info.t) / 10 : 0;
-        parts.push(`${pick}<div class="forecast"><div><span class="label">Target</span><div class="big">${info.t}</div></div><div class="parts">${p.kind === 'dispel' ? `5 + CM ${stat(u, 'countermeasures')} − strength ${t.effects[effIdx] ? t.effects[effIdx].strength : 0}` : hostile ? `5 + Systems ${stat(u, 'systems')}` : `Systems ${stat(u, 'systems')}`} ${DIFF[p.diff] >= 0 ? '+' : '−'} ${Math.abs(DIFF[p.diff])} (${p.diff})${hostile ? ` − CM ${info.cm}${info.field ? ` (${info.field.cs}'s field)` : ''}` : ''}${S.ui.ppush ? ' + 2 Push' : ''}<br>
-          ${p.kind === 'dispel' ? `Success ${pct(ps)} · fail ${pct(1 - ps)}` : `Success ${pct(ps)}${hostile ? ` · countered ${pct(pc)}` : ''} · fizzle ${pct(1 - ps - pc)}`}${S.ui.p === 'cascade_burst' ? '<br>Rolls separately against each enemy within 2.' : ''}</div></div>
-          <div class="row"><label><input type="checkbox" id="ppush" ${S.ui.ppush ? 'checked' : ''} ${u.will < 1 ? 'disabled' : ''}> Push (1 Will, +2)</label><button class="primary" data-act="useproto">Use ${p.name}</button></div>`);
+        const brk = `${p.kind === 'dispel' ? `5 + CM ${stat(u, 'countermeasures')} − strength ${t.effects[effIdx] ? t.effects[effIdx].strength : 0}` : hostile ? `5 + Systems ${stat(u, 'systems')}` : `Systems ${stat(u, 'systems')}`} ${DIFF[p.diff] >= 0 ? '+' : '−'} ${Math.abs(DIFF[p.diff])} (${p.diff})${hostile ? ` − CM ${info.cm}${info.field ? ` (${info.field.cs}'s field)` : ''}` : ''}${S.ui.ppush ? ' + 2 Push' : ''}${S.ui.p === 'cascade_burst' ? '. Rolls separately against each enemy within 2.' : ''}`;
+        parts.push(`${pick}<div class="row"><span class="label">Target</span><b class="big" title="${tip(brk)}">${info.t}</b><span class="parts">${p.kind === 'dispel' ? `Success ${pct(ps)} · fail ${pct(1 - ps)}` : `Success ${pct(ps)}${hostile ? ` · countered ${pct(pc)}` : ''} · fizzle ${pct(1 - ps - pc)}`}</span></div>
+          <div class="row"><label title="1 Will, +2"><input type="checkbox" id="ppush" ${S.ui.ppush ? 'checked' : ''} ${u.will < 1 ? 'disabled' : ''}> Push +2</label><button class="primary" data-act="useproto">Use ${p.name}</button></div>`);
       }
     }
-  } else parts.push(`<p class="note">No Protocols on this frame. Turn on <b>Every Protocol</b> to test them all.</p>`);
-  const reloads = Object.entries(u.ammo).filter(([w, a]) => a.spares > 0 && a.mag < W[w].mag);
-  if (reloads.length) parts.push(`<div class="row"><span class="label">Reload</span>${reloads.map(([w, a]) => `<button data-reload="${w}" ${u.acted || hasFlag(u, 'nofeed') ? 'disabled' : ''}>${W[w].name} (${a.mag}/${W[w].mag}, ${a.spares} spare)</button>`).join('')}</div>`);
-  if (hasFlag(u, 'nofeed')) parts.push(`<p class="warn">Feed Jam: cannot reload this round.</p>`);
-  if (isEngaged(u)) { const dest = breakOffDest(u); parts.push(`<div class="row"><button data-act="breakoff" ${u.acted || !dest ? 'disabled' : ''}>Break off</button><span class="note">${dest ? 'Each engaged foe that has not attacked takes a parting strike at +2.' : 'No open hex away from the foes.'}</span></div>`); }
-  if (hasAbility(u, 'newtype')) parts.push(`<div class="row"><span class="label">Newtype Reflexes</span><button data-newtype="-1" ${u.newtypeUsed || u.will < 1 ? 'disabled' : ''}>Turn ↺ (1 Will)</button><button data-newtype="1" ${u.newtypeUsed || u.will < 1 ? 'disabled' : ''}>Turn ↻ (1 Will)</button></div>`);
-  parts.push(withdrawRow(u));
+  } else parts.push(`<p class="note" title="Turn on Every Protocol to test them all">No Protocols.</p>`);
+  const btns = [];
+  for (const [w, a] of Object.entries(u.ammo).filter(([w, a]) => a.spares > 0 && a.mag < W[w].mag))
+    btns.push(`<button data-reload="${w}"${disTip(u.acted ? 'Action used' : hasFlag(u, 'nofeed') ? 'Feed Jam: cannot reload this round' : '', `Reload ${W[w].name}`)}>Reload ${wShort(W[w])} ${a.mag}/${W[w].mag} +${a.spares}</button>`);
+  if (isEngaged(u)) { const dest = breakOffDest(u); btns.push(`<button data-act="breakoff"${disTip(u.acted ? 'Action used' : !dest ? 'No open hex away from the foes' : '', 'Each engaged foe that has not attacked takes a parting strike at +2')}>Break off</button>`); }
+  if (hasAbility(u, 'newtype')) { const why = u.newtypeUsed ? 'Used this round' : u.will < 1 ? 'Needs 1 Will' : ''; btns.push(`<button data-newtype="-1"${disTip(why, 'Newtype Reflexes: turn one facing (1 Will)')}>Newtype ↺</button><button data-newtype="1"${disTip(why, 'Newtype Reflexes: turn one facing (1 Will)')}>Newtype ↻</button>`); }
+  const werr = withdrawError(u);
+  btns.push(`<button data-aft="withdraw"${disTip(werr, 'Leaves from its own map edge, keeping its damage; no ejection roll')}>Withdraw</button><button data-aft="tasktab"${disTip(u.acted ? 'Action used' : '', 'Open the task check on the Aftermath tab')}>Task check</button>`);
+  if (hasFlag(u, 'nofeed')) parts.push('<p class="warn">Feed Jam: no reload.</p>');
+  parts.push(`<div class="row">${btns.join('')}</div>`);
   return `<div class="box"><h3>Action${u.acted ? ' · used' : ''}</h3>${parts.join('')}</div>`;
 }
 
-function attackBox(u) {
-  if (u.attacked) return `<div class="box"><h3>Attack · used</h3><p class="note">${u.cs} has made its attack this round.</p></div>`;
-  const gate = attackGate(u); if (gate) return gate;
-  const list = u.weapons.map(wid => {
-    const w = W[wid];
-    const tg = living().filter(t => !attackError(u, t, wid));
-    const any = living().filter(t => t.side !== u.side).map(t => attackError(u, t, wid));
-    const why = tg.length ? `${tg.length} target${tg.length > 1 ? 's' : ''}` : (any.find(e => /Energy|empty|Dry|Engaged|attacked/.test(e)) || 'No legal target');
-    return `<button class="opt ${S.ui.w === wid ? 'on' : ''}" data-weapon="${wid}"><span>${w.name} <small>${w.shots}×${w.dmg}${w.ap ? ` AP${w.ap}` : ''} · ${rangeTxt(w)} · ${ARC_NAME[ARC_HEX[w.arc]]}</small><br><small>${tg.length ? why : `<span class="why">${why}</span>`}</small></span></button>`;
-  }).join('');
+// The weapon picker (Attack and Declare): weapons with no legal target are dimmed, the reason in the tooltip.
+function weaponPicker(u, sn, declare) {
+  return `<div class="list">${u.weapons.map(wid => {
+    const w = W[wid], tg = living().filter(t => !attackError(u, t, wid));
+    const why = tg.length ? '' : (living().filter(t => t.side !== u.side).map(t => attackError(u, t, wid)).find(e => /Energy|empty|Dry|Engaged|attacked|kneel|move|Jammed|Transformed/.test(e)) || 'No legal target');
+    const attrs = declare ? disTip(why) : why ? ` title="${tip(why)}"` : '';
+    return `<button class="opt ${S.ui.w === wid ? 'on' : ''} ${why ? 'dim' : ''}" data-weapon="${wid}" aria-pressed="${S.ui.w === wid}"${attrs}><span>${w.name} <small>${wStats(w)} · ${rangeTxt(w)} · ${ARC_NAME[ARC_HEX[w.arc]]} · ${ammoTxt(u, wid)}</small> ${weaponChips(u, wid, sn.notes)}</span></button>`;
+  }).join('')}</div>`;
+}
+// The attack forecast: the numbers, with the hit-target breakdown and lock details in tooltips.
+function forecastHtml(u, t, wid, f) {
+  const w = W[wid], ht = f.ht, li = f.li;
+  const brk = ht.parts.map(([n, v], i) => `${i ? (v < 0 ? '− ' : '+ ') : ''}${Math.abs(v)} ${n}`).join(' ') + (ht.raw !== ht.t ? ` = ${ht.raw}, limited to ${ht.t}` : '')
+    + `. Range ${rangeOf(u, t)} · cover ${coverInfo(u, t, w).total} · Armour ${f.ea}${w.ap ? ` (AP ${w.ap})` : ''}`;
+  const lock = !li.ok ? '—' : li.given ? 'given' : `${li.t}${li.tu > li.t ? ` · countered ${li.tu === li.t + 1 ? li.tu : `${li.t + 1}–${li.tu}`}` : ''}`;
+  const lockT = li.ok ? (li.given ? 'Lock given' : `Lock on ${li.t} against CM ${li.cm}${li.field ? ` (${li.field.cs}'s field)` : ''}`) : li.why;
+  const crit = f.crit >= 1 ? (f.crit === 1 ? '1' : `1–${Math.min(f.crit, 10)}`) : 'never';
+  const glance = w.heavy && f.glanceTo > ht.t ? (f.glanceTo === ht.t + 1 ? `${f.glanceTo}` : `${ht.t + 1}–${f.glanceTo}`) : '';
+  const flags = [];
+  if (f.bt !== null) flags.push(chip(`${t.cs} braced: halves on ${f.bt >= 1 ? `≤${f.bt}` : 'never'}`, 'Reflex counts 2 lower; each damaging hit or glance halved on the Brace roll'));
+  if (f.fm) flags.push(chip('Full move: first hit rerolled'));
+  if (linkedFire(u, wid)) flags.push(chip(`Linked: ${shotsOf(u, wid)} shots`));
+  if (ftag(t, 'damage_floor')) flags.push(chip(`Floor ${ftag(t, 'damage_floor')}`, `${t.cs} shrugs off hits of ${ftag(t, 'damage_floor')} or less`));
+  if (!losClear(u, t) && spotterFor(u, t)) flags.push(chip(`Spotted by ${spotterFor(u, t).cs}`, 'Indirect fire'));
+  const split = f.pLock > 0 && f.pLock < 1 && Math.abs(f.expLocked - f.expUnlocked) >= 0.05 ? ` <small>(lock ${f.expLocked.toFixed(1)} / no lock ${f.expUnlocked.toFixed(1)})</small>` : '';
+  return `<div class="fc">
+    <div title="${tip(brk)}"><span class="label">Hit</span><b class="big">${ht.t}</b></div>
+    <div title="${tip(lockT)}"><span class="label">Lock</span><b>${lock}</b></div>
+    <div><span class="label">Crit</span><b>${crit}</b> <small>→ ${f.dC}</small></div>
+    ${glance ? `<div><span class="label">Glance</span><b>${glance}</b> <small>→ ${f.dG}</small></div>` : ''}
+    <div><span class="label">Per hit</span><b>${f.dH}</b></div>
+    <div title="Any damage ${pct(f.any)}"><span class="label">Destroy</span><b>${pct(f.kill)}</b></div>
+    <div class="wide"><span class="label">Expected</span><b>${f.exp.toFixed(1)}</b>${split}</div>
+  </div>${flags.length ? `<div class="row">${flags.join('')}</div>` : ''}`;
+}
+function pushRow(u, fireAttr) {
+  return `<div class="row"><label title="1 Will, +2 to hit"><input type="checkbox" id="push" ${S.ui.push ? 'checked' : ''} ${u.will < 1 ? 'disabled' : ''}> Push +2</label>
+    ${hasAbility(u, 'see_it') ? `<label title="1 Will, +2 rerolls"><input type="checkbox" id="see" ${S.ui.see ? 'checked' : ''} ${u.will < 1 ? 'disabled' : ''}> I Can See It</label>` : ''}
+    <button class="primary" ${fireAttr}>Roll attack</button></div>`;
+}
+function attackBox(u, sn) {
+  const gate = attackGate(u, sn); if (gate) return gate;
   let fc = '';
   const t = S.ui.target && U(S.ui.target);
-  if (S.ui.w && t && !attackError(u, t, S.ui.w)) {
-    const f = forecast(u, t, S.ui.w, { push: S.ui.push, seeIt: S.ui.see });
-    const w = W[S.ui.w];
-    fc = `<div class="forecast"><div><span class="label">Hit on</span><div class="big">${f.ht.t}</div></div>
-      <div class="parts">${f.ht.parts.map(([n, v], i) => `${i ? (v < 0 ? '− ' : '+ ') : ''}${Math.abs(v)} ${n}`).join(' ')}${f.ht.raw !== f.ht.t ? ` = ${f.ht.raw}, limited to ${f.ht.t}` : ''}<br>
-      Range ${rangeOf(u, t)} · cover ${coverInfo(u, t, w).total} · Armour ${f.ea}${w.ap ? ` (AP ${w.ap})` : ''}${linkedFire(u, S.ui.w) ? ` · linked fire: ${shotsOf(u, S.ui.w)} shots` : ''}${ftag(t, 'damage_floor') ? ` · ${t.cs} shrugs off hits of ${ftag(t, 'damage_floor')} or less` : ''}${!losClear(u, t) && spotterFor(u, t) ? ` · indirect, spotted by ${spotterFor(u, t).cs}` : ''}
-      ${f.bt !== null ? `<br><b>${t.cs} is bracing:</b> Reflex counts 2 lower; each damaging hit or glance is halved on ${f.bt >= 1 ? `${f.bt} or less` : 'a target of 0, so never'}.` : ''}${f.fm ? `<br><b>${t.cs} made a full move:</b> your first hit is rerolled.` : ''}${w.special ? `<br>Special: ${w.special}` : ''}</div></div>
-      <div class="stats3">
-        <div><span class="label">Lock</span><b>${f.li.ok ? f.li.t : '—'}</b><span class="note">${f.li.ok ? `against CM ${f.li.cm}${f.li.tu > f.li.t ? `; countered on ${f.li.t + 1}–${f.li.tu}` : ''}${f.li.field ? ` · ${f.li.field.cs}'s field` : ''}` : f.li.why}</span></div>
-        <div><span class="label">Crit on</span><b>${f.crit >= 1 ? (f.crit === 1 ? '1' : '1–' + Math.min(f.crit, 10)) : 'never'}</b><span class="note">${f.dC} damage</span></div>
-        <div><span class="label">Glance</span><b>${f.glanceTo && f.glanceTo > f.ht.t ? (f.glanceTo === f.ht.t + 1 ? `${f.glanceTo}` : `${f.ht.t + 1}–${f.glanceTo}`) : '—'}</b><span class="note">${w.heavy ? f.dG + ' damage' : 'light weapon'}</span></div>
-        <div><span class="label">Per hit</span><b>${f.dH}</b></div>
-        <div><span class="label">Expected</span><b>${f.exp.toFixed(1)}</b></div>
-        <div><span class="label">Destroy</span><b>${pct(f.kill)}</b><span class="note">any damage ${pct(f.any)}</span></div>
-      </div>
-      <div class="row"><label><input type="checkbox" id="push" ${S.ui.push ? 'checked' : ''} ${u.will < 1 ? 'disabled' : ''}> Push (1 Will, +2)</label>
-      ${hasAbility(u, 'see_it') ? `<label><input type="checkbox" id="see" ${S.ui.see ? 'checked' : ''} ${u.will < 1 ? 'disabled' : ''}> I Can See It (1 Will, +2 rerolls)</label>` : ''}
-      <button class="primary" data-act="fire">Roll attack</button></div>`;
-  } else if (S.ui.w) fc = `<p class="note">Click a highlighted enemy. The badge shows the hit target. Green hexes are in range and arc for a target on the ground; dashed red ones are in range and arc but out of sight.</p>`;
-  const order = initiative(), ahead = order.slice(0, order.indexOf(u)).filter(o => !o.attacked && !atkDone(o));
-  const warn = ahead.length ? `<p class="warn">Attacks go in initiative order: ${ahead.map(o => o.cs).join(', ')} ${ahead.length > 1 ? 'come' : 'comes'} first. A unit destroyed before its turn loses its attack.</p>` : '';
-  return `<div class="box"><h3>Attack</h3>${warn}<div class="list">${list}</div>${fc}${skipRow(u)}</div>`;
+  if (S.ui.w && t && !attackError(u, t, S.ui.w)) fc = forecastHtml(u, t, S.ui.w, forecast(u, t, S.ui.w, { push: S.ui.push, seeIt: S.ui.see })) + pushRow(u, 'data-act="fire"');
+  else if (S.ui.w) fc = `<p class="note" title="The badge shows the hit target. Green hexes: in range and arc for a target on the ground; dashed red: in range and arc but out of sight.">Click a target.</p>`;
+  return `<div class="box"><h3>Attack</h3>${weaponPicker(u, sn, false)}${fc}${skipRow(u)}</div>`;
 }
 
 function gmBox(u) {
   return `<div class="box"><h3>GM tools</h3>
     <div class="row"><button data-gm="left">Turn ↺</button><button data-gm="right">Turn ↻</button>${fr(u).bands.map(b => `<button data-gmband="${b}" class="${u.band === b ? 'on' : ''}">${BANDS[b]}</button>`).join('')}</div>
-    <div class="row"><button data-gm="teleport" class="${S.placing === 'teleport' ? 'on' : ''}">Move to a hex</button><button data-gm="s-10">Structure −10</button><button data-gm="s+10">+10</button><button data-gm="e+1">Energy +1</button><button data-gm="w+1">Will +1</button></div>
+    <div class="row"><button data-gm="teleport" class="${S.placing === 'teleport' ? 'on' : ''}" title="Then click any hex">Move to a hex</button><button data-gm="s-10">Structure −10</button><button data-gm="s+10">+10</button><button data-gm="e+1">Energy +1</button><button data-gm="w+1">Will +1</button></div>
     <div class="row"><label>Pilot <select id="gmpilot">${Object.keys(P).filter(k => !k.startsWith('_')).map(k => `<option value="${k}" ${u.pilot === k ? 'selected' : ''}>${pilotLabel(k)}</option>`).join('')}</select></label>
     <button data-gm="clearfx">Clear effects</button><button data-gm="refit">Refit ammo</button><button data-gm="remove">Remove</button></div>
-    ${S.placing === 'teleport' ? '<p class="note">Click any hex to move this unit there.</p>' : ''}</div>`;
+    ${S.placing === 'teleport' ? '<p class="note">Click a hex.</p>' : ''}</div>`;
 }
 
 function addBox() {
   const a = S.ui.add || (S.ui.add = { side: 0, frame: 'm4_garrison', faction: 'us', pilot: 'rook', weapons: F.m4_garrison.loadout.slice(), cs: 'ROOK' });
   const f = F[a.frame];
   const carry = Object.entries(W).filter(([k, w]) => !w.builtin && (SIZE_ORDER.indexOf(w.size) <= SIZE_ORDER.indexOf(f.size) || (f.loadout || []).includes(k)));
-  // Every sheet frame, by generation then bloc; a frame on several blocs is listed under each.
-  const gens = [...new Set(Object.values(F).map(x => x.gen))].sort((x, y) => x - y);
-  const frameOpts = gens.map(g => FACTIONS.map(fa => { const ks = fa.frames.filter(k => F[k].gen === g); return ks.length ? `<optgroup label="Gen ${g} · ${fa.name}">${ks.map(k => `<option value="${k}@${fa.id}" ${a.frame === k && a.faction === fa.id ? 'selected' : ''}>${F[k].name}${F[k].cls === 'Vehicle' ? ' (vehicle)' : ''}</option>`).join('')}</optgroup>` : ''; }).join('')).join('');
+  // Every sheet frame once, by generation; its blocs go in the tooltip, and a Gen 1 unit takes its first bloc.
+  const keys = [...new Set(FACTIONS.flatMap(fa => fa.frames))];
+  const gens = [...new Set(keys.map(k => F[k].gen))].sort((x, y) => x - y);
+  const frameOpts = gens.map(g => `<optgroup label="Gen ${g}">${keys.filter(k => F[k].gen === g).map(k => { const fa = FACTIONS.find(x => x.frames.includes(k));
+    return `<option value="${k}@${fa.id}" ${a.frame === k ? 'selected' : ''} title="${tip(F[k].blocs.join(', '))}">${F[k].name}${F[k].cls === 'Vehicle' ? ' (vehicle)' : ''}</option>`; }).join('')}</optgroup>`).join('');
+  const picked = a.weapons.map(k => wShort(W[k])).join(', ') || 'none';
   return `<div class="box"><h3>Add a unit</h3>
     <div class="formgrid">
       <label for="addcs">Callsign</label><input id="addcs" value="${a.cs}" maxlength="8">
@@ -2656,29 +2758,26 @@ function addBox() {
       <label for="addframe">Frame</label><select id="addframe">${frameOpts}</select>
       <label for="addpilot">Pilot</label><select id="addpilot">${Object.keys(P).filter(k => !k.startsWith('_')).map(k => `<option value="${k}" ${a.pilot === k ? 'selected' : ''}>${pilotLabel(k)}</option>`).join('')}</select>
     </div>
-    ${ART[a.frame] ? `<img src="data:image/jpeg;base64,${ART[a.frame].scene}" alt="${f.name} concept art" style="width:100%;height:auto;border-radius:3px">` : ''}
-    <p class="note"><i>${f.lore || ''}</i></p>
-    <span class="label">Weapons (${f.size} frame carries ${f.size} or smaller)</span>
-    <div class="weaponpick">${carry.map(([k, w]) => `<label><input type="checkbox" data-addw="${k}" ${a.weapons.includes(k) ? 'checked' : ''}> ${w.name} <span class="note">${w.shots}×${w.dmg}${w.ap ? ` AP${w.ap}` : ''} · ${rangeTxt(w)}</span></label>`).join('')}</div>
-    <div class="row"><button class="primary" data-act="place" ${S.placing === 'add' ? 'disabled' : ''}>${S.placing === 'add' ? 'Click a hex on the map' : 'Place on the map'}</button>${f.melee ? `<span class="note">Hands are fitted automatically.</span>` : ''}</div></div>
+    ${ART[a.frame] ? `<img class="art" src="data:image/jpeg;base64,${ART[a.frame].scene}" alt="${f.name} concept art" title="${tip(f.lore || '')}">` : ''}
+    ${det('addw', `Weapons: ${picked}`, `<div class="weaponpick">${carry.map(([k, w]) => `<label><input type="checkbox" data-addw="${k}" ${a.weapons.includes(k) ? 'checked' : ''}> ${w.name} <span class="note">${wStats(w)} · ${rangeTxt(w)}</span></label>`).join('')}</div>`, `Change weapons: a ${f.size} frame carries ${f.size} or smaller`)}
+    <div class="row"><button class="primary" data-act="place" ${S.placing === 'add' ? 'disabled' : ''}${f.melee ? ' title="Hands are fitted automatically"' : ''}>${S.placing === 'add' ? 'Click a hex' : 'Place on the map'}</button></div></div>
     ${rosterBox()}`;
 }
 function rosterBox() {
-  const short = ['gunnery', 'melee', 'precision', 'reflex', 'systems', 'countermeasures', 'brace', 'spirit'];
   const head = ['Gun', 'Mel', 'Pre', 'Ref', 'Sys', 'CM', 'Bra', 'Spi'];
   const rows = Object.keys(P).filter(k => !k.startsWith('_')).map(k => {
-    const p = P[k], top = Math.max(...short.filter(s => s !== 'spirit').map(s => p.stats[s]));
-    return `<tr><td><b>${p.name.split(' / ')[1]}</b><br><span class="role">${p.role}</span></td>${short.map(s => `<td class="n" style="${p.stats[s] >= top && s !== 'spirit' && p.stats[s] > 0 ? 'color:var(--accent);font-weight:600' : ''}">${p.stats[s]}</td>`).join('')}<td class="note">${p.plays}</td></tr>`;
+    const p = P[k], top = Math.max(...STATS.filter(s => s !== 'spirit').map(s => p.stats[s]));
+    return `<tr><td title="${tip(p.plays)}"><b>${p.name.split(' / ')[1]}</b> <span class="note">${p.role}</span></td>${STATS.map(s => `<td class="n" style="${p.stats[s] >= top && s !== 'spirit' && p.stats[s] > 0 ? 'color:var(--accent);font-weight:600' : ''}">${p.stats[s]}</td>`).join('')}</tr>`;
   }).join('');
-  return `<div class="box"><h3>Pilot roster</h3><p class="note">Pilot stats run 1–14 (the old ratings + 5). Every pilot has a different build, and each pilot's highest stats are highlighted. A unit's total adds the frame's hardware, up to the frame's threshold. Pilots cannot add Structure or Armour, so a "Tank" pilot brings Brace, and the frame brings the armour.</p>
-    <div class="tablewrap"><table><thead><tr><th>Pilot</th>${head.map(h => `<th class="n">${h}</th>`).join('')}<th>Plays as</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  return det('roster', 'Pilot roster', `<div class="tablewrap"><table><thead><tr><th>Pilot</th>${head.map(h => `<th class="n">${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`,
+    'Pilot stats run 1–14; each pilot\'s highest stats are highlighted. A unit adds the frame\'s hardware, up to its threshold.');
 }
 
 // ---------- GM screen and attack order: rendering ----------
 function screenBar() {
   if (!S.screen) return '';
   const sc = scr();
-  const txt = sc.cover ? 'Screen up' : sc.side !== null ? `${SIDE_NAME[sc.side]} ${S.phase === 'plan' ? 'enters orders' : 'declares'}` : S.stancesShown ? 'Stances shown' : 'Stances hidden';
+  const txt = sc.cover ? 'Screen up' : sc.side !== null ? `${SIDE_NAME[sc.side]} ${S.phase === 'plan' ? 'orders' : 'declares'}` : S.stancesShown ? 'Stances shown' : 'Stances hidden';
   return `<span class="screenbar">${txt}</span>`;
 }
 // The cover panel: a full-page panel between one side's turn behind the screen and the next.
@@ -2688,60 +2787,53 @@ function renderCover() {
   if (!sc || !sc.cover) { if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'screencover'; el.className = 'screencover'; document.body.appendChild(el); }
   const n = sc.cover.next, decl = S.phase === 'declare';
-  let head, body, btn;
+  let head, body = '', btn, btnTip;
   if (n === 0 || n === 1) {
-    const me = SIDE_NAME[n], other = SIDE_NAME[1 - n];
+    const me = SIDE_NAME[n];
     head = `${me} ${decl ? 'declares' : 'plans'}`;
-    body = `Pass the screen to ${me}. ${other}: look away. ${me} ${decl ? 'picks a target and weapon for each unit, or no attack' : 'gives each unit a manoeuvre and a stance'}, then presses <b>Hide and pass</b>.`;
-    btn = `Show ${me}'s ${decl ? 'declarations' : 'orders'}`;
-  } else if (n === 'reveal') {
-    head = 'Orders are in';
-    body = 'Both sides have entered their orders. <b>Reveal movement</b> shows the movement and resolves it in initiative order. Stances stay hidden through Movement and Action.';
-    btn = 'Reveal movement';
-  } else {
-    head = 'Declarations are in';
-    body = 'Both sides have declared. <b>Reveal stances</b> shows every stance; then attacks go in initiative order.';
-    btn = 'Reveal stances';
-  }
-  el.innerHTML = `<div class="box" role="dialog" aria-modal="true" aria-label="${head}"><span class="label">GM screen · Round ${S.round}</span><h2>${head}</h2><p class="note">${body}</p>
-    <div class="row"><button class="primary" data-scr="uncover">${btn}</button><button data-scr="toggle">Turn off GM screen</button></div></div>`;
+    body = `${SIDE_NAME[1 - n]}, look away.`;
+    btn = `Show ${me}`;
+    btnTip = `${me} ${decl ? 'picks a weapon and target for each unit, or no attack' : 'gives each unit a manoeuvre and a stance'}, then presses Hide and pass`;
+  } else if (n === 'reveal') { head = 'Orders are in'; btn = 'Reveal movement'; btnTip = 'Shows the movement and resolves it in initiative order; stances stay hidden'; }
+  else { head = 'Declarations are in'; btn = 'Reveal stances'; btnTip = 'Shows every stance; then attacks go in initiative order'; }
+  el.innerHTML = `<div class="box" role="dialog" aria-modal="true" aria-label="${head}"><span class="label">Round ${S.round}</span><h2>${head}</h2>${body ? `<p class="note">${body}</p>` : ''}
+    <div class="row"><button class="primary" data-scr="uncover" title="${tip(btnTip)}">${btn}</button><button data-scr="toggle">Screen off</button></div></div>`;
 }
 // The phase box while the GM screen is on: '' leaves the normal box in place.
-function screenBox(u) {
+function screenBox(u, sn) {
   if (!S.screen) return '';
-  if (S.phase === 'plan' && !canOrder(u)) return `<div class="box"><h3>Orders</h3><p class="note">${SIDE_NAME[u.side]} enters its orders and stances behind the screen on its own turn.</p></div>`;
-  if (S.phase === 'declare') return declareBox(u);
+  if (S.phase === 'plan' && !canOrder(u)) return `<div class="box"><p class="note">${SIDE_NAME[u.side]} orders behind the screen.</p></div>`;
+  if (S.phase === 'declare') return declareBox(u, sn);
   return '';
 }
-// Before Reveal stances: the forecast against evade, full-Move evade and brace. After: the real one.
+// Before Reveal stances: a small table against evade, full-Move evade and brace. After: the real figures.
 function forecastCols(a, d, wid) {
   if (stanceShown(d)) {
     const f = forecast(a, d, wid);
-    return `<div class="cols3"><div><span class="label">Hit on</span><b class="big2">${f.ht.t}</b></div><div><span class="label">Expected</span><b class="big2">${f.exp.toFixed(1)}</b></div><div><span class="label">Destroy</span><b class="big2">${pct(f.kill)}</b><span class="note">any damage ${pct(f.any)}</span></div></div>`;
+    return `<p class="parts">Hit <b>${f.ht.t}</b> · Expected <b>${f.exp.toFixed(1)}</b> · <span title="Any damage ${pct(f.any)}">Destroy <b>${pct(f.kill)}</b></span></p>`;
   }
   const hf = hiddenForecast(a, d, wid), hint = stanceHint(d), li = hf.evade.li;
-  const col = (k, name, f) => `<div class="${hint === k ? 'likely' : ''}"><span class="label">${name}</span><b class="big2">${f.ht.t}</b><span class="note">hit on</span><br>Expected <b>${f.exp.toFixed(1)}</b><br>Destroy <b>${pct(f.kill)}</b><br><span class="note">any damage ${pct(f.any)}</span></div>`;
-  return `<p class="note">${d.cs}'s stance is hidden until <b>Reveal stances</b>. Range ${rangeOf(a, d)} · cover ${cover(a, d)} · lock ${li.ok ? li.t : '— (' + li.why + ')'}.</p>
-    <div class="cols3">${col('evade', 'Evade', hf.evade)}${col('fullmove', 'Full-Move evade', hf.fullmove)}${col('brace', 'Brace', hf.brace)}</div>
-    ${hint ? `<p class="note">${d.cs} moved ${d.moveHexes} of ${moveOf(d)} hexes, more than a bracing unit may: the ${hint === 'fullmove' ? 'full-Move evade' : 'evade'} column applies.</p>` : ''}`;
+  const cols = [['evade', 'Evade'], ['fullmove', 'Full move'], ['brace', 'Brace']];
+  const hintTip = hint ? `${d.cs} moved ${d.moveHexes} of ${moveOf(d)} hexes, more than a bracing unit may` : '';
+  const cell = (k, v, t) => `<td class="n ${hint === k ? 'likely' : ''}"${t ? ` title="${tip(t)}"` : ''}>${v}</td>`;
+  return `<p class="note" title="Range ${rangeOf(a, d)} · cover ${cover(a, d)}">Stance hidden · lock ${li.ok ? li.t : '—'}</p>
+    <div class="tablewrap"><table class="dtab"><thead><tr><th></th>${cols.map(([k, n]) => `<th class="n ${hint === k ? 'likely' : ''}"${hint === k ? ` title="${tip(hintTip)}"` : ''}>${n}</th>`).join('')}</tr></thead><tbody>
+    <tr><td>Hit</td>${cols.map(([k]) => cell(k, hf[k].ht.t)).join('')}</tr>
+    <tr><td>Expected</td>${cols.map(([k]) => cell(k, hf[k].exp.toFixed(1))).join('')}</tr>
+    <tr><td>Destroy</td>${cols.map(([k]) => cell(k, pct(hf[k].kill), `Any damage ${pct(hf[k].any)}`)).join('')}</tr></tbody></table></div>`;
 }
-function declareBox(u) {
-  if (!canOrder(u)) return `<div class="box"><h3>Declare</h3><p class="note">${SIDE_NAME[u.side]} declares behind the screen on its own turn.</p></div>`;
+function declareBox(u, sn) {
+  if (!canOrder(u)) return `<div class="box"><p class="note">${SIDE_NAME[u.side]} declares behind the screen.</p></div>`;
   const left = living().filter(o => o.side === u.side && !o.decl).length;
-  const leftTxt = `<p class="note">${left ? `${left} ${SIDE_NAME[u.side]} unit${left > 1 ? 's' : ''} still to declare. Any left at <b>Hide and pass</b> declares no attack.` : `Every ${SIDE_NAME[u.side]} unit has declared: press <b>Hide and pass</b>.`}</p>`;
-  if (u.decl && u.decl.why) return `<div class="box"><h3>Declare</h3><p class="note">${u.cs} has used its attack this round (a channelled Protocol or a parting strike), so it declares no attack.</p>${leftTxt}</div>`;
+  const leftTxt = `<p class="note">${left ? `${left} left · undeclared = no attack` : 'All declared: Hide and pass.'}</p>`;
+  if (u.decl && u.decl.why) return `<div class="box"><h3>Declare</h3><p class="note" title="A channelled Protocol or a parting strike">Attack used: no attack.</p>${leftTxt}</div>`;
   const dt = u.decl && u.decl.t && U(u.decl.t);
-  const cur = u.decl ? `<p class="note">Declared: <b>${u.decl.none ? 'no attack' : `${W[u.decl.w].name} at ${dt ? dt.cs : '?'}`}</b>. <button data-scr="redeclare">Change</button></p>` : '';
-  const list = u.weapons.map(wid => {
-    const w = W[wid], tg = living().filter(t => !attackError(u, t, wid));
-    const why = tg.length ? `${tg.length} target${tg.length > 1 ? 's' : ''}` : (living().filter(t => t.side !== u.side).map(t => attackError(u, t, wid)).find(e => /Energy|empty|Dry|Engaged|kneel|move|Jammed|Transformed/.test(e)) || 'No legal target');
-    return `<button class="opt ${S.ui.w === wid ? 'on' : ''}" data-weapon="${wid}" ${tg.length ? '' : 'disabled'}><span>${w.name} <small>${w.shots}×${w.dmg}${w.ap ? ` AP${w.ap}` : ''} · ${rangeTxt(w)} · ${ARC_NAME[ARC_HEX[w.arc]]}</small><br><small>${tg.length ? why : `<span class="why">${why}</span>`}</small></span></button>`;
-  }).join('');
+  if (u.decl) return `<div class="box"><h3>Declare · done</h3><div class="row"><span>Declared: <b>${u.decl.none ? 'no attack' : `${W[u.decl.w].name} → ${dt ? dt.cs : '?'}`}</b></span><button data-scr="redeclare">Change</button></div>${leftTxt}</div>`;
   let fc = '';
   const t = S.ui.target && U(S.ui.target);
-  if (S.ui.w && t && !attackError(u, t, S.ui.w)) fc = forecastCols(u, t, S.ui.w) + `<div class="row"><button class="primary" data-scr="declare">Declare ${W[S.ui.w].name} at ${t.cs}</button></div>`;
-  else if (S.ui.w) fc = `<p class="note">Click a highlighted enemy. A ? badge means the hit target depends on its hidden stance.</p>`;
-  return `<div class="box"><h3>Declare${u.decl ? ' · done' : ''}</h3>${cur}<div class="list">${list}</div>${fc}<div class="row"><button data-scr="noattack">No attack</button></div>${leftTxt}</div>`;
+  if (S.ui.w && t && !attackError(u, t, S.ui.w)) fc = forecastCols(u, t, S.ui.w) + `<div class="row"><button class="primary" data-scr="declare" title="${tip(`${W[S.ui.w].name} at ${t.cs}`)}">Declare</button><button data-scr="noattack">No attack</button></div>`;
+  else fc = `${S.ui.w ? '<p class="note" title="A ? badge means the hit target depends on its hidden stance">Click a target.</p>' : ''}<div class="row"><button data-scr="noattack">No attack</button></div>`;
+  return `<div class="box"><h3>Declare</h3>${weaponPicker(u, sn, true)}${fc}${leftTxt}</div>`;
 }
 function skipRow(u) {
   return attackTurn() === u ? `<div class="row"><button data-scr="skip" title="GM override: end this unit's turn without an attack">Skip turn (GM)</button></div>` : '';
@@ -2751,9 +2843,8 @@ function skipRow(u) {
 function attackGate(u) {
   const cur = attackTurn();
   if (cur !== u) {
-    const why = atkDone(u) ? { skipped: 'Its turn was skipped.', lost: 'It lost its attack.', none: 'It declared no attack.', used: 'It used its attack earlier this round.', fired: 'It has attacked.' }[S.atk.done[u.id]] || '' : '';
-    const turn = cur ? `Attacks go in initiative order: it is <b>${cur.cs}</b>'s turn.` : 'Every attack this round is done.';
-    return `<div class="box"><h3>Attack</h3>${why ? `<p class="note">${why}</p>` : ''}<p class="warn">${turn}</p>${cur ? `<div class="row"><button data-sel="${cur.id}">Go to ${cur.cs}</button></div>` : ''}</div>`;
+    const why = atkDone(u) ? { skipped: 'Skipped.', lost: 'Attack lost.', none: 'No attack declared.', used: 'Attack used earlier.', fired: 'Attacked.' }[S.atk.done[u.id]] || '' : u.attacked ? 'Attacked.' : '';
+    return `<div class="box"><h3>Attack</h3><div class="row">${why ? `<span class="note">${why}</span>` : ''}${cur ? `<span>${cur.cs}'s turn</span><button data-sel="${cur.id}">Go to ${cur.cs}</button>` : '<span class="note">All attacks done.</span>'}</div></div>`;
   }
   if (!S.screen || !u.decl || !u.decl.w) return '';
   return declaredAttackBox(u);
@@ -2765,26 +2856,11 @@ function declaredAttackBox(u) {
   if (err) {
     const gone = !t ? 'is gone' : t.dead ? 'was destroyed' : t.withdrawn ? 'withdrew' : `is no longer a legal target (${err})`;
     const alts = retargets(u);
-    return `<div class="box"><h3>Attack · ${u.cs}'s turn</h3><p class="warn">Declared: ${w.name} at ${t ? t.cs : 'a unit'}, which ${gone}.</p>
-      ${alts.length ? `<span class="label">Other legal targets for the ${w.name}</span><div class="row">${alts.map(o => `<button data-scr="retarget" data-t="${o.id}">${o.cs} · hit on ${hitTarget(u, o, dc.w).t}</button>`).join('')}</div>` : '<p class="note">No other legal target for this weapon.</p>'}
-      <div class="row"><button data-scr="lose">Lose the attack</button></div>${skipRow(u)}</div>`;
+    return `<div class="box"><h3>Attack</h3><p class="warn">Declared target ${t ? t.cs : ''} ${gone}.</p>
+      <div class="row">${alts.map(o => `<button data-scr="retarget" data-t="${o.id}" title="${tip(`Switch the ${w.name} to ${o.cs}`)}">${o.cs} · hit ${hitTarget(u, o, dc.w).t}</button>`).join('')}<button data-scr="lose">Lose the attack</button></div>${skipRow(u)}</div>`;
   }
   const f = forecast(u, t, dc.w, { push: S.ui.push, seeIt: S.ui.see });
-  return `<div class="box"><h3>Attack · ${u.cs}'s turn</h3><p class="note">Declared: <b>${w.name}</b> at <b>${t.cs}</b>. Push and I Can See It are chosen now.</p>
-    <div class="forecast"><div><span class="label">Hit on</span><div class="big">${f.ht.t}</div></div>
-    <div class="parts">${f.ht.parts.map(([n, v], i) => `${i ? (v < 0 ? '− ' : '+ ') : ''}${Math.abs(v)} ${n}`).join(' ')}${f.ht.raw !== f.ht.t ? ` = ${f.ht.raw}, limited to ${f.ht.t}` : ''}<br>
-    Range ${rangeOf(u, t)} · cover ${cover(u, t)} · Armour ${f.ea}${w.ap ? ` (AP ${w.ap})` : ''}
-    ${f.bt !== null ? `<br><b>${t.cs} is bracing:</b> each damaging hit or glance is halved on ${f.bt >= 1 ? `${f.bt} or less` : 'a target of 0, so never'}.` : ''}${f.fm ? `<br><b>${t.cs} made a full move:</b> your first hit is rerolled.` : ''}${w.special ? `<br>Special: ${w.special}` : ''}</div></div>
-    <div class="stats3">
-      <div><span class="label">Lock</span><b>${f.li.ok ? f.li.t : '—'}</b><span class="note">${f.li.ok ? `against CM ${f.li.cm}` : f.li.why}</span></div>
-      <div><span class="label">Crit on</span><b>${f.crit >= 1 ? (f.crit === 1 ? '1' : '1–' + Math.min(f.crit, 10)) : 'never'}</b><span class="note">${f.dC} damage</span></div>
-      <div><span class="label">Per hit</span><b>${f.dH}</b></div>
-      <div><span class="label">Expected</span><b>${f.exp.toFixed(1)}</b></div>
-      <div><span class="label">Destroy</span><b>${pct(f.kill)}</b><span class="note">any damage ${pct(f.any)}</span></div>
-    </div>
-    <div class="row"><label><input type="checkbox" id="push" ${S.ui.push ? 'checked' : ''} ${u.will < 1 ? 'disabled' : ''}> Push (1 Will, +2)</label>
-    ${hasAbility(u, 'see_it') ? `<label><input type="checkbox" id="see" ${S.ui.see ? 'checked' : ''} ${u.will < 1 ? 'disabled' : ''}> I Can See It (1 Will, +2 rerolls)</label>` : ''}
-    <button class="primary" data-scr="firedecl">Roll attack</button></div>${skipRow(u)}</div>`;
+  return `<div class="box"><h3>Attack: ${w.name} → ${t.cs}</h3>${forecastHtml(u, t, dc.w, f)}${pushRow(u, 'data-scr="firedecl"')}${skipRow(u)}</div>`;
 }
 // Clicks on data-scr buttons: the screen toggle, the cover panel, declarations and the attack turn.
 function screenClick(d, u) {
@@ -2810,22 +2886,6 @@ function screenClick(d, u) {
   }
 }
 
-// The unit card's specials: a note for each tag the page applies, the controls some need (Limits off, the augmented
-// box, Shoot and scoot), and a warning for tags the page does not apply.
-function specialsBox(u) {
-  const { notes, gaps } = specialNotes(u), ctl = [];
-  if (ftag(u, 'augmented_only')) ctl.push(`<label><input type="checkbox" id="augmented" ${u.augmented ? 'checked' : ''}> Augmented pilot</label>`);
-  if (ftag(u, 'limits_off') && alive(u)) {
-    const on = u.effects.some(e => e.pid === 'limits_off');
-    ctl.push(S.phase === 'plan' ? `<button data-special="limits" class="${on ? 'on' : ''}" ${!on && u.will < 1 ? 'disabled' : ''}>${on ? 'Limits off: on (undo)' : 'Limits off (1 Will, +1 Reflex)'}</button>` : on ? '<span class="pill buff">Limits off this round</span>' : '');
-  }
-  if (u.scoot && alive(u) && S.phase === 'attack') {
-    const n = scootEnds(u).size;
-    ctl.push(`<span class="note">${n ? `Shoot and scoot: click a highlighted hex to move up to ${u.scoot}.` : 'Shoot and scoot: no hex to move to.'}</span><button data-special="noscoot">Stay</button>`);
-  }
-  if (!notes.length && !gaps.length && !ctl.length) return '';
-  return `<div class="box"><h3>Specials</h3>${notes.map(n => `<p class="note">${n}</p>`).join('')}${gaps.length ? `<p class="warn">Not applied here: ${gaps.join(', ')}. The GM handles ${gaps.length > 1 ? 'these' : 'this'}.</p>` : ''}${ctl.length ? `<div class="row">${ctl.join('')}</div>` : ''}</div>`;
-}
 function specialAction(u, a) {
   if (a === 'limits' && S.phase === 'plan') {
     const i = u.effects.findIndex(e => e.pid === 'limits_off');
@@ -2834,39 +2894,38 @@ function specialAction(u, a) {
   } else if (a === 'noscoot') { u.scoot = 0; log(`${u.cs} stays put.`); }
 }
 function checksBox() {
-  const res = runChecks(), pass = res.filter(r => r.pass).length;
-  return `<div class="box checks"><h3>Rules checks · ${pass}/${res.length} pass</h3>
-    <p class="note">Each check runs the sandbox's own rule functions with scripted dice: the Player's Guide worked examples (playtest edition), Brace, Evade and Protocol rules, then the hex conversions and the catalogue.</p>
-    <div class="tablewrap"><table><tbody>${res.map(r => `<tr><td class="${r.pass ? 'ok' : 'fail'}">${r.pass ? 'PASS' : 'FAIL'}</td><td>${r.name}${r.detail ? `<br><span class="note">${r.detail}</span>` : ''}</td></tr>`).join('')}</tbody></table></div></div>`;
+  const res = runChecks(), pass = res.filter(r => r.pass).length, fails = res.filter(r => !r.pass);
+  const row = r => `<tr><td class="${r.pass ? 'ok' : 'fail'}">${r.pass ? 'PASS' : 'FAIL'}</td><td>${r.name}${r.detail ? `<br><span class="note">${r.detail}</span>` : ''}</td></tr>`;
+  return `<div class="box checks"><h3 title="The sandbox's own rule functions with scripted dice: the Player's Guide worked examples, Brace, Evade and Protocol rules, hex conversions and the catalogue">Rules checks · ${pass}/${res.length} pass</h3>
+    ${fails.length ? `<div class="tablewrap"><table><tbody>${fails.map(row).join('')}</tbody></table></div>` : ''}
+    ${det('checks', 'All checks', `<div class="tablewrap"><table><tbody>${res.map(row).join('')}</tbody></table></div>`)}</div>`;
 }
 
-// ---------- Rendering: withdrawal, task checks, aftermath and missions ----------
-function withdrawRow(u) {
-  const err = withdrawError(u);
-  return `<div class="row"><button data-aft="withdraw" ${err ? 'disabled' : ''}>Withdraw</button><button data-aft="tasktab" ${u.acted ? 'disabled' : ''}>Task check…</button><span class="note">${err ? `Withdraw: ${err}.` : 'Leaves the battle from its own map edge, keeping its damage; no ejection roll.'}</span></div>`;
-}
+// ---------- Rendering: ejection, task checks, aftermath and missions ----------
+const INJURY_TIP = 'Fail: injury roll. 1–5 Hurt (−1 Will next mission), 6–8 Badly hurt (misses the next mission), 9 Lasting injury, 10 Killed or captured if lethal, otherwise lasting.';
 function ejectText(u) {
   const e = u.eject;
-  if (e.pending) return `Destroyed: ejection roll waiting (pilot Reflex ${pilotStat(u, 'reflex')}${e.hard ? ' − 2 after a crit or melee hit' : ''}, target ${ejectTarget(u, false).t}).`;
-  if (e.ejected) return `Destroyed: ejected (rolled ${e.roll} vs ${e.t}), shaken.`;
-  return `Destroyed: ejection failed (rolled ${e.roll} vs ${e.t}). Injury roll ${e.injuryRoll}: <b>${INJURY[e.injury].name}</b>${e.chooseStat ? ', pick the stat' : e.lastingStat ? ` (${STAT_NAME[e.lastingStat]} −1)` : ''}.`;
+  if (e.pending) return `Destroyed: ejection roll due.`;
+  if (e.ejected) return `Destroyed: ejected (${e.roll} vs ${e.t}), shaken.`;
+  return `Destroyed: ejection failed (${e.roll} vs ${e.t}); injury ${e.injuryRoll}: <b>${INJURY[e.injury].name}</b>${e.chooseStat ? ', pick the stat' : e.lastingStat ? ` (${STAT_NAME[e.lastingStat]} −1)` : ''}.`;
 }
 function aftermathNote(u) {
   const bits = [], ps = u.pilotState;
   if (u.withdrawn) bits.push(`Withdrew with ${u.structure}/${fr(u).structure} Structure.`);
-  if (u.dead && !u.eject) bits.push(isMech(u) ? 'Destroyed.' : 'Destroyed. No ejection roll: ejection is for mechs only.');
+  if (u.dead && !u.eject) bits.push(isMech(u) ? 'Destroyed.' : 'Destroyed (no ejection).');
   if (u.eject) bits.push(ejectText(u));
   if (ps && ps.willPenalty) bits.push(`Next mission: −${ps.willPenalty} Will${ps.shaken ? ' (shaken)' : ''}.`);
   if (ps && ps.missNext) bits.push('Misses the next mission.');
   const mods = Object.entries(u.injuryMods || {}).filter(([, v]) => v);
-  if (mods.length) bits.push(`Lasting injury: ${mods.map(([s, v]) => `${STAT_NAME[s]} ${v}`).join(', ')} to the pilot stat.`);
+  if (mods.length) bits.push(`Lasting injury: ${mods.map(([s, v]) => `${STAT_NAME[s]} ${v}`).join(', ')}.`);
   return bits.length ? `<p class="prov">${bits.join(' ')}</p>` + ejectControls(u) : '';
 }
 function ejectControls(u) {
   const e = u.eject;
   if (!e) return '';
-  if (e.pending) return `<div class="row"><button class="primary" data-aft="eject" data-uid="${u.id}">Roll ejection (${ejectTarget(u, false).t})</button><button data-aft="eject" data-uid="${u.id}" data-push="1" ${u.will < 1 ? 'disabled' : ''}>Push and roll (${ejectTarget(u, true).t}, 1 Will)</button></div>`;
-  if (e.chooseStat) return `<div class="row"><span class="label">Lasting injury: −1 to</span>${STATS.filter(s => s !== 'spirit').map(s => `<button data-aft="lasting" data-uid="${u.id}" data-stat="${s}">${STAT_NAME[s]} ${pilotStat(u, s)}</button>`).join('')}</div>`;
+  const why = `Pilot Reflex ${pilotStat(u, 'reflex')}${e.hard ? ' − 2 (crit or melee)' : ''}. ${INJURY_TIP}`;
+  if (e.pending) return `<div class="row"><button class="primary" data-aft="eject" data-uid="${u.id}" title="${tip(why)}">Roll ejection (${ejectTarget(u, false).t})</button><button data-aft="eject" data-uid="${u.id}" data-push="1"${disTip(u.will < 1 ? 'Needs 1 Will' : '', `${why} Push: +2, 1 Will`)}>Push (${ejectTarget(u, true).t})</button></div>`;
+  if (e.chooseStat) return `<div class="row"><span class="label">Lasting −1</span>${STATS.filter(s => s !== 'spirit').map(s => `<button data-aft="lasting" data-uid="${u.id}" data-stat="${s}">${STAT_ABBR[s]} ${pilotStat(u, s)}</button>`).join('')}</div>`;
   return '';
 }
 function taskBox() {
@@ -2878,35 +2937,33 @@ function taskBox() {
   if (u) {
     const { raw, t } = taskTarget(u, T.stat, T.diff, T.push, !!T.helper);
     const err = taskError(u, T.stat, T);
-    fc = `<div class="forecast"><div><span class="label">Target</span><div class="big">${t}</div></div><div class="parts">${STAT_NAME[T.stat]} ${stat(u, T.stat)} ${DIFF[T.diff] >= 0 ? '+' : '−'} ${Math.abs(DIFF[T.diff])} (${T.diff})${T.push ? ' + 2 Push' : ''}${T.helper ? ' + 1 help' : ''}${raw !== t ? ` = ${raw}, limited to ${t}` : ''}<br>Success ${pct(t / 10)}</div></div>
+    const brk = `${STAT_NAME[T.stat]} ${stat(u, T.stat)} ${DIFF[T.diff] >= 0 ? '+' : '−'} ${Math.abs(DIFF[T.diff])} (${T.diff})${T.push ? ' + 2 Push' : ''}${T.helper ? ' + 1 help' : ''}${raw !== t ? ` = ${raw}, limited to ${t}` : ''}`;
+    fc = `<div class="row"><span class="label">Target</span><b class="big" title="${tip(brk)}">${t}</b><span class="parts">Success ${pct(t / 10)}</span></div>
       ${err ? `<p class="warn">${err}.</p>` : ''}<div class="row"><button class="primary" data-aft="task" ${err ? 'disabled' : ''}>Roll task check</button></div>`;
   }
-  return `<div class="box"><h3>Task check</h3><div class="formgrid">
+  return `<div class="box"><h3 title="d10 at or under stat + difficulty, +2 Push, +1 help from a same-side unit with 6+ in the stat; limited to 1–9">Task check</h3><div class="formgrid">
       <label for="tkunit">Unit</label><select id="tkunit"><option value="">—</option>${units.map(x => `<option value="${x.id}" ${T.unit === x.id ? 'selected' : ''}>${x.cs}</option>`).join('')}</select>
       <label for="tkstat">Stat</label><select id="tkstat">${STATS.map(s => `<option value="${s}" ${T.stat === s ? 'selected' : ''}>${STAT_NAME[s]}${u ? ` (${stat(u, s)})` : ''}</option>`).join('')}</select>
       <label for="tkdiff">Difficulty</label><select id="tkdiff">${Object.entries(DIFF).map(([k, v]) => `<option value="${k}" ${T.diff === k ? 'selected' : ''}>${k} (${v >= 0 ? '+' : '−'}${Math.abs(v)})</option>`).join('')}</select>
       <label for="tkhelp">Help</label><select id="tkhelp"><option value="">None</option>${helpers.map(h => `<option value="${h.id}" ${T.helper === h.id ? 'selected' : ''}>${h.cs} (${stat(h, T.stat)})</option>`).join('')}</select>
     </div>
-    <div class="row"><label><input type="checkbox" id="tkpush" ${T.push ? 'checked' : ''} ${u && u.will < 1 ? 'disabled' : ''}> Push (1 Will, +2)</label><label><input type="checkbox" id="tkfight" ${T.fight ? 'checked' : ''}> In a fight (uses the action)</label></div>
-    ${fc}<p class="note">Roll d10 at or under stat total + difficulty, + 2 for a Push, + 1 for help from a unit on the same side with 6 or more in that stat; the target is limited to 1–9.</p></div>`;
+    <div class="row"><label title="1 Will, +2"><input type="checkbox" id="tkpush" ${T.push ? 'checked' : ''} ${u && u.will < 1 ? 'disabled' : ''}> Push +2</label><label title="Uses the unit's action"><input type="checkbox" id="tkfight" ${T.fight ? 'checked' : ''}> In a fight</label></div>
+    ${fc}</div>`;
 }
 function missionTabLabel() { const n = S.units.filter(u => u.eject && (u.eject.pending || u.eject.chooseStat)).length; return n ? `Aftermath (${n})` : 'Aftermath'; }
 function missionBox() {
   const gone = S.units.filter(u => u.dead), out = S.units.filter(u => u.withdrawn), bench = S.bench || [];
   const nm = aftUi().nextMap || S.preset;
-  return `<div class="box"><h3>Fight settings</h3><div class="row">
-      <button data-aft="mission" class="${S.mission ? 'on' : ''}">Mission mode</button>
-      <button data-aft="lethal" class="${S.lethal ? 'on' : ''}">Lethal fight</button></div>
-    <p class="note">${S.mission ? `Mission mode is on (fight ${S.fight || 1}): Structure, Will, magazines and spares, injuries and shaken status carry to the next fight. Starting another scenario carries over the units that survived or withdrew.` : 'Mission mode is off: each scenario starts fresh.'} ${S.lethal ? 'Lethal: an injury roll of 10 kills or captures the pilot.' : 'Not lethal: an injury roll of 10 is a lasting injury.'}</p></div>
-    <div class="box"><h3>Destroyed</h3>${gone.length ? gone.map(u => `<div><b><span class="dot ${sideCls(u)}"></span> ${u.cs}</b> <span class="note">${fr(u).name}</span>${aftermathNote(u)}</div>`).join('') : '<p class="note">None yet.</p>'}
-      <p class="note">Ejection: d10 at or under the pilot's own Reflex, − 2 if the final hit was a crit or melee, + 2 for a Push. Failure rolls on the injury table: 1–5 Hurt (−1 Will next mission), 6–8 Badly hurt (misses the next mission), 9 Lasting injury, 10 Killed or captured if lethal. Tanks and aircraft roll no ejection.</p></div>
-    <div class="box"><h3>Withdrawn</h3>${out.length ? `<div class="tablewrap"><table><tbody>${out.map(u => `<tr><td><span class="dot ${sideCls(u)}"></span> ${u.cs}</td><td>${fr(u).name}</td><td class="n">Structure <b>${u.structure}/${fr(u).structure}</b></td></tr>`).join('')}</tbody></table></div>` : '<p class="note">None.</p>'}</div>
+  return `<div class="box"><div class="row">
+      <button data-aft="mission" class="${S.mission ? 'on' : ''}" aria-pressed="${!!S.mission}" title="Structure, Will, magazines, injuries and shaken status carry to the next fight">Mission mode${S.mission ? ` · fight ${S.fight || 1}` : ''}</button>
+      <button data-aft="lethal" class="${S.lethal ? 'on' : ''}" aria-pressed="${!!S.lethal}" title="Lethal: an injury roll of 10 kills or captures the pilot; otherwise it is a lasting injury">Lethal fight</button></div></div>
+    <div class="box"><h3>Destroyed</h3>${gone.length ? gone.map(u => `<div><b><span class="dot ${sideCls(u)}"></span> ${u.cs}</b> <span class="note">${fr(u).name}</span>${aftermathNote(u)}</div>`).join('') : '<p class="note">None.</p>'}</div>
+    <div class="box"><h3>Withdrawn</h3>${out.length ? `<div class="tablewrap"><table><tbody>${out.map(u => `<tr><td><span class="dot ${sideCls(u)}"></span> ${u.cs}</td><td>${fr(u).name}</td><td class="n">Str <b>${u.structure}/${fr(u).structure}</b></td></tr>`).join('')}</tbody></table></div>` : '<p class="note">None.</p>'}</div>
     ${taskBox()}
     ${S.mission ? `<div class="box"><h3>Between fights</h3>
-      <div class="row"><button data-aft="downtime" ${S.downtimeDone ? 'disabled' : ''}>Downtime</button><span class="note">${S.downtimeDone ? 'Taken.' : `Field repair up to ${FIELD_REPAIR} Structure a frame, Will to Spirit less penalties, every magazine and spare restocked.`}</span></div>
-      ${bench.length ? `<p class="note">Sitting out: ${bench.map(u => u.cs).join(', ')}. They return for the fight after next.</p>` : ''}
-      <div class="row"><label>Next map <select id="nextmap">${Object.entries(PRESETS).map(([k, p]) => `<option value="${k}" ${nm === k ? 'selected' : ''}>${p.name}</option>`).join('')}</select></label><button class="primary" data-aft="nextfight">Start next fight</button></div>
-      <p class="note">Units marked "misses the next mission" sit out once. A destroyed mech's surviving pilot returns in a replacement frame of the same type.</p></div>` : ''}`;
+      <div class="row"><button data-aft="downtime"${disTip(S.downtimeDone ? 'Taken' : '', `Field repair up to ${FIELD_REPAIR} Structure a frame, Will to Spirit less penalties, magazines and spares restocked`)}>Downtime</button></div>
+      ${bench.length ? `<p class="note" title="They return for the fight after next">Sitting out: ${bench.map(u => u.cs).join(', ')}.</p>` : ''}
+      <div class="row"><label>Next map <select id="nextmap">${presetOptions(nm)}</select></label><button class="primary" data-aft="nextfight" title="A destroyed mech's surviving pilot returns in a replacement frame of the same type">Start next fight</button></div></div>` : ''}`;
 }
 function aftUi() {
   if (!S.aftUi) S.aftUi = {};
@@ -2949,16 +3006,20 @@ function renderSide() {
   if (S.tab === 'unit') {
     const u = selected();
     if (!u) body = `<p class="note">Select a unit on the map or in the initiative bar.</p>
-      <div class="box"><h3>How a round runs</h3><p class="note"><b>Plan &amp; move:</b> pick each unit's stance (Evade or Brace) and give it a manoeuvre, then resolve. Units move in initiative order (highest Reflex total, fixed at the start of the round) and collisions stop them short.<br><b>Action:</b> one Protocol, reload or break-off each.<br><b>Attack:</b> in initiative order, pick a weapon, click a target, check the forecast, roll.<br><b>End:</b> Energy recharges, effects count down, Charge bonuses end.</p><p class="note">Rules: Player's Guide, playtest edition. Numbers: the Frames and Weapons sheet, built into this page from tabletop/data/catalogue.json. Turn on <b>GM screen</b> for hidden orders: each side enters its orders and stances, then declares its attacks, behind a cover panel; stances show at <b>Reveal stances</b>. Attacks always go strictly in initiative order.<br><b>Aftermath</b> tab: withdrawn units, ejection and injury rolls, task checks, the lethal-fight switch, and mission mode with Downtime.<br>Frame and weapon tags the page cannot apply (battery crane, drone command, shared lock) show a "Not applied here" warning on the unit card; the GM handles them.</p></div>${rosterBox()}`;
+      ${det('howto', 'How a round runs', `<p class="note"><b>Plan &amp; move:</b> a stance and a manoeuvre per unit; moves resolve in initiative order.<br><b>Action:</b> one Protocol, reload or break-off each.<br><b>Attack:</b> in initiative order: weapon, target, roll.<br><b>End:</b> Energy recharges, effects count down.</p>`)}${rosterBox()}`;
     else {
-      body = unitSheet(u);
-      if (alive(u)) body += screenBox(u) || (S.phase === 'plan' ? planBox(u) : S.phase === 'action' ? actionBox(u) : attackBox(u));
+      // Header, resources and chips; the phase box; the weapon table (the picker replaces it in Attack and Declare);
+      // then the closed Unit details.
+      const sn = specialNotes(u);
+      const phase = alive(u) ? screenBox(u, sn) || (S.phase === 'plan' ? planBox(u) : S.phase === 'action' ? actionBox(u) : attackBox(u, sn)) : '';
+      const table = weaponTable(u, sn), inPhase = S.phase === 'plan' || S.phase === 'action';
+      body = unitTop(u, sn) + phase + (inPhase ? table : '') + unitDetails(u, inPhase ? '' : table);
       if (S.gm) body += gmBox(u);
     }
   } else if (S.tab === 'add') body = addBox();
   else if (S.tab === 'mission') body = missionBox();
   else body = checksBox();
-  $('side').innerHTML = `<div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button role="tab" class="${S.tab === k ? 'on' : ''}" data-tab="${k}">${n}</button>`).join('')}</div><div class="pane">${body}</div>`;
+  $('side').innerHTML = `<div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button role="tab" class="${S.tab === k ? 'on' : ''}" aria-selected="${S.tab === k}" data-tab="${k}">${n}</button>`).join('')}</div><div class="pane">${body}</div>`;
 }
 function render() { renderHeader(); renderInit(); renderMap(); renderSide(); renderLog(); renderCover(); }
 
@@ -3004,7 +3065,7 @@ function onMapClick(e) {
   if (!tok) { const here = living().filter(x => same(x.hex, h)); if (here.length) { selectUnit(here[here.length - 1].id); render(); } }
 }
 function onClick(e) {
-  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  const b = e.target.closest('button'); if (!b || b.disabled || (b.getAttribute && b.getAttribute('aria-disabled') === 'true')) return;
   const u = selected(), d = b.dataset;
   if (d.aft) { aftermathClick(d, u); render(); return; }
   if (d.scr) { screenClick(d, u); render(); return; }
@@ -3084,6 +3145,8 @@ function start(data) {
   window.claude?.hot?.snapshot?.(() => ({ S }));
   document.addEventListener('click', e => { if (e.target.closest('#map')) onMapClick(e); else onClick(e); });
   document.addEventListener('change', onChange);
+  // Keep each <details> open or closed across re-renders.
+  document.addEventListener('toggle', e => { const k = e.target.dataset && e.target.dataset.keep; if (k) { if (e.target.open) OPEN.add(k); else OPEN.delete(k); } }, true);
   render();
 }
 if (typeof document !== 'undefined') {
