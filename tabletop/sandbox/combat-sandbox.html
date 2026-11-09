@@ -727,7 +727,7 @@ function thOf(f, s) { return s === 'brace' ? (f.brace || [0, 14])[1] : f.th[s]; 
 function stat(u, s) {
   if (s === 'spirit') return pl(u).stats.spirit;
   const f = fr(u);
-  return clamp((pl(u).stats[s] || 0) + hwOf(f, s) + effectSum(u, s), 1, thOf(f, s));
+  return clamp(pilotStat(u, s) + hwOf(f, s) + effectSum(u, s), 1, thOf(f, s));
 }
 function moveOf(u) { return Math.max(1, fr(u).move - (hasFlag(u, 'lockout') ? 1 : 0) - (hasFlag(u, 'stagger') ? 1 : 0)); }
 // Brace: at most floor(Move / 2) hexes. Fixed-distance manoeuvres only if their distance fits that cap.
@@ -776,6 +776,7 @@ function applyDamage(u, n) {
   u.structure = Math.max(0, u.structure - n);
   if (u.structure === 0 && !u.dead) {
     u.dead = true; u.order = null;
+    markEjection(u);
     if (!isAir(u) && !S.wrecks.includes(key(u.hex))) S.wrecks.push(key(u.hex));
     cleanEngagements();
     return true;
@@ -1121,6 +1122,7 @@ function rollAttack(a, d, wid, opts = {}, dice = d10) {
   a.attacked = true;
   a.revealed = true;
   const killed = applyDamage(d, total);
+  if (killed) noteFinalHit(d, w.melee || shots.some(s => s.res === 'crit'));
   // On-hit effects: once per attack if at least one shot hits (a glance does not trigger them).
   let onHit = '';
   if (w.special && shots.some(s => s.res === 'hit' || s.res === 'crit')) {
@@ -1183,6 +1185,264 @@ function breakOff(u, dice = d10) {
   if (alive(u)) { u.hex = dest; u.moved = true; log(`${u.cs} backs 1 hex away, facing ${ARROWS[u.facing]}.`); }
   cleanEngagements();
   return '';
+}
+
+// ---------- Withdrawal and task checks ----------
+// Withdraw (the unit's action): only from a hex on its own side's map edge, the edge it deploys from (Blue the west
+// edge, column 0; Red the east edge). It leaves with its damage recorded: not destroyed, no ejection roll. An engaged
+// unit breaks off first. An aircraft whose path leaves the map withdraws the same way in walk().
+const isMech = u => fr(u).cls === 'Mech';
+const ownEdgeCol = side => side === 0 ? 0 : COLS - 1;
+const onOwnEdge = u => toOffset(u.hex)[0] === ownEdgeCol(u.side);
+function withdrawError(u) {
+  if (!alive(u)) return 'Not in the fight';
+  if (S.phase !== 'action') return 'Action phase only';
+  if (u.acted) return 'Action already used';
+  if (isEngaged(u)) return 'Engaged: break off first';
+  if (!onOwnEdge(u)) return `Not on ${u.side === 0 ? 'Blue' : 'Red'}'s own map edge (${u.side === 0 ? 'west' : 'east'})`;
+  return '';
+}
+function withdraw(u) {
+  const err = withdrawError(u);
+  if (err) return err;
+  u.withdrawn = true; u.acted = true; u.order = null;
+  cleanEngagements();
+  log(`<b>${u.cs} withdraws</b> from its own map edge with ${u.structure}/${fr(u).structure} Structure. It is not destroyed: no ejection roll.`);
+  return '';
+}
+// Task check: d10 ≤ stat total + difficulty, + 2 for a Push (1 Will), + 1 help from another unit on the same side
+// with 6 or more in that stat; target limited to 1–9. In a fight it uses the unit's action.
+function taskHelpers(u, s) { return living().filter(o => o !== u && o.side === u.side && stat(o, s) >= 6); }
+function taskTarget(u, s, diff, push, help) {
+  const raw = stat(u, s) + DIFF[diff] + (push ? 2 : 0) + (help ? 1 : 0);
+  return { raw, t: clampT(raw) };
+}
+function taskError(u, s, opts) {
+  if (!u || u.dead || u.withdrawn) return 'Pick a unit in the fight';
+  if (!STATS.includes(s)) return 'Pick a stat';
+  if (!(opts.diff in DIFF)) return 'Pick a difficulty';
+  if (opts.push && u.will < 1) return 'No Will left to Push';
+  if (opts.helper && !taskHelpers(u, s).some(o => o.id === opts.helper)) return 'That helper needs 6 or more in the stat';
+  if (opts.fight && S.phase !== 'action') return 'In a fight a task check is the unit\'s action: Action phase only';
+  if (opts.fight && u.acted) return 'Action already used';
+  return '';
+}
+function taskCheck(u, s, opts = {}, dice = d10) {
+  const o = Object.assign({ diff: 'Standard' }, opts);
+  const err = taskError(u, s, o);
+  if (err) return { err };
+  const push = !!o.push, help = !!o.helper;
+  if (push) u.will--;
+  if (o.fight) u.acted = true;
+  const { raw, t } = taskTarget(u, s, o.diff, push, help);
+  const r = dice(), pass = r <= t;
+  log(`<b>${u.cs}</b> task check: ${STAT_NAME[s]} ${stat(u, s)} ${DIFF[o.diff] >= 0 ? '+' : '−'} ${Math.abs(DIFF[o.diff])} (${o.diff})${push ? ' + 2 Push (1 Will)' : ''}${help ? ` + 1 help from ${U(o.helper).cs}` : ''}${raw !== t ? ` = ${raw}, limited to ${t}` : ''}. Roll <span class="die">${r}</span> vs ${t}: <b>${pass ? 'SUCCESS' : 'FAILURE'}</b>${o.fight ? ' (uses the action)' : ''}.`);
+  return { r, t, raw, pass };
+}
+
+// ---------- Ejection, injury and missions ----------
+// Ejection (mechs only): d10 against the pilot's own Reflex (not the total), − 2 if the final hit was a crit or a melee
+// attack, + 2 for a Push (1 Will), target limited to 1–9. Success: ejected and shaken (−1 Will next mission). Failure:
+// the injury table. This page has no pilot skills, so Survivor is not offered.
+function pilotStat(u, s) { return (pl(u).stats[s] || 0) + ((u.injuryMods && u.injuryMods[s]) || 0); }
+function markEjection(u) { if (isMech(u) && !u.eject) u.eject = { pending: true, hard: false }; }
+function noteFinalHit(u, hard) { if (u.eject && u.eject.pending) u.eject.hard = !!hard; }
+function ejectTarget(u, push) {
+  const raw = pilotStat(u, 'reflex') - (u.eject && u.eject.hard ? 2 : 0) + (push ? 2 : 0);
+  return { raw, t: clampT(raw) };
+}
+const INJURY = {
+  hurt: { name: 'Hurt', text: 'next mission −1 Will' },
+  badly: { name: 'Badly hurt', text: 'misses the next mission' },
+  lasting: { name: 'Lasting injury', text: '−1 to a pilot stat other than Spirit, and misses the next mission' },
+  killed: { name: 'Killed or captured', text: 'out of the campaign' },
+};
+// 1–5 Hurt, 6–8 Badly hurt, 9 Lasting injury, 10 Killed or captured in a lethal fight, otherwise a lasting injury.
+function injuryResult(roll, lethal) { return roll <= 5 ? 'hurt' : roll <= 8 ? 'badly' : roll === 9 || !lethal ? 'lasting' : 'killed'; }
+function pilotState(u) { return u.pilotState || (u.pilotState = { willPenalty: 0, missNext: false, shaken: false, killed: false, history: [] }); }
+function rollEjection(u, push, dice = d10) {
+  const e = u.eject;
+  if (!e || !e.pending) return { err: 'No ejection roll is waiting' };
+  push = !!push && u.will >= 1;
+  if (push) u.will--;
+  const { t } = ejectTarget(u, push);
+  const r = dice(), ps = pilotState(u);
+  Object.assign(e, { pending: false, roll: r, t, push });
+  const head = `<b>${u.cs}</b> ejection: pilot Reflex ${pilotStat(u, 'reflex')}${e.hard ? ' − 2 (crit or melee)' : ''}${push ? ' + 2 Push (1 Will)' : ''}. Roll <span class="die">${r}</span> vs ${t}`;
+  if (r <= t) {
+    e.ejected = true; ps.shaken = true; ps.willPenalty += 1;
+    ps.history.push('Ejected, shaken');
+    log(`${head}: <b>EJECTED</b>. The pilot is shaken: 1 less Will next mission.`);
+    return { ejected: true, r, t };
+  }
+  const ir = dice(), inj = injuryResult(ir, !!S.lethal);
+  Object.assign(e, { ejected: false, injuryRoll: ir, injury: inj });
+  if (inj === 'hurt') ps.willPenalty += 1;
+  if (inj === 'badly' || inj === 'lasting') ps.missNext = true;
+  if (inj === 'lasting') e.chooseStat = true;
+  if (inj === 'killed') ps.killed = true;
+  ps.history.push(INJURY[inj].name);
+  log(`${head}: <b>FAILED</b>. Injury roll <span class="die">${ir}</span>${ir === 10 && !S.lethal ? ' (not a lethal fight)' : ''}: <b>${INJURY[inj].name}</b>, ${INJURY[inj].text}.`);
+  return { ejected: false, r, t, ir, injury: inj };
+}
+function applyLasting(u, s) {
+  if (!u.eject || !u.eject.chooseStat) return 'No lasting injury is waiting';
+  if (!STATS.includes(s) || s === 'spirit') return 'Pick a pilot stat other than Spirit';
+  u.injuryMods = Object.assign({}, u.injuryMods);
+  u.injuryMods[s] = (u.injuryMods[s] || 0) - 1;
+  u.eject.chooseStat = false; u.eject.lastingStat = s;
+  log(`${u.cs}'s pilot: lasting injury, ${STAT_NAME[s]} −1 (now ${pilotStat(u, s)}).`);
+  return '';
+}
+// Mission mode: Structure, Will, magazines and spares, injuries and shaken status carry to the next fight.
+// Downtime: free field repair (up to 10 Structure a frame), Will back to Spirit less next-mission penalties, and a refit.
+const FIELD_REPAIR = 10;
+function refitAmmo(u) { for (const w of Object.keys(u.ammo)) u.ammo[w] = { mag: W[w].mag, spares: fr(u).noSpares ? 0 : W[w].spares }; }
+function downtime() {
+  if (S.downtimeDone) return 'Downtime already taken since the last fight';
+  const lines = [];
+  for (const u of S.units.concat(S.bench || [])) {
+    const ps = pilotState(u);
+    if (ps.killed) continue;
+    const before = u.structure;
+    // A destroyed frame is replaced, not repaired, when the next fight starts.
+    if (!u.dead) u.structure = Math.min(fr(u).structure, u.structure + FIELD_REPAIR);
+    u.will = Math.max(0, pl(u).stats.spirit - ps.willPenalty);
+    refitAmmo(u); u.jammed = null;
+    lines.push(`${u.cs}${u.dead ? ' (frame lost)' : ` ${before}→${u.structure}`}, Will ${u.will}${ps.willPenalty ? ` (−${ps.willPenalty})` : ''}${ps.missNext ? ', sits out the next mission' : ''}`);
+  }
+  S.downtimeDone = true;
+  log(`<b>Downtime</b>: field repair (up to ${FIELD_REPAIR} Structure a frame), Will refilled, magazines and spares restocked. ${lines.join('; ')}.`);
+  return '';
+}
+// Who goes on: units that survived or withdrew, and the pilots of destroyed mechs who are not killed or captured
+// (in a replacement frame of the same type). Benched units come back.
+function missionRoster() { return S.units.filter(u => !u.dead || (u.eject && !u.eject.pending && !pilotState(u).killed)); }
+function nextFightError() {
+  if (S.units.some(u => u.eject && u.eject.pending)) return 'Roll the waiting ejections first';
+  if (S.units.some(u => u.eject && u.eject.chooseStat)) return 'Pick the stat for each lasting injury first';
+  return '';
+}
+function freeHex(h, band) {
+  if (!unitAt(h, band) && !blocks(terrainAt(h), band)) return h;
+  for (let d = 1; d < 6; d++) for (const g of ALL_HEXES) if (hdist(g, h) === d && !blocks(terrainAt(g), band) && !unitAt(g, band)) return g;
+  return h;
+}
+const DEPLOY_YS = [-4.5, -1.5, 1.5, 4.5, 7.5, -7.5, 0, 3, -3, 6, -6];
+function nextFight(preset) {
+  const err = nextFightError();
+  if (err) return err;
+  const prev = S, going = missionRoster().concat(prev.bench || []), notes = [];
+  newState(preset);
+  Object.assign(S, { mission: true, lethal: prev.lethal, fight: (prev.fight || 1) + 1, gm: prev.gm, allProtos: prev.allProtos, bench: [], units: [], log: [], downtimeDone: false });
+  const pr = PRESETS[preset], count = [0, 0];
+  for (const u of going) {
+    const ps = pilotState(u);
+    if (ps.missNext) { ps.missNext = false; S.bench.push(u); notes.push(`${u.cs} sits out`); continue; }
+    if (u.dead) { u.structure = fr(u).structure; refitAmmo(u); notes.push(`${u.cs} takes a replacement ${fr(u).name}`); }
+    Object.assign(u, { dead: false, withdrawn: false, effects: [], engaged: [], chargeTarget: null, order: null, acted: false, attacked: false, newtypeUsed: false,
+      stance: 'evade', moved: false, moveHexes: 0, moveM: null, bandChanged: false, revealed: false, shred: 0, energy: fr(u).energy, eject: null });
+    u.will = clamp(Math.min(u.will, pl(u).stats.spirit - ps.willPenalty), 0, pl(u).stats.spirit);
+    ps.willPenalty = 0; ps.shaken = false;
+    const band = fr(u).bands.includes(u.band) ? u.band : fr(u).bands[0];
+    const x = isAir(u) && pr.fx ? pr.fx[u.side] : pr.xs ? pr.xs[u.side] : u.side === 0 ? -5 : 5;
+    u.hex = freeHex(placeHex(x, DEPLOY_YS[count[u.side]++ % DEPLOY_YS.length], band), band);
+    u.band = band; u.facing = u.side === 0 ? 1 : 4;
+    S.units.push(u);
+  }
+  startRound();
+  log(`<b>Mission fight ${S.fight}</b> on ${pr.name}: ${S.units.length} unit${S.units.length === 1 ? '' : 's'} carried over with their Structure, Will, ammunition and injuries${notes.length ? `. ${notes.join('; ')}` : ''}.`);
+  return '';
+}
+// Rules checks for withdrawal, task checks, ejection, injury and Downtime; runChecks calls this with its helpers.
+function aftermathChecks(ok, mk, world0) {
+  P._ej = { name: 'Test ejector', stats: st(7, 5, 6, 6, 7, 5, 5, 7), abilities: ['push'] };
+  P._frail = { name: 'Test frail', stats: st(5, 5, 5, 1, 5, 5, 5, 7), abilities: [] };
+  F._mech = sf('Test mech', 2, 'medium', 60, 2, 'none', 3, 5, 1, [0, 0, 0, 0, 0, 0], [14, 14, 14, 14, 14, 14], [0, 14], { melee: null, cls: 'Mech' });
+  F._veh = sf('Test vehicle', 2, 'medium', 60, 2, 'none', 3, 5, 1, [0, 0, 0, 0, 0, 0], [14, 14, 14, 14, 14, 14], [0, 14], { melee: null, cls: 'Vehicle' });
+  try {
+    // Withdraw: only from the unit's own map edge, in the Action phase; it keeps its damage and rolls no ejection.
+    S = world0(); S.phase = 'action';
+    const wb = mk({ id: 'wb', cs: 'WB', side: 0, pilot: '_ej', frame: '_mech', hex: toAxial(0, 5) });
+    const wr = mk({ id: 'wr', cs: 'WR', side: 1, pilot: '_ej', frame: '_mech', hex: toAxial(0, 9), facing: 4 });
+    const wi = mk({ id: 'wi', cs: 'WI', side: 0, pilot: '_ej', frame: '_mech', hex: toAxial(1, 13) });
+    const we = mk({ id: 'we', cs: 'WE', side: 1, pilot: '_ej', frame: '_mech', hex: toAxial(COLS - 1, 17), facing: 4 });
+    wb.structure = 25;
+    const wErr = withdraw(wb);
+    ok('Withdraw: Blue leaves from its own (west) edge with its damage, not destroyed, no ejection', !wErr && wb.withdrawn && !wb.dead && wb.structure === 25 && !wb.eject && !alive(wb), wErr || `Structure ${wb.structure}`);
+    ok('Withdraw: Red cannot leave by Blue\'s edge, and a unit one hex in cannot leave', !!withdrawError(wr) && !!withdrawError(wi) && !wr.withdrawn, `${withdrawError(wr)} / ${withdrawError(wi)}`);
+    ok('Withdraw: Red can leave by the east edge; only in the Action phase and with the action unused', !withdrawError(we) && (S.phase = 'attack', !!withdrawError(we)) && (S.phase = 'action', we.acted = true, !!withdrawError(we)), '');
+    we.acted = false;
+    // Task checks: stat total + difficulty + Push 2 + help 1, limited to 1–9.
+    const tk = mk({ id: 'tk', cs: 'TK', side: 0, pilot: '_ej', frame: '_mech', hex: toAxial(10, 5) });
+    const th = mk({ id: 'th', cs: 'TH', side: 0, pilot: '_ej', frame: '_mech', hex: toAxial(12, 5) });
+    ok('Task check: Gunnery 7 Easy + Push + help = 12, limited to 9', taskTarget(tk, 'gunnery', 'Easy', true, true).t === 9 && taskTarget(tk, 'gunnery', 'Easy', true, true).raw === 12, '');
+    ok('Task check: Reflex 6 Very hard = 2; Melee 5 Exceptional = −1, limited to 1; Systems 7 Standard + help = 8',
+      taskTarget(tk, 'reflex', 'Very hard').t === 2 && taskTarget(tk, 'melee', 'Exceptional').t === 1 && taskTarget(tk, 'systems', 'Standard', false, true).t === 8, '');
+    ok('Task check: help needs 6 or more in the stat', taskHelpers(tk, 'systems').includes(th) && !taskHelpers(tk, 'melee').includes(th), '');
+    const tr = taskCheck(tk, 'systems', { diff: 'Hard', push: true, helper: 'th', fight: true }, seq([8]));
+    ok('Task check: Systems 7 Hard + Push + help = 8; rolls 8, succeeds, spends 1 Will and the action', tr.t === 8 && tr.pass && tk.will === 6 && tk.acted, JSON.stringify(tr));
+    ok('Task check: a second one in the same Action phase is refused', !!taskCheck(tk, 'gunnery', { fight: true }, seq([1])).err, '');
+    // Ejection: pilot Reflex (not the total), −2 after a crit or melee, Push +2, limited to 1–9.
+    S = world0();
+    const em = mk({ id: 'em', cs: 'EM', side: 1, pilot: '_ej', frame: '_mech', hex: toAxial(10, 9) });
+    em.effects.push({ stat: 'reflex', amt: 3, expires: 99 });
+    applyDamage(em, 999);
+    ok('Ejection: a destroyed mech waits for its roll, against the pilot\'s own Reflex 6', em.eject && em.eject.pending && ejectTarget(em, false).t === 6, JSON.stringify(em.eject));
+    noteFinalHit(em, true);
+    ok('Ejection: −2 after a crit or melee hit (4), Push +2 (6)', ejectTarget(em, false).t === 4 && ejectTarget(em, true).t === 6, '');
+    const ef = mk({ id: 'ef', cs: 'EF', side: 1, pilot: '_frail', frame: '_mech', hex: toAxial(12, 9) });
+    applyDamage(ef, 999); noteFinalHit(ef, true);
+    ok('Ejection: Reflex 1 − 2 = −1 is limited to 1', ejectTarget(ef, false).t === 1 && ejectTarget(ef, false).raw === -1, '');
+    const ev = mk({ id: 'ev', cs: 'EV', side: 1, pilot: '_ej', frame: '_veh', hex: toAxial(14, 9) });
+    applyDamage(ev, 999);
+    ok('Ejection: tanks and aircraft roll no ejection', ev.dead && !ev.eject, '');
+    // A kill by rollAttack records whether the final hit was a crit: lock 3, three hits on 1, crit rolls 1 9 9.
+    const ka = mk({ id: 'ka', cs: 'KA', side: 0, pilot: '_ej', frame: '_mech', weapons: ['_t36'], hex: toAxial(6, 3) });
+    const kd = mk({ id: 'kd', cs: 'KD', side: 1, pilot: '_ej', frame: '_mech', hex: toAxial(10, 3), facing: 4 });
+    kd.structure = 1;
+    const kr = rollAttack(ka, kd, '_t36', {}, seq([3, 1, 1, 1, 1, 9, 9]));
+    const kd2 = mk({ id: 'kd2', cs: 'KD2', side: 1, pilot: '_ej', frame: '_mech', hex: toAxial(10, 1), facing: 4 });
+    const ka2 = mk({ id: 'ka2', cs: 'KA2', side: 0, pilot: '_ej', frame: '_mech', weapons: ['_t36'], hex: toAxial(6, 1) });
+    kd2.structure = 1;
+    const kr2 = rollAttack(ka2, kd2, '_t36', {}, seq([3, 1, 1, 1, 9, 9, 9]));
+    ok('Ejection: a crit as the killing attack gives −2; plain hits do not', kr.killed && kd.eject.hard && kr2.killed && !kd2.eject.hard, `${kr.err || ''} ${kr2.err || ''}`);
+    const e1 = rollEjection(em, false, seq([4]));
+    ok('Ejection: 4 vs 4 ejects; the pilot is shaken (−1 Will next mission)', e1.ejected && pilotState(em).shaken && pilotState(em).willPenalty === 1, JSON.stringify(e1));
+    S.lethal = false;
+    const e2 = rollEjection(kd, false, seq([9, 10]));
+    ok('Ejection: a failure rolls injury; 10 in a fight that is not lethal is a lasting injury', !e2.ejected && e2.injury === 'lasting' && kd.eject.chooseStat && pilotState(kd).missNext, JSON.stringify(e2));
+    ok('Lasting injury: −1 to the chosen pilot stat, never Spirit', !!applyLasting(kd, 'spirit') && !applyLasting(kd, 'gunnery') && pilotStat(kd, 'gunnery') === 6 && stat(kd, 'gunnery') === 6, '');
+    S.lethal = true;
+    const e3 = rollEjection(kd2, false, seq([9, 10]));
+    ok('Ejection: 10 in a lethal fight kills or captures', e3.injury === 'killed' && pilotState(kd2).killed, JSON.stringify(e3));
+    const inj = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(r => injuryResult(r, false)).join(',');
+    ok('Injury table: 1–5 Hurt, 6–8 Badly hurt, 9 Lasting, 10 Lasting unless lethal', inj === 'hurt,hurt,hurt,hurt,hurt,badly,badly,badly,lasting,lasting' && injuryResult(10, true) === 'killed' && injuryResult(9, true) === 'lasting', inj);
+    // Downtime: up to 10 Structure a frame, Will to Spirit less penalties, magazines and spares restocked.
+    S = world0();
+    const d1 = mk({ id: 'd1', cs: 'D1', side: 0, pilot: '_ej', frame: '_mech', weapons: ['ar40_longhorn_rifle'], hex: toAxial(4, 4) });
+    const d2 = mk({ id: 'd2', cs: 'D2', side: 0, pilot: '_ej', frame: '_mech', hex: toAxial(6, 4) });
+    d1.structure = 35; d2.structure = 55; d1.will = 2; d2.will = 0;
+    pilotState(d1).willPenalty = 1;
+    d1.ammo.ar40_longhorn_rifle = { mag: 0, spares: 0 };
+    downtime();
+    ok('Downtime: repair is capped at 10 a frame and at full Structure (35→45, 55→60)', d1.structure === 45 && d2.structure === 60, `${d1.structure}, ${d2.structure}`);
+    ok('Downtime: Will refills to Spirit less next-mission penalties (7 − 1 = 6, and 7)', d1.will === 6 && d2.will === 7, `${d1.will}, ${d2.will}`);
+    ok('Downtime: every magazine and spare restocked; once per fight', d1.ammo.ar40_longhorn_rifle.mag === W.ar40_longhorn_rifle.mag && d1.ammo.ar40_longhorn_rifle.spares === W.ar40_longhorn_rifle.spares && !!downtime() && d1.structure === 45, '');
+    // Mission mode: survivors and withdrawn units carry their state; a badly hurt pilot sits out once.
+    S = world0(); S.preset = 'contact'; S.mission = true;
+    const m1 = mk({ id: 'm1', cs: 'M1', side: 0, pilot: '_ej', frame: '_mech', hex: toAxial(0, 4) });
+    const m2 = mk({ id: 'm2', cs: 'M2', side: 1, pilot: '_ej', frame: '_mech', hex: toAxial(20, 4), facing: 4 });
+    const m3 = mk({ id: 'm3', cs: 'M3', side: 1, pilot: '_ej', frame: '_mech', hex: toAxial(20, 8), facing: 4 });
+    m1.structure = 30; m1.withdrawn = true; m1.will = 3;
+    applyDamage(m2, 999); rollEjection(m2, false, seq([10, 7]));
+    applyDamage(m3, 999); rollEjection(m3, false, seq([1]));
+    const nf = nextFight('contact');
+    ok('Mission mode: the withdrawn unit carries Structure and Will; the badly hurt pilot sits out; the shaken one starts at Spirit − 1',
+      !nf && S.mission && S.units.includes(m1) && m1.structure === 30 && m1.will === 3 && !m1.withdrawn && S.bench.includes(m2) && S.units.includes(m3) && m3.will === 6 && m3.structure === 60, nf || `${S.units.map(u => u.cs)}`);
+  } finally {
+    delete P._ej; delete P._frail; delete F._mech; delete F._veh;
+  }
 }
 
 // ---------- Protocols ----------
@@ -1321,6 +1581,7 @@ function runChecks() {
   const mk = spec => { const u = makeUnit(Object.assign({ facing: 1, band: 0, weapons: [] }, spec)); S.units.push(u); return u; };
   const east = (h, n) => { for (let i = 0; i < n; i++) h = step(h, 1); return h; };
   try {
+    aftermathChecks(ok, mk, world0);
     // (a) KESTREL Gunnery 7, Precision 6, Systems 7: 3 × 6 AP 0 at range 4 against Reflex 6, CM 5, Armour 2, cover 1.
     S = world0();
     const a = mk({ id: 'a', cs: 'KESTREL', side: 0, pilot: '_mark', frame: '_plain', weapons: ['_t36'], hex: toAxial(6, 11) });
@@ -1634,7 +1895,7 @@ function rangeTxt(w) { return w.melee ? 'adjacent' : `${Math.ceil(w.rmin)}–${M
 function unitSheet(u) {
   const f = fr(u), p = pl(u);
   const rows = STATS.map(s => {
-    const pil = p.stats[s], frm = s === 'spirit' ? '' : hwOf(f, s), eff = s === 'spirit' ? '' : effectSum(u, s);
+    const pil = pilotStat(u, s), frm = s === 'spirit' ? '' : hwOf(f, s), eff = s === 'spirit' ? '' : effectSum(u, s);
     const max = s === 'spirit' ? '—' : thOf(f, s);
     return `<tr><td>${STAT_NAME[s]}</td><td class="n">${pil}</td><td class="n">${frm === '' ? '—' : (frm > 0 ? '+' : '') + frm}</td><td class="n">${eff === '' || eff === 0 ? '—' : (eff > 0 ? '+' : '') + eff}</td><td class="n"><b>${stat(u, s)}</b></td><td class="n">${max}</td></tr>`;
   }).join('');
@@ -1650,6 +1911,7 @@ function unitSheet(u) {
   <p class="note">${p.plays}. <i>${f.lore || ''}</i></p>
   ${f.special ? `<p class="note"><b>Special:</b> ${f.special}</p>` : ''}
   ${u.jammed ? `<p class="prov">${W[u.jammed].name} is jammed until repaired.</p>` : ''}
+  ${aftermathNote(u)}
   <div class="meters">
     <div class="meter"><span class="label">Structure</span><b>${u.structure}/${f.structure}</b><div class="bar"><span style="width:${100 * u.structure / f.structure}%"></span></div></div>
     <div class="meter"><span class="label">Energy</span><b>${u.energy}/${f.energy}</b><span class="note">+${f.recharge} a round</span></div>
@@ -1730,6 +1992,7 @@ function actionBox(u) {
   if (hasFlag(u, 'nofeed')) parts.push(`<p class="warn">Feed Jam: cannot reload this round.</p>`);
   if (isEngaged(u)) { const dest = breakOffDest(u); parts.push(`<div class="row"><button data-act="breakoff" ${u.acted || !dest ? 'disabled' : ''}>Break off</button><span class="note">${dest ? 'Each engaged foe that has not attacked takes a parting strike at +2.' : 'No open hex away from the foes.'}</span></div>`); }
   if (hasAbility(u, 'newtype')) parts.push(`<div class="row"><span class="label">Newtype Reflexes</span><button data-newtype="-1" ${u.newtypeUsed || u.will < 1 ? 'disabled' : ''}>Turn ↺ (1 Will)</button><button data-newtype="1" ${u.newtypeUsed || u.will < 1 ? 'disabled' : ''}>Turn ↻ (1 Will)</button></div>`);
+  parts.push(withdrawRow(u));
   return `<div class="box"><h3>Action${u.acted ? ' · used' : ''}</h3>${parts.join('')}</div>`;
 }
 
@@ -1816,19 +2079,123 @@ function checksBox() {
     <div class="tablewrap"><table><tbody>${res.map(r => `<tr><td class="${r.pass ? 'ok' : 'fail'}">${r.pass ? 'PASS' : 'FAIL'}</td><td>${r.name}${r.detail ? `<br><span class="note">${r.detail}</span>` : ''}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 
+// ---------- Rendering: withdrawal, task checks, aftermath and missions ----------
+function withdrawRow(u) {
+  const err = withdrawError(u);
+  return `<div class="row"><button data-aft="withdraw" ${err ? 'disabled' : ''}>Withdraw</button><button data-aft="tasktab" ${u.acted ? 'disabled' : ''}>Task check…</button><span class="note">${err ? `Withdraw: ${err}.` : 'Leaves the battle from its own map edge, keeping its damage; no ejection roll.'}</span></div>`;
+}
+function ejectText(u) {
+  const e = u.eject;
+  if (e.pending) return `Destroyed: ejection roll waiting (pilot Reflex ${pilotStat(u, 'reflex')}${e.hard ? ' − 2 after a crit or melee hit' : ''}, target ${ejectTarget(u, false).t}).`;
+  if (e.ejected) return `Destroyed: ejected (rolled ${e.roll} vs ${e.t}), shaken.`;
+  return `Destroyed: ejection failed (rolled ${e.roll} vs ${e.t}). Injury roll ${e.injuryRoll}: <b>${INJURY[e.injury].name}</b>${e.chooseStat ? ', pick the stat' : e.lastingStat ? ` (${STAT_NAME[e.lastingStat]} −1)` : ''}.`;
+}
+function aftermathNote(u) {
+  const bits = [], ps = u.pilotState;
+  if (u.withdrawn) bits.push(`Withdrew with ${u.structure}/${fr(u).structure} Structure.`);
+  if (u.dead && !u.eject) bits.push(isMech(u) ? 'Destroyed.' : 'Destroyed. No ejection roll: ejection is for mechs only.');
+  if (u.eject) bits.push(ejectText(u));
+  if (ps && ps.willPenalty) bits.push(`Next mission: −${ps.willPenalty} Will${ps.shaken ? ' (shaken)' : ''}.`);
+  if (ps && ps.missNext) bits.push('Misses the next mission.');
+  const mods = Object.entries(u.injuryMods || {}).filter(([, v]) => v);
+  if (mods.length) bits.push(`Lasting injury: ${mods.map(([s, v]) => `${STAT_NAME[s]} ${v}`).join(', ')} to the pilot stat.`);
+  return bits.length ? `<p class="prov">${bits.join(' ')}</p>` + ejectControls(u) : '';
+}
+function ejectControls(u) {
+  const e = u.eject;
+  if (!e) return '';
+  if (e.pending) return `<div class="row"><button class="primary" data-aft="eject" data-uid="${u.id}">Roll ejection (${ejectTarget(u, false).t})</button><button data-aft="eject" data-uid="${u.id}" data-push="1" ${u.will < 1 ? 'disabled' : ''}>Push and roll (${ejectTarget(u, true).t}, 1 Will)</button></div>`;
+  if (e.chooseStat) return `<div class="row"><span class="label">Lasting injury: −1 to</span>${STATS.filter(s => s !== 'spirit').map(s => `<button data-aft="lasting" data-uid="${u.id}" data-stat="${s}">${STAT_NAME[s]} ${pilotStat(u, s)}</button>`).join('')}</div>`;
+  return '';
+}
+function taskBox() {
+  const T = aftUi().task, u = T.unit && U(T.unit);
+  const units = S.units.filter(x => alive(x));
+  const helpers = u ? taskHelpers(u, T.stat) : [];
+  if (T.helper && !helpers.some(h => h.id === T.helper)) T.helper = '';
+  let fc = '<p class="note">Pick a unit.</p>';
+  if (u) {
+    const { raw, t } = taskTarget(u, T.stat, T.diff, T.push, !!T.helper);
+    const err = taskError(u, T.stat, T);
+    fc = `<div class="forecast"><div><span class="label">Target</span><div class="big">${t}</div></div><div class="parts">${STAT_NAME[T.stat]} ${stat(u, T.stat)} ${DIFF[T.diff] >= 0 ? '+' : '−'} ${Math.abs(DIFF[T.diff])} (${T.diff})${T.push ? ' + 2 Push' : ''}${T.helper ? ' + 1 help' : ''}${raw !== t ? ` = ${raw}, limited to ${t}` : ''}<br>Success ${pct(t / 10)}</div></div>
+      ${err ? `<p class="warn">${err}.</p>` : ''}<div class="row"><button class="primary" data-aft="task" ${err ? 'disabled' : ''}>Roll task check</button></div>`;
+  }
+  return `<div class="box"><h3>Task check</h3><div class="formgrid">
+      <label for="tkunit">Unit</label><select id="tkunit"><option value="">—</option>${units.map(x => `<option value="${x.id}" ${T.unit === x.id ? 'selected' : ''}>${x.cs}</option>`).join('')}</select>
+      <label for="tkstat">Stat</label><select id="tkstat">${STATS.map(s => `<option value="${s}" ${T.stat === s ? 'selected' : ''}>${STAT_NAME[s]}${u ? ` (${stat(u, s)})` : ''}</option>`).join('')}</select>
+      <label for="tkdiff">Difficulty</label><select id="tkdiff">${Object.entries(DIFF).map(([k, v]) => `<option value="${k}" ${T.diff === k ? 'selected' : ''}>${k} (${v >= 0 ? '+' : '−'}${Math.abs(v)})</option>`).join('')}</select>
+      <label for="tkhelp">Help</label><select id="tkhelp"><option value="">None</option>${helpers.map(h => `<option value="${h.id}" ${T.helper === h.id ? 'selected' : ''}>${h.cs} (${stat(h, T.stat)})</option>`).join('')}</select>
+    </div>
+    <div class="row"><label><input type="checkbox" id="tkpush" ${T.push ? 'checked' : ''} ${u && u.will < 1 ? 'disabled' : ''}> Push (1 Will, +2)</label><label><input type="checkbox" id="tkfight" ${T.fight ? 'checked' : ''}> In a fight (uses the action)</label></div>
+    ${fc}<p class="note">Roll d10 at or under stat total + difficulty, + 2 for a Push, + 1 for help from a unit on the same side with 6 or more in that stat; the target is limited to 1–9.</p></div>`;
+}
+function missionTabLabel() { const n = S.units.filter(u => u.eject && (u.eject.pending || u.eject.chooseStat)).length; return n ? `Aftermath (${n})` : 'Aftermath'; }
+function missionBox() {
+  const gone = S.units.filter(u => u.dead), out = S.units.filter(u => u.withdrawn), bench = S.bench || [];
+  const nm = aftUi().nextMap || S.preset;
+  return `<div class="box"><h3>Fight settings</h3><div class="row">
+      <button data-aft="mission" class="${S.mission ? 'on' : ''}">Mission mode</button>
+      <button data-aft="lethal" class="${S.lethal ? 'on' : ''}">Lethal fight</button></div>
+    <p class="note">${S.mission ? `Mission mode is on (fight ${S.fight || 1}): Structure, Will, magazines and spares, injuries and shaken status carry to the next fight. Starting another scenario carries over the units that survived or withdrew.` : 'Mission mode is off: each scenario starts fresh.'} ${S.lethal ? 'Lethal: an injury roll of 10 kills or captures the pilot.' : 'Not lethal: an injury roll of 10 is a lasting injury.'}</p></div>
+    <div class="box"><h3>Destroyed</h3>${gone.length ? gone.map(u => `<div><b><span class="dot ${sideCls(u)}"></span> ${u.cs}</b> <span class="note">${fr(u).name}</span>${aftermathNote(u)}</div>`).join('') : '<p class="note">None yet.</p>'}
+      <p class="note">Ejection: d10 at or under the pilot's own Reflex, − 2 if the final hit was a crit or melee, + 2 for a Push. Failure rolls on the injury table: 1–5 Hurt (−1 Will next mission), 6–8 Badly hurt (misses the next mission), 9 Lasting injury, 10 Killed or captured if lethal. Tanks and aircraft roll no ejection.</p></div>
+    <div class="box"><h3>Withdrawn</h3>${out.length ? `<div class="tablewrap"><table><tbody>${out.map(u => `<tr><td><span class="dot ${sideCls(u)}"></span> ${u.cs}</td><td>${fr(u).name}</td><td class="n">Structure <b>${u.structure}/${fr(u).structure}</b></td></tr>`).join('')}</tbody></table></div>` : '<p class="note">None.</p>'}</div>
+    ${taskBox()}
+    ${S.mission ? `<div class="box"><h3>Between fights</h3>
+      <div class="row"><button data-aft="downtime" ${S.downtimeDone ? 'disabled' : ''}>Downtime</button><span class="note">${S.downtimeDone ? 'Taken.' : `Field repair up to ${FIELD_REPAIR} Structure a frame, Will to Spirit less penalties, every magazine and spare restocked.`}</span></div>
+      ${bench.length ? `<p class="note">Sitting out: ${bench.map(u => u.cs).join(', ')}. They return for the fight after next.</p>` : ''}
+      <div class="row"><label>Next map <select id="nextmap">${Object.entries(PRESETS).map(([k, p]) => `<option value="${k}" ${nm === k ? 'selected' : ''}>${p.name}</option>`).join('')}</select></label><button class="primary" data-aft="nextfight">Start next fight</button></div>
+      <p class="note">Units marked "misses the next mission" sit out once. A destroyed mech's surviving pilot returns in a replacement frame of the same type.</p></div>` : ''}`;
+}
+function aftUi() {
+  if (!S.aftUi) S.aftUi = {};
+  if (!S.aftUi.task) S.aftUi.task = { unit: '', stat: 'gunnery', diff: 'Standard', push: false, helper: '', fight: true };
+  return S.aftUi;
+}
+function aftermathClick(d, u) {
+  const A = aftUi(), T = A.task, X = d.uid && U(d.uid);
+  let err = '';
+  switch (d.aft) {
+    case 'withdraw': err = u ? withdraw(u) : 'No unit selected'; if (err) log(`${u ? u.cs : 'Withdraw'}: cannot withdraw: ${err}.`); break;
+    case 'tasktab': if (u) { T.unit = u.id; T.helper = ''; } S.tab = 'mission'; break;
+    case 'task': { const t = U(T.unit), res = taskCheck(t, T.stat, T); if (res.err) log(`Task check: ${res.err}.`); T.push = false; break; }
+    case 'eject': if (X) { const res = rollEjection(X, d.push === '1'); if (res.err) log(`${X.cs}: ${res.err}.`); } break;
+    case 'lasting': if (X) { err = applyLasting(X, d.stat); if (err) log(`${X.cs}: ${err}.`); } break;
+    case 'mission': S.mission = !S.mission; if (S.mission && !S.fight) S.fight = 1; log(`Mission mode ${S.mission ? 'on' : 'off'}.`); break;
+    case 'lethal': S.lethal = !S.lethal; log(`This fight is ${S.lethal ? '' : 'not '}lethal.`); break;
+    case 'downtime': err = downtime(); if (err) log(err + '.'); break;
+    case 'nextfight': err = nextFight(A.nextMap || S.preset); if (err) log(`Cannot start the next fight: ${err}.`); else S.aftUi = { nextMap: S.preset }; break;
+  }
+}
+function aftermathChange(t) {
+  const A = aftUi(), T = A.task;
+  if (t.id === 'preset' && S.mission) { const err = nextFight(t.value); if (err) log(`Cannot start the next fight: ${err}.`); return true; }
+  if (t.id === 'tkunit') { T.unit = t.value; T.helper = ''; }
+  else if (t.id === 'tkstat') { T.stat = t.value; T.helper = ''; }
+  else if (t.id === 'tkdiff') T.diff = t.value;
+  else if (t.id === 'tkhelp') T.helper = t.value;
+  else if (t.id === 'tkpush') T.push = t.checked;
+  else if (t.id === 'tkfight') T.fight = t.checked;
+  else if (t.id === 'nextmap') A.nextMap = t.value;
+  else return false;
+  return true;
+}
+
 function renderSide() {
-  const tabs = [['unit', 'Unit'], ['add', 'Add unit'], ['checks', 'Rules checks']];
+  aftUi();
+  const tabs = [['unit', 'Unit'], ['add', 'Add unit'], ['mission', missionTabLabel()], ['checks', 'Rules checks']];
   let body = '';
   if (S.tab === 'unit') {
     const u = selected();
     if (!u) body = `<p class="note">Select a unit on the map or in the initiative bar.</p>
-      <div class="box"><h3>How a round runs</h3><p class="note"><b>Plan &amp; move:</b> pick each unit's stance (Evade or Brace) and give it a manoeuvre, then resolve. Units move in initiative order (highest Reflex total, fixed at the start of the round) and collisions stop them short.<br><b>Action:</b> one Protocol, reload or break-off each.<br><b>Attack:</b> in initiative order, pick a weapon, click a target, check the forecast, roll.<br><b>End:</b> Energy recharges, effects count down, Charge bonuses end.</p><p class="note">Rules: Player's Guide, playtest edition. Numbers: the Frames and Weapons sheet, built into this page from tabletop/data/catalogue.json. Not built here: secret orders and the Declare step (stances show at once, and you pick targets after seeing them), switching targets when one is gone, withdrawing, and task checks.</p></div>${rosterBox()}`;
+      <div class="box"><h3>How a round runs</h3><p class="note"><b>Plan &amp; move:</b> pick each unit's stance (Evade or Brace) and give it a manoeuvre, then resolve. Units move in initiative order (highest Reflex total, fixed at the start of the round) and collisions stop them short.<br><b>Action:</b> one Protocol, reload or break-off each.<br><b>Attack:</b> in initiative order, pick a weapon, click a target, check the forecast, roll.<br><b>End:</b> Energy recharges, effects count down, Charge bonuses end.</p><p class="note">Rules: Player's Guide, playtest edition. Numbers: the Frames and Weapons sheet, built into this page from tabletop/data/catalogue.json. Not built here: secret orders and the Declare step (stances show at once, and you pick targets after seeing them), switching targets when one is gone.<br><b>Aftermath</b> tab: withdrawn units, ejection and injury rolls, task checks, the lethal-fight switch, and mission mode with Downtime.</p></div>${rosterBox()}`;
     else {
       body = unitSheet(u);
       if (alive(u)) body += S.phase === 'plan' ? planBox(u) : S.phase === 'action' ? actionBox(u) : attackBox(u);
       if (S.gm) body += gmBox(u);
     }
   } else if (S.tab === 'add') body = addBox();
+  else if (S.tab === 'mission') body = missionBox();
   else body = checksBox();
   $('side').innerHTML = `<div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button role="tab" class="${S.tab === k ? 'on' : ''}" data-tab="${k}">${n}</button>`).join('')}</div><div class="pane">${body}</div>`;
 }
@@ -1877,6 +2244,7 @@ function onMapClick(e) {
 function onClick(e) {
   const b = e.target.closest('button'); if (!b || b.disabled) return;
   const u = selected(), d = b.dataset;
+  if (d.aft) { aftermathClick(d, u); render(); return; }
   if (d.tab) { S.tab = d.tab; S.placing = null; }
   else if (d.sel) selectUnit(d.sel);
   else if (d.stance) {
@@ -1931,6 +2299,7 @@ function gmAction(u, a) {
 }
 function onChange(e) {
   const t = e.target, u = selected();
+  if (aftermathChange(t)) { render(); return; }
   if (t.id === 'preset') { newState(t.value); }
   else if (t.id === 'push') S.ui.push = t.checked;
   else if (t.id === 'see') S.ui.see = t.checked;
