@@ -1,7 +1,7 @@
 {
  "about": "Built by tabletop/sheet_export.py from the Frames and Weapons sheet. Do not edit by hand.",
  "spreadsheet": "1-5qpooUhSsjcMrzQWp6DiSxTNM7Y1OZav0AaZKeT00E",
- "revision": "APfK_pAQcuz3vLebAFLB_H3DNvxjc8X2oiYy7087NssQuS25WqpAcWGxz7ClunKJ-y5HMJAMB2tyYm1RbCBJULcotkNhIZVHK7HBYUjLifM",
+ "revision": "APfK_pChy7YlT8NlI2T1QqeKpgXC3BHkExzP_jw6DmsHpE4aX8MWzy5JF82nUrk1XzpktJElggdYi5bJ4BEadIIuCY3rH1pPW-ZPez6pPqA",
  "frames": [
   {
    "id": "m4_garrison",
@@ -4291,7 +4291,7 @@
    "radius": 0,
    "duration": 1,
    "channelled": false,
-   "effect": "#ERROR!",
+   "effect": "+1 Reflex",
    "tags": {
     "target": "self",
     "stat": "reflex+1"

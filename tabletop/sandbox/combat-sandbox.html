@@ -247,7 +247,7 @@ td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-nume
 const CATALOGUE = {
  "about": "Built by tabletop/sheet_export.py from the Frames and Weapons sheet. Do not edit by hand.",
  "spreadsheet": "1-5qpooUhSsjcMrzQWp6DiSxTNM7Y1OZav0AaZKeT00E",
- "revision": "APfK_pAQcuz3vLebAFLB_H3DNvxjc8X2oiYy7087NssQuS25WqpAcWGxz7ClunKJ-y5HMJAMB2tyYm1RbCBJULcotkNhIZVHK7HBYUjLifM",
+ "revision": "APfK_pChy7YlT8NlI2T1QqeKpgXC3BHkExzP_jw6DmsHpE4aX8MWzy5JF82nUrk1XzpktJElggdYi5bJ4BEadIIuCY3rH1pPW-ZPez6pPqA",
  "frames": [
   {"id":"m4_garrison","name":"M4 Garrison","class":"Mech","gen":1,"role":"Heavy line","bloc":"US, Union, Pact","size":"Medium","movement":"Ground","structure":68,"armour":2,"armour_type":"Ballistic","move":2,"energy":2,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":1},"limits":{"gunnery":7,"melee":7,"precision":7,"reflex":6,"systems":7,"countermeasures":7,"brace":8},"protocols":[],"special":"","tags":{},"weapons":["m30_hand_cannon","pb1_pile_bunker"],"production":"Line","price":1013},
   {"id":"hx4_merlin","name":"HX-4 Merlin","class":"Mech","gen":1,"role":"Variable","bloc":"United States","size":"Medium","movement":"Variable","structure":42,"armour":1,"armour_type":"Energy","move":4,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":8,"melee":6,"precision":7,"reflex":8,"systems":7,"countermeasures":7,"brace":6},"protocols":[],"special":"Transforming takes a full round: it cannot attack in a round it changes band.","tags":{"transform_no_attack":true},"weapons":["lr1_linear_rifle"],"production":"Prototype","price":2771},
@@ -382,7 +382,7 @@ const CATALOGUE = {
  ],
  "protocols": [
   {"id":"sensor_link","name":"Sensor Link","type":"Buff","difficulty":"Easy","modifier":2,"energy":1,"range":6,"radius":0,"duration":1,"channelled":false,"effect":"Ally +1 Gunnery","tags":{"target":"ally","stat":"gunnery+1"}},
-  {"id":"ghost_return","name":"Ghost Return","type":"Buff","difficulty":"Standard","modifier":0,"energy":1,"range":0,"radius":0,"duration":1,"channelled":false,"effect":"#ERROR!","tags":{"target":"self","stat":"reflex+1"}},
+  {"id":"ghost_return","name":"Ghost Return","type":"Buff","difficulty":"Standard","modifier":0,"energy":1,"range":0,"radius":0,"duration":1,"channelled":false,"effect":"+1 Reflex","tags":{"target":"self","stat":"reflex+1"}},
   {"id":"ammo_relay","name":"Ammo Relay","type":"Buff","difficulty":"Easy","modifier":2,"energy":1,"range":4,"radius":0,"duration":0,"channelled":false,"effect":"Ally reloads one weapon from its spares without using its action","tags":{"target":"ally","reload":true}},
   {"id":"target_painter","name":"Target Painter","type":"Debuff","difficulty":"Standard","modifier":0,"energy":1,"range":8,"radius":0,"duration":2,"channelled":false,"effect":"−1 Reflex","tags":{"target":"enemy","stat":"reflex-1"}},
   {"id":"jam","name":"Jam","type":"Debuff","difficulty":"Standard","modifier":0,"energy":1,"range":8,"radius":0,"duration":1,"channelled":false,"effect":"No lock rolls","tags":{"target":"enemy","no_lock":true}},
