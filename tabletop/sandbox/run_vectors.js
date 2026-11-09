@@ -5,9 +5,10 @@
 // Each attack case becomes a tiny two-unit world on an empty map: frames, pilots and (except for the catalogue
 // cases, which use the page's own weapon) a weapon whose totals are the case's. The page's functions then do the
 // work: forecast() for forecasts, rollAttack() with the scripted dice for dice.json, lockInfo() and rollAttack() for
-// locks, protoRoll() and useProtocol() for Protocols and Purges, stat() for stat totals. Cover comes from terrain in
-// the defender's hex (light 1, heavy 2), a lock of `none` from a Jam effect, a given lock from opts.locked, planted
-// from a braced attacker that did not move, a full move from a Ground Move of the defender's whole Move.
+// locks, protoRoll() and useProtocol() for Protocols and Purges, stat() for stat totals, taskTarget() for task checks.
+// Cover comes from terrain in the defender's hex (light 1, heavy 2), a lock of `none` from a Jam effect, a given lock
+// from opts.locked, planted from a braced attacker that did not move, a full move from a Ground Move of the
+// defender's whole Move.
 //
 // Prints a summary per file (cases, passed, failed, and fields the page cannot produce, with counts) and exits 1 on
 // any failure or if the page's script cannot run. -v prints every failure, not just the first few per file.
@@ -33,7 +34,7 @@ function loadPage() {
   const src = pageScript(fs.readFileSync(page, 'utf8'));
   const context = vm.createContext({ console });
   vm.runInContext(`${src}
-;globalThis.__page = { forecast, rollAttack, attackError, lockInfo, protoRoll, useProtocol, stat, makeUnit, moveOf, sf, st,
+;globalThis.__page = { forecast, rollAttack, attackError, lockInfo, protoRoll, useProtocol, stat, taskTarget, makeUnit, moveOf, sf, st,
   toAxial, step, key, lc, DIFF, W, F, P, PROTOS, setS: v => { S = v; }, getS: () => S };`, context, { filename: path.basename(page) });
   return context.__page;
 }
@@ -386,6 +387,23 @@ function runStats(name, cases) {
   return rep;
 }
 
+// Task checks: target = stat + difficulty + Push (+2) + help (+1), limited to 1-9 (the page's taskTarget).
+function runTasks(name, cases) {
+  const rep = new Report(name);
+  for (const c of cases) {
+    try {
+      const diff = DIFF_NAME(c.modifier);
+      if (diff === undefined) throw new Error(`no difficulty gives ${c.modifier}`);
+      const S = world();
+      pg.F._vtask = pg.sf('Vector task', 2, 'medium', 50, 0, 'none', 3, 99, 1, [0, 0, 0, 0, 0, 0], [99, 99, 99, 99, 99, 99], [0, 99], { melee: null });
+      pilot('_vtask', { gunnery: c.stat });
+      const u = unit(S, { id: 'u', cs: 'U', side: 0, pilot: '_vtask', frame: '_vtask', hex: START });
+      rep.check(c.id, { expected: pg.taskTarget(u, 'gunnery', diff, c.push, c.help > 0).t }, { expected: c.expected }, 0);
+    } catch (e) { rep.error(c.id, e); }
+  }
+  return rep;
+}
+
 // ------------------------------------------------------------------ main
 function main() {
   const reports = [];
@@ -395,9 +413,7 @@ function main() {
   reports.push(runProtocols('anchors.json protocols', anchors.protocols));
   reports.push(runPurges('anchors.json purges', anchors.purges));
   reports.push(runStats('anchors.json stats', anchors.stats));
-  const tasks = new Report('anchors.json tasks');
-  tasks.notComparable('expected', 'the page has no task checks yet (plan step 4)', anchors.tasks.length);
-  reports.push(tasks);
+  reports.push(runTasks('anchors.json tasks', anchors.tasks));
   reports.push(runDice(load('dice.json').cases));
   reports.push(runForecasts('converted.json', load('converted.json').cases, 0.006));
   // build_vectors.py writes the engine's figures rounded to 6 decimals.

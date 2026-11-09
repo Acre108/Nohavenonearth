@@ -21,8 +21,8 @@ node tabletop/sandbox/run_vectors.js  # the combat sandbox against every file (u
 ```
 
 `sandbox/run_vectors.js` feeds each case to the sandbox page's own functions (forecast, scripted attack roll,
-lock, Protocol, Purge and stat code) and prints, per file, the cases passed and failed and the fields the page
-cannot produce yet (task checks, fractional stat bonuses). `catalogue_attacks.json` holds figures rounded to 6
+lock, Protocol, Purge, stat and task-check code) and prints, per file, the cases passed and failed and the fields the page
+cannot produce yet (fractional stat bonuses). `catalogue_attacks.json` holds figures rounded to 6
 decimals, so it is compared within 5 × 10⁻⁷.
 
 The generated files must match a fresh build, so a rules or sheet change shows up as a diff to
