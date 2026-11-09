@@ -1,6 +1,18 @@
 # Plan: finishing the combat sandbox
 
-**Status: proposed, 9 November 2026.** The [combat sandbox](https://claude.ai/artifact/JgqktsdJAv71A8j6XkpviL)
+**Status: done, 9 November 2026.** Steps 1–7 are built and published as version 11 of the artifact,
+from `tabletop/sandbox/combat-sandbox.html` on branch `tabletop-bot-prep`. The page passes 109 built-in
+rules checks and every shared test vector it can take (1,629 of 2,382 cases; the rest need fractional
+stat bonuses, which the page doesn't have). Rulings the build had to make, for the user to confirm: an
+engaged unit must break off before it can withdraw; a pilot who survives losing their mech returns in
+a new frame of the same type; each new fight counts as the next mission for Will penalties; help costs
+the helper nothing; a bracing target ignores Stagger on a roll at or under its Brace target; an
+unaugmented pilot's Reflex counts as 5 in an augmented-only frame (so 4 rises to 5); point defence is a
+flat −2 however many defenders cover the target; the hidden-stance forecast highlights the evade
+columns when the target's revealed move was more than half its Move. Battery crane, drone command and
+shared lock are shown as "Not applied here". The plan below is kept as the record.
+
+Original status: proposed, 9 November 2026. The [combat sandbox](https://claude.ai/artifact/JgqktsdJAv71A8j6XkpviL)
 is the GM's stand-in for the Discord bot until Phase 2 of the [Discord plan](discord-ttrpg-plan.md)
 is playable, and stays afterwards as the place to settle geometry and test rules. On 9 November it
 was brought up to the Frames and Weapons sheet's numbers, the 1–14 pilots, brace and evade, the
