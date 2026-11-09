@@ -473,6 +473,210 @@ for (const c of CATALOGUE.frames) {
       silent: t.stealth_range || 0, field: t.cm_field || 0, transformLock: !!t.transform_no_attack, jamRisk: !!t.jury_rigged, noSpares: air || !!t.no_spares,
     }, air || t.no_hands ? { melee: null } : {}));
 }
+// Tag-driven specials. Weapons tagged anchor fire only if the unit did not move (the page's `still` rule). A frame
+// tagged linked_fire fires a weapon it carries twice as one attack (`twins`).
+for (const w of Object.values(W)) if (w.tags && w.tags.anchor) w.still = true;
+for (const c of CATALOGUE.frames) if (c.tags && c.tags.linked_fire) F[c.id].twins = c.weapons.filter((w, i) => c.weapons.indexOf(w) !== i);
+// How the page treats each catalogue tag: 'rule' is applied by the page's rules, 'note' is shown as text only (it
+// has no effect inside one fight). Tags missing here are shown on the unit card as "Not applied here".
+const TAG_SUPPORT = {
+  frame: {
+    aircraft: 'rule', anchor: 'rule', augmented_only: 'rule', charge_reach: 'rule', cm_field: 'rule', damage_floor: 'rule', dug_in_cover: 'rule',
+    extra_spare: 'rule', flies_high: 'rule', front_cover: 'rule', ground_move_only: 'rule', jury_rigged: 'rule', limits_off: 'rule', linked_fire: 'rule',
+    no_hands: 'rule', no_spares: 'rule', point_defence: 'rule', rattletrap: 'rule', shelter_cover: 'rule', shoot_and_scoot: 'rule', stealth_range: 'rule',
+    still_stealth_range: 'rule', tank: 'rule', transform_no_attack: 'rule', space_only: 'note', unarmed: 'note', swap_pit: 'note',
+  },
+  weapon: {
+    anchor: 'rule', cooldown: 'rule', hands_by_size: 'rule', ignore_cover: 'rule', indirect: 'rule', kneel_only: 'rule', on_hit: 'rule', reach: 'rule',
+    vs_protocol_user: 'rule', gm_issue: 'note', needs_generator: 'note',
+  },
+};
+const ON_HIT_SUPPORTED = ['shred', 'stagger', 'tether', 'dazzle'];
+// A frame or weapon tag's value (0 when absent). Test frames built with sf() have no tags.
+const ftag = (u, k) => { const t = fr(u).tags || {}; return t[k] === true ? 1 : t[k] || 0; };
+const wtag = (w, k) => { const t = w.tags || {}; return t[k] === true ? 1 : t[k] || 0; };
+// The pilot's own stat: lasting-injury losses first, then augmented_only (an unaugmented pilot's Reflex counts as 5
+// in this frame; the unit card has an "augmented" box).
+function pilotStat(u, s) {
+  const own = (pl(u).stats[s] || 0) + ((u.injuryMods && u.injuryMods[s]) || 0);
+  return s === 'reflex' && ftag(u, 'augmented_only') && !u.augmented ? 5 : own;
+}
+// extra_spare: N extra spare magazines for the frame's first ranged weapon.
+function addExtraSpares(f, weapons, ammo) {
+  const n = (f.tags || {}).extra_spare || 0, first = weapons.find(w => !W[w].melee && ammo[w]);
+  if (n && first && !f.noSpares) ammo[first].spares += n;
+}
+// rattletrap: d10 at mission start, on a 1 it has −1 Move for the mission.
+function rollRattletrap(f, spec, dice = d10) { return !!(f.tags || {}).rattletrap && !spec.noJam && dice() === 1; }
+// charge_reach: Charge reaches Move + N instead of Move + 1.
+const chargeReach = u => moveOf(u) + (ftag(u, 'charge_reach') || 1);
+// reach: melee reaches N hexes (1 without the tag).
+const meleeReach = w => wtag(w, 'reach') || 1;
+// linked_fire: two identical weapons fire as one attack, doubling the shots; one load comes from each (the page keeps
+// the pair's magazines in step, so one count stands for both).
+const linkedFire = (a, wid) => !!ftag(a, 'linked_fire') && (fr(a).twins || []).includes(wid);
+const shotsOf = (a, wid) => W[wid].shots * (linkedFire(a, wid) ? 2 : 1);
+// damage_floor: hits of N damage or less, after Armour, deal none (worked out before Brace halving).
+const floorDmg = (d, n) => n > 0 && n <= ftag(d, 'damage_floor') ? 0 : n;
+// still_stealth_range: while it has not moved this round it cannot be targeted beyond N.
+const stillHidden = (a, d) => !!ftag(d, 'still_stealth_range') && !d.moved && rangeOf(a, d) > ftag(d, 'still_stealth_range');
+function stealthWhy(a, d) {
+  if (fr(d).silent > 0 && !d.revealed && rangeOf(a, d) > fr(d).silent) return `Silent running: cannot be targeted beyond ${fr(d).silent} until it attacks`;
+  if (stillHidden(a, d)) return `Still and hidden: cannot be targeted beyond ${ftag(d, 'still_stealth_range')} while it has not moved`;
+  return '';
+}
+// shelter_cover: +N cover to an ally within 1 behind it, that is, the sheltering frame stands in the hex next to the
+// ally on a line of sight from the attacker.
+function shelterFor(a, d) {
+  let best = null;
+  for (const s of living()) {
+    const n = ftag(s, 'shelter_cover');
+    if (!n || s === d || s.side !== d.side || s.band !== d.band || hdist(s.hex, d.hex) !== 1) continue;
+    if (!losLines(a.hex, d.hex).some(line => line.some(h => same(h, s.hex)))) continue;
+    if (!best || n > ftag(best, 'shelter_cover')) best = s;
+  }
+  return best;
+}
+// Every cover the target gets against this attack: terrain, front_cover (attacker in its Front arc), dug_in_cover
+// (it did not move this round) and shelter_cover, less the weapon's ignore_cover.
+function coverInfo(a, d, w) {
+  const terrain = cover(a, d), bits = [];
+  let total = terrain;
+  const fc = ftag(d, 'front_cover'); if (fc && inArc(d, a.hex, 120)) { total += fc; bits.push(`front ${fc}`); }
+  const dg = ftag(d, 'dug_in_cover'); if (dg && !d.moved) { total += dg; bits.push(`dug in ${dg}`); }
+  const sh = shelterFor(a, d); if (sh) { total += ftag(sh, 'shelter_cover'); bits.push(`${sh.cs}'s shelter ${ftag(sh, 'shelter_cover')}`); }
+  const cut = Math.min(w ? wtag(w, 'ignore_cover') : 0, total);
+  total -= cut;
+  const label = bits.length || cut ? `Cover (terrain ${terrain}${bits.map(b => ' + ' + b).join('')}${cut ? ` − ${cut} ignored` : ''})` : 'Cover';
+  return { terrain, total, cut, label };
+}
+// point_defence: explosive ranged attacks against it, or an ally within N, are −2 (once, however many cover it).
+function pointDefender(a, d, w) {
+  if (w.melee || w.type !== 'explosive') return null;
+  return living().find(o => o.side === d.side && ftag(o, 'point_defence') && hdist(o.hex, d.hex) <= ftag(o, 'point_defence')) || null;
+}
+// indirect: may fire without line of sight if an ally can see the target.
+const spotterFor = (a, d) => living().find(o => o !== a && o.side === a.side && losClear(o, d)) || null;
+// cooldown: after two attacks the weapon cools down for N rounds.
+const coolingUntil = (a, wid) => (a.cool && a.cool[wid] && a.cool[wid].until) || 0;
+// Attack rules that come from tags (checked in attackError).
+function specialAttackError(a, d, wid) {
+  const w = W[wid];
+  if (coolingUntil(a, wid) >= S.round) return `Cooling down until the end of round ${coolingUntil(a, wid)}`;
+  if (ftag(a, 'anchor') && !w.melee && a.moved) return 'Anchor: fires only if it did not move this round';
+  return '';
+}
+// After an attack: count it towards the weapon's cooldown, and offer shoot_and_scoot (not after a charge).
+function noteAttack(a, wid, opts = {}) {
+  const n = wtag(W[wid], 'cooldown');
+  if (n) {
+    a.cool = a.cool || {};
+    const c = a.cool[wid] = a.cool[wid] || { count: 0, until: 0 };
+    if (++c.count >= 2) { c.count = 0; c.until = S.round + n; }
+  }
+  if (!opts.parting && ftag(a, 'shoot_and_scoot') && a.moveM !== 'charge') a.scoot = ftag(a, 'shoot_and_scoot');
+}
+// shoot_and_scoot: the hexes it can reach after its attack (Ground Move rules, same band, not while engaged or tethered).
+function scootEnds(u) {
+  const out = new Map();
+  if (!u.scoot || isEngaged(u) || hasFlag(u, 'tether')) return out;
+  const prev = new Map([[key(u.hex), null]]);
+  let frontier = [u.hex];
+  for (let d = 0; d < u.scoot; d++) {
+    const next = [];
+    for (const h of frontier) for (let f = 0; f < 6; f++) {
+      const n = step(h, f), k = key(n);
+      if (prev.has(k) || !passOK(u, n, u.band)) continue;
+      prev.set(k, key(h)); next.push(n);
+    }
+    frontier = next;
+  }
+  for (const k of prev.keys()) {
+    if (k === key(u.hex) || !endOK(u, unkey(k), u.band)) continue;
+    const path = []; let c = k;
+    while (c) { path.unshift(unkey(c)); c = prev.get(c); }
+    out.set(k, [{ path, facing: u.facing }]);
+  }
+  return out;
+}
+function doScoot(u, h) {
+  const opts = scootEnds(u).get(key(h));
+  if (!opts) return false;
+  u.hex = h; u.moved = true; u.moveHexes += opts[0].path.length - 1; u.scoot = 0;
+  cleanEngagements();
+  log(`${u.cs} shoots and scoots ${opts[0].path.length - 1} hex${opts[0].path.length === 2 ? '' : 'es'}.`);
+  return true;
+}
+// On-hit effects, once per attack if at least one shot hits (a glance does not trigger them).
+// Stagger's clause "A bracing target ignores this on its Brace target": a target that is bracing when hit rolls a d10
+// against its Brace target (Brace − 2) and ignores the Stagger on a success.
+function applyOnHit(a, d, w, shots, killed, dice = d10) {
+  if (!w.onHit || killed || !shots.some(s => s.res === 'hit' || s.res === 'crit')) return '';
+  const N = S.round;
+  switch (w.onHit) {
+    case 'shred': d.shred = (d.shred || 0) + 1; return `Shred: ${d.cs} has Armour ${armourNow(d)} for the rest of the fight.`;
+    case 'stagger': {
+      if (bracing(d) && braceTarget(d) >= 1) {
+        const r = dice();
+        if (r <= braceTarget(d)) return `Stagger: ${d.cs} is bracing and rolls <span class="die brace">${r}</span> against its Brace target ${braceTarget(d)}: ignored.`;
+        addEffect(d, { pid: 'stagger', name: 'Stagger', flag: 'stagger', starts: N + 1, expires: N + 1, strength: 0, kind: 'debuff' });
+        return `Stagger: ${d.cs} is bracing but rolls <span class="die">${r}</span> against its Brace target ${braceTarget(d)}: it has 1 less Move next round and cannot earn the full-Move reroll.`;
+      }
+      addEffect(d, { pid: 'stagger', name: 'Stagger', flag: 'stagger', starts: N + 1, expires: N + 1, strength: 0, kind: 'debuff' });
+      return `Stagger: ${d.cs} has 1 less Move next round and cannot earn the full-Move reroll.`;
+    }
+    case 'tether': addEffect(d, { pid: 'tether', name: 'Tether', flag: 'tether', starts: N + 1, expires: N + 1, strength: 0, kind: 'debuff' }); return `Tether: ${d.cs} cannot move next round.`;
+    case 'dazzle': addEffect(d, { pid: 'dazzle', name: 'Dazzle', flag: 'dazzle', starts: N + 1, expires: N + 1, strength: 0, kind: 'debuff' }); return `Dazzle: ${d.cs} makes no lock rolls next round.`;
+  }
+  return `On hit: ${w.special}`;
+}
+// The unit card's notes for its tags, and the tags the page does not apply.
+function specialNotes(u) {
+  const f = fr(u), t = f.tags || {}, notes = [], gaps = [];
+  const FN = {
+    point_defence: n => `Point defence ${n}: explosive ranged attacks against it, or an ally within ${n}, are −2.`,
+    front_cover: n => `Front cover: +${n} cover against attacks from its Front arc.`,
+    dug_in_cover: n => `Dug in: +${n} cover if it has not moved this round${u.moved ? ' (it has moved)' : ''}.`,
+    shelter_cover: n => `Shelter: +${n} cover to allies within 1 behind it.`,
+    damage_floor: n => `Damage floor: hits of ${n} damage or less after Armour deal none.`,
+    charge_reach: n => `Charge reaches Move + ${n} = ${moveOf(u) + n}.`,
+    still_stealth_range: n => `Still stealth: while it has not moved this round it cannot be targeted beyond ${n}${u.moved ? ' (it has moved)' : ''}.`,
+    stealth_range: n => `Silent running: cannot be targeted beyond ${n} until it attacks${u.revealed ? ' (it has attacked)' : ''}.`,
+    shoot_and_scoot: n => `Shoot and scoot: after its attack it may move ${n} hex${n > 1 ? 'es' : ''}, unless it charged.`,
+    extra_spare: n => `${n} extra spare magazine${n > 1 ? 's' : ''} for its first ranged weapon.`,
+    limits_off: () => 'Limits off: in Planning, 1 Will for +1 Reflex this round.',
+    linked_fire: () => `Linked fire: ${(f.twins || []).map(w => W[w].name).join(', ') || 'a twin weapon'} fires as one attack, double shots.`,
+    anchor: () => 'Anchor: its ranged weapons fire only if it did not move this round.',
+    rattletrap: () => `Rattletrap: d10 at mission start, on a 1 −1 Move for the mission${u.rattled ? '. <b>Rolled a 1: −1 Move.</b>' : ' (rolled fine)'}.`,
+    augmented_only: () => `Augmented pilots only: an unaugmented pilot's Reflex counts as 5${u.augmented ? '' : ' (applied)'}.`,
+    unarmed: () => 'Unarmed apart from its hands.',
+    space_only: () => 'Space only (the sandbox map is a ground map).',
+    swap_pit: () => 'Needs a swap pit between missions.',
+  };
+  for (const [k, v] of Object.entries(t)) {
+    if (!TAG_SUPPORT.frame[k]) gaps.push(k);
+    else if (FN[k]) notes.push(FN[k](v === true ? 1 : v));
+  }
+  const WN = {
+    ignore_cover: (w, n) => `${w.name} ignores ${n} cover.`,
+    reach: (w, n) => `${w.name} reaches ${n} hexes in melee.`,
+    vs_protocol_user: (w, n) => `${w.name}: +${n} to hit a unit that used a Protocol this round.`,
+    cooldown: (w, n, wid) => `${w.name}: after two attacks it cools down for ${n} rounds${coolingUntil(u, wid) >= S.round ? ` (cooling until the end of round ${coolingUntil(u, wid)})` : u.cool && u.cool[wid] && u.cool[wid].count ? ' (1 attack made)' : ''}.`,
+    gm_issue: w => `${w.name}: issued only when the GM allows.`,
+    indirect: w => `${w.name}: may fire without line of sight if an ally can see the target.`,
+    needs_generator: w => `${w.name}: needs its generator (the GM checks it).`,
+    anchor: w => `${w.name}: fires only if the unit did not move this round.`,
+    on_hit: (w, v) => ON_HIT_SUPPORTED.includes(v) ? `${w.name}: ${v} on a hit.` : null,
+  };
+  for (const wid of u.weapons) {
+    const w = W[wid];
+    for (const [k, v] of Object.entries(w.tags || {})) {
+      if (!TAG_SUPPORT.weapon[k] || (k === 'on_hit' && !ON_HIT_SUPPORTED.includes(v))) gaps.push(k === 'on_hit' ? `on_hit:${v}` : k);
+      else if (WN[k]) { const s = WN[k](w, v === true ? 1 : v, wid); if (s) notes.push(s); }
+    }
+  }
+  return { notes, gaps: [...new Set(gaps)] };
+}
 // Blocs for the Add unit list, in the sheet's order with "Any" last. A frame on several blocs is listed under each.
 const BLOC_ID = { 'United States': 'us', 'Continental Union': 'cu', 'Eurasian Pact': 'ep', Canada: 'ca', Japan: 'jp', 'Pan-African League': 'pal', Any: 'any' };
 const FACTIONS = [];
@@ -688,6 +892,7 @@ function makeUnit(spec) {
   if (fr.melee && !weapons.includes(fr.melee)) weapons.push(fr.melee);
   const ammo = {};
   for (const w of weapons) if (W[w].mag) ammo[w] = { mag: W[w].mag, spares: fr.noSpares ? 0 : W[w].spares };
+  addExtraSpares(fr, weapons, ammo);
   // Technical Refits: a d10 roll of 1 at mission start jams one weapon until repaired.
   const guns = weapons.filter(w => !W[w].builtin);
   const jammed = fr.jamRisk && !spec.noJam && guns.length && d10() === 1 ? guns[Math.floor(Math.random() * guns.length)] : null;
@@ -696,6 +901,7 @@ function makeUnit(spec) {
     hex: spec.hex, facing: spec.facing, band: spec.band, structure: fr.structure, energy: fr.energy, will: pl.stats.spirit, ammo,
     effects: [], engaged: [], chargeTarget: null, order: null, acted: false, attacked: false, newtypeUsed: false, dead: false, withdrawn: false,
     stance: 'evade', moved: false, moveHexes: 0, moveM: null, bandChanged: false, revealed: false, jammed, shred: 0,
+    rattled: rollRattletrap(fr, spec), augmented: !!spec.augmented, scoot: 0, cool: {}, usedProto: 0,
   };
 }
 function newState(preset) {
@@ -713,6 +919,7 @@ function newState(preset) {
     S.units.push(makeUnit(Object.assign({}, spec, { weapons: F[spec.frame].loadout, hex: placeHex(x, spec.y, spec.band), facing: spec.side === 0 ? 1 : 4 })));
   }
   for (const u of S.units) if (u.jammed) log(`${u.cs}'s ${W[u.jammed].name} is <b>jammed</b>: the refit's mission-start roll came up 1.`);
+  for (const u of S.units) if (u.rattled) log(`${u.cs} is a <b>rattletrap</b>: its mission-start roll came up 1, so it has −1 Move for the mission.`);
   startRound();
   log(`<b>${pr.name}</b> loaded. Round 1 planning.`);
 }
@@ -738,7 +945,7 @@ function stat(u, s) {
   const f = fr(u);
   return clamp(pilotStat(u, s) + hwOf(f, s) + effectSum(u, s), 1, thOf(f, s));
 }
-function moveOf(u) { return Math.max(1, fr(u).move - (hasFlag(u, 'lockout') ? 1 : 0) - (hasFlag(u, 'stagger') ? 1 : 0)); }
+function moveOf(u) { return Math.max(1, fr(u).move - (hasFlag(u, 'lockout') ? 1 : 0) - (hasFlag(u, 'stagger') ? 1 : 0) - (u.rattled ? 1 : 0)); }
 // Brace: at most floor(Move / 2) hexes. Fixed-distance manoeuvres only if their distance fits that cap.
 const FIXED_DIST = { brake: 1, lateral: 2, reverse: 2 };
 const moveCap = u => bracing(u) ? Math.floor(moveOf(u) / 2) : moveOf(u);
@@ -812,6 +1019,7 @@ function bandsFor(u, m) {
 }
 function manoError(u, m) {
   const M = MANO[m];
+  if (hasFlag(u, 'tether')) return 'Tethered: cannot move this round';
   if (isEngaged(u)) return 'Engaged: break off in the Action phase';
   if ((M.kind === 'ground' || M.kind === 'charge') && u.band !== 0) return 'Needs the GROUND band';
   if (M.cost > u.energy) return `Needs ${M.cost} Energy`;
@@ -892,7 +1100,7 @@ function endpoints(u, m, band) {
 }
 function chargeTargets(u) {
   if (u.band !== 0) return [];
-  const reach = moveOf(u) + 1;
+  const reach = chargeReach(u);
   return living().filter(t => t.side !== u.side && t.band === 0 && !isAir(t) && inArc(u, t.hex, 120) && hdist(u.hex, t.hex) - 1 <= reach);
 }
 function setOrder(u, m, band, opt) {
@@ -959,7 +1167,7 @@ function resolveCharge(u, o) {
   if (t.band !== 0) { log(`${u.cs} charges, but ${t.cs} is airborne. The charge fails (1 Energy spent).`); return; }
   const path = chargePath(u, t);
   if (!path) { log(`${u.cs} has no path to ${t.cs}. The charge fails (1 Energy spent).`); return; }
-  const steps = path.slice(0, moveOf(u) + 2);
+  const steps = path.slice(0, chargeReach(u) + 1);
   while (steps.length > 1 && unitAt(steps[steps.length - 1], 0, u)) steps.pop();
   if (steps.length > 1) u.moved = true;
   u.moveHexes = steps.length - 1; u.moveM = 'charge';
@@ -996,23 +1204,25 @@ function attackError(a, d, wid) {
   if (w.energy > a.energy) return `Needs ${w.energy} Energy`;
   if (w.mag && a.ammo[wid].mag <= 0) return a.ammo[wid].spares ? 'Magazine empty: reload' : 'Dry';
   if (a.jammed === wid) return 'Jammed until repaired';
+  { const se = specialAttackError(a, d, wid); if (se) return se; }
   if (w.still && a.moved) return 'Fires only if the unit did not move this round';
   if (w.kneel && !bracing(a)) return 'Fires only from a kneel: choose Brace in planning';
   if (fr(a).transformLock && a.bandChanged) return 'Transformed this round: cannot attack';
-  if (hiddenFrom(a, d)) return `Silent running: cannot be targeted beyond ${fr(d).silent} until it attacks`;
+  if (hiddenFrom(a, d)) return stealthWhy(a, d);
   if (w.melee) {
-    if (a.band !== d.band || hdist(a.hex, d.hex) !== 1) return 'Melee reaches adjacent hexes in the same band';
+    if (a.band !== d.band || hdist(a.hex, d.hex) < 1 || hdist(a.hex, d.hex) > meleeReach(w)) return meleeReach(w) > 1 ? `Melee reaches ${meleeReach(w)} hexes in the same band` : 'Melee reaches adjacent hexes in the same band';
     if (!engagedWith(a, d) && !inArc(a, d.hex, w.arc)) return 'Outside the Narrow arc';
   } else {
     const R = rangeOf(a, d), lo = Math.ceil(w.rmin), hi = Math.floor(w.rmax);
     if (R < lo || R > hi) return `Range ${R}, needs ${lo}–${hi}`;
     if (!inArc(a, d.hex, w.arc)) return `Outside the ${ARC_NAME[ARC_HEX[w.arc]]} arc`;
   }
-  if (!losClear(a, d)) return 'No line of sight';
+  if (!losClear(a, d) && !(wtag(w, 'indirect') && spotterFor(a, d))) return wtag(w, 'indirect') ? 'No line of sight, and no ally can see the target' : 'No line of sight';
   return '';
 }
-// Silent-running frames (tag stealth_range) cannot be targeted beyond that range until they have attacked.
-const hiddenFrom = (a, d) => fr(d).silent > 0 && !d.revealed && rangeOf(a, d) > fr(d).silent;
+// Silent-running frames (tag stealth_range) cannot be targeted beyond that range until they have attacked; frames
+// tagged still_stealth_range cannot be targeted beyond theirs while they have not moved this round.
+const hiddenFrom = (a, d) => (fr(d).silent > 0 && !d.revealed && rangeOf(a, d) > fr(d).silent) || stillHidden(a, d);
 const bracing = u => u.stance === 'brace';
 // Brace halving roll: d10 ≤ Brace − 2. Not limited: 0 or less never halves.
 const braceTarget = u => stat(u, 'brace') - 2;
@@ -1023,7 +1233,9 @@ function hitTarget(a, d, wid, opts = {}) {
   // Attacks treat a bracing target's Reflex as 2 lower (its initiative is unchanged).
   const parts = [['Base', 5], [STAT_NAME[s], stat(a, s)]];
   parts.push(bracing(d) ? ['Target Reflex (braced, −2)', -(stat(d, 'reflex') - 2)] : ['Target Reflex', -stat(d, 'reflex')]);
-  const cv = Math.max(0, cover(a, d) - ((w.tags && w.tags.ignore_cover) || 0)); if (cv) parts.push(['Cover', -cv]);
+  const cv = coverInfo(a, d, w); if (cv.total) parts.push([cv.label, -cv.total]);
+  if (pointDefender(a, d, w)) parts.push([`Point defence (${pointDefender(a, d, w).cs})`, -2]);
+  if (wtag(w, 'vs_protocol_user') && d.usedProto === S.round) parts.push(['Protocol user', wtag(w, 'vs_protocol_user')]);
   if (w.aim) parts.push(['Aim', w.aim]);
   const sz = SIZE_ADJ[fr(d).size]; if (sz) parts.push(['Size', sz]);
   const charged = w.melee && a.chargeTarget === d.id;
@@ -1040,6 +1252,7 @@ function lockInfo(a, d, given = false) {
   // A lock given without a roll (opts.locked): LOCKED, with the lock's reroll.
   if (given) return { ok: true, given: true, why: 'lock given', t: null, tu: null };
   if (hasFlag(a, 'jam')) return { ok: false, why: 'Jammed: no lock rolls' };
+  if (hasFlag(a, 'dazzle')) return { ok: false, why: 'Dazzled: no lock rolls this round' };
   if (rangeOf(a, d) > 8) return { ok: false, why: 'Beyond lock range 8' };
   if (!losClear(a, d)) return { ok: false, why: 'No line of sight' };
   const sys = stat(a, 'systems'), cm = cmEff(d), fs = fieldSource(d);
@@ -1087,7 +1300,8 @@ function damageDist(t, heavy, critT, shots, rerolls, dH, dC, dG, pBrace = 0, fm 
 }
 function forecast(a, d, wid, opts = {}) {
   const w = W[wid], ht = hitTarget(a, d, wid, opts), li = lockInfo(a, d, opts.locked), ea = effArmour(w, d), crit = critTarget(a);
-  const dH = Math.max(0, w.dmg - ea), dC = w.dmg, dG = Math.max(0, Math.floor(w.dmg / 2) - ea);
+  const dH = floorDmg(d, Math.max(0, w.dmg - ea)), dC = floorDmg(d, w.dmg), dG = floorDmg(d, Math.max(0, Math.floor(w.dmg / 2) - ea));
+  const shots = shotsOf(a, wid);
   const extra = opts.seeIt ? 2 : 0;
   const pLock = li.ok ? (li.given ? 1 : li.t / 10) : 0;
   const bt = bracing(d) ? braceTarget(d) : null, pB = bt === null ? 0 : clamp(bt, 0, 9) / 10;
@@ -1095,8 +1309,8 @@ function forecast(a, d, wid, opts = {}) {
   const mix = new Map();
   const merge = (dist, wgt) => { for (const [dm, p] of dist) mix.set(dm, (mix.get(dm) || 0) + p * wgt); };
   // Expected damage averages over the lock roll; the locked and unlocked figures are kept too.
-  const locked = damageDist(ht.t, w.heavy, crit, w.shots, extra + 1, dH, dC, dG, pB, fm, 1);
-  const unlocked = damageDist(ht.t, w.heavy, crit, w.shots, extra, dH, dC, dG, pB, fm, 0);
+  const locked = damageDist(ht.t, w.heavy, crit, shots, extra + 1, dH, dC, dG, pB, fm, 1);
+  const unlocked = damageDist(ht.t, w.heavy, crit, shots, extra, dH, dC, dG, pB, fm, 0);
   if (pLock > 0) merge(locked, pLock);
   if (pLock < 1) merge(unlocked, 1 - pLock);
   const expOf = dist => [...dist].reduce((x, [dm, p]) => x + dm * p, 0);
@@ -1120,7 +1334,7 @@ function rollAttack(a, d, wid, opts = {}, dice = d10) {
   if (w.mag) a.ammo[wid].mag--;
   a.energy -= w.energy;
   const shots = [];
-  for (let i = 0; i < w.shots; i++) { const r = dice(); shots.push({ r, res: classify(r, t, w.heavy) }); }
+  for (let i = 0; i < shotsOf(a, wid); i++) { const r = dice(); shots.push({ r, res: classify(r, t, w.heavy) }); }
   let rerolls = lockRes === 'LOCK' || lockRes === 'LOCKED' ? 1 : 0;
   const misses = shots.filter(s => s.res === 'miss').length;
   let seeIt = false;
@@ -1138,22 +1352,18 @@ function rollAttack(a, d, wid, opts = {}, dice = d10) {
   let total = 0;
   const bt = bracing(d) ? braceTarget(d) : null;
   for (const s of shots) {
-    s.dmg = s.res === 'hit' ? Math.max(0, w.dmg - ea) : s.res === 'crit' ? w.dmg : s.res === 'glance' ? Math.max(0, Math.floor(w.dmg / 2) - ea) : 0;
+    s.dmg = floorDmg(d, s.res === 'hit' ? Math.max(0, w.dmg - ea) : s.res === 'crit' ? w.dmg : s.res === 'glance' ? Math.max(0, Math.floor(w.dmg / 2) - ea) : 0);
     // Brace: damage is worked out first, Armour and crits included, then each damaging hit or glance rolls to halve it.
     if (bt !== null && bt >= 1 && s.dmg > 0) { s.br = dice(); if (s.br <= bt && s.br !== 10) { s.dmg = Math.floor(s.dmg / 2); s.halved = true; } }
     total += s.dmg;
   }
   a.attacked = true;
   a.revealed = true;
+  noteAttack(a, wid, opts);
   const killed = applyDamage(d, total);
   if (killed) noteFinalHit(d, w.melee || shots.some(s => s.res === 'crit'));
   // On-hit effects: once per attack if at least one shot hits (a glance does not trigger them).
-  let onHit = '';
-  if (w.special && shots.some(s => s.res === 'hit' || s.res === 'crit')) {
-    if (w.onHit === 'shred' && !killed) { d.shred = (d.shred || 0) + 1; onHit = `Shred: ${d.cs} has Armour ${armourNow(d)} for the rest of the fight.`; }
-    else if (w.onHit === 'stagger' && !killed) { addEffect(d, { pid: 'stagger', name: 'Stagger', flag: 'stagger', starts: S.round + 1, expires: S.round + 1, strength: 0, kind: 'debuff' }); onHit = `Stagger: ${d.cs} has 1 less Move next round and cannot earn the full-Move reroll.`; }
-    else if (w.onHit !== 'shred' && w.onHit !== 'stagger' && /on a hit/i.test(w.special)) onHit = `On hit: ${w.special}`;
-  }
+  const onHit = applyOnHit(a, d, w, shots, killed, dice);
   return { t, ht, li, lockRoll, lockRes, shots, total, killed, push, seeIt, will, ea, w, bt, fm, onHit };
 }
 function attackLog(a, d, res, label) {
@@ -1192,6 +1402,7 @@ function bestPartingWeapon(foe, u) {
   return best;
 }
 function breakOff(u, dice = d10) {
+  if (hasFlag(u, 'tether')) return 'Tethered: cannot move this round';
   const dest = breakOffDest(u);
   if (!dest) return 'No open hex away from your foes';
   log(`<b>${u.cs} breaks off</b>.`);
@@ -1268,7 +1479,7 @@ function taskCheck(u, s, opts = {}, dice = d10) {
 // Ejection (mechs only): d10 against the pilot's own Reflex (not the total), − 2 if the final hit was a crit or a melee
 // attack, + 2 for a Push (1 Will), target limited to 1–9. Success: ejected and shaken (−1 Will next mission). Failure:
 // the injury table. This page has no pilot skills, so Survivor is not offered.
-function pilotStat(u, s) { return (pl(u).stats[s] || 0) + ((u.injuryMods && u.injuryMods[s]) || 0); }
+// pilotStat (with lasting-injury losses) is defined with the frame tags above.
 function markEjection(u) { if (isMech(u) && !u.eject) u.eject = { pending: true, hard: false }; }
 function noteFinalHit(u, hard) { if (u.eject && u.eject.pending) u.eject.hard = !!hard; }
 function ejectTarget(u, push) {
@@ -1521,6 +1732,7 @@ function useProtocol(u, pid, t, push, effectIdx, dice = d10) {
   if (push && u.will < 1) push = false;
   if (push) u.will--;
   u.energy -= p.energy; u.acted = true;
+  u.usedProto = S.round;
   if (p.channelled) u.attacked = true;
   const strength = stat(u, 'systems');
   const outcome = (roll, info) => roll <= info.t ? 'SUCCESS' : roll <= info.tu ? 'COUNTERED' : 'FIZZLED';
@@ -1578,6 +1790,7 @@ function endRound() {
     u.effects = u.effects.filter(e => e.expires > S.round);
     u.chargeTarget = null; u.acted = false; u.attacked = false; u.newtypeUsed = false; u.order = null;
     u.stance = 'evade'; u.moved = false; u.moveHexes = 0; u.moveM = null; u.bandChanged = false;
+    u.scoot = 0;
   }
   S.round++; S.phase = 'plan'; S.ui = {};
   startRound();
@@ -1972,6 +2185,152 @@ function runChecks() {
       loseAttack(o4);
       ok('Lose the attack ends the round\'s attacks', o4.attacked && attackTurn() === null, '');
     }
+    // On-hit effects: Dazzle, Tether, Stagger (and its bracing clause). Each lands next round; a glance does not trigger.
+    {
+      S = world0();
+      const a = mk({ id: 'a', cs: 'A', side: 0, pilot: '_mark', frame: '_plain', weapons: ['ac2_arc_projector', 'th2_tether_harpoon', 'type09_long_cannon'], hex: toAxial(4, 11) });
+      const d = mk({ id: 'd', cs: 'D', side: 1, pilot: '_tgt', frame: '_plain', weapons: [], hex: east(toAxial(4, 11), 2), facing: 4 });
+      const r1 = rollAttack(a, d, 'ac2_arc_projector', {}, seq([10, 2, 9, 9, 5]));
+      const dzNow = hasFlag(d, 'dazzle'); S.round = 2;
+      ok('Dazzle: a hit stops the target\'s lock rolls next round, not this one', r1.total > 0 && !dzNow && !lockInfo(d, a).ok && /Dazzled/.test(lockInfo(d, a).why), `${r1.onHit} · ${lockInfo(d, a).why || 'lock allowed'}`);
+      S.round = 1; d.effects = []; a.attacked = false;
+      const r2 = rollAttack(a, d, 'th2_tether_harpoon', {}, seq([10, 2, 5]));
+      const tNow = manoError(d, 'ground'); S.round = 2; S.phase = 'plan';
+      ok('Tether: a hit stops the target moving next round (no manoeuvre, no break-off)', r2.total > 0 && tNow === '' && /Tethered/.test(manoError(d, 'ground')) && autoEnds(d).size === 0 && /Tethered/.test(breakOff(d)), `${manoError(d, 'ground')}`);
+      S.round = 1; S.phase = 'attack'; d.effects = []; a.attacked = false;
+      const r3 = rollAttack(a, d, 'type09_long_cannon', {}, seq([10, 7]));
+      ok('On-hit effects: a glance does not trigger Stagger', r3.shots[0].res === 'glance' && !d.effects.length, r3.shots[0].res);
+      a.attacked = false;
+      const r4 = rollAttack(a, d, 'type09_long_cannon', {}, seq([10, 2, 5]));
+      S.round = 2; const mv = moveOf(d); S.round = 1;
+      ok('Stagger: an evading target hit has 1 less Move next round', r4.total > 0 && mv === F._plain.move - 1, `Move ${mv}`);
+      d.effects = []; d.stance = 'brace'; a.attacked = false;
+      const r5 = rollAttack(a, d, 'type09_long_cannon', {}, seq([10, 2, 5, 9, 3]));
+      const ignored = !d.effects.length;
+      a.attacked = false; a.ammo.type09_long_cannon.mag = W.type09_long_cannon.mag;
+      const r6 = rollAttack(a, d, 'type09_long_cannon', {}, seq([10, 2, 5, 9, 8]));
+      ok('Stagger: a bracing target ignores it on a d10 at or under its Brace target (5: 3 ignores, 8 does not)', r5.total > 0 && ignored && /ignored/.test(r5.onHit) && d.effects.some(e => e.flag === 'stagger') && braceTarget(d) === 5, `${r5.onHit} | ${r6.onHit}`);
+    }
+    // Frame and weapon specials from the catalogue's tags.
+    {
+      S = world0();
+      const a = mk({ id: 'a', cs: 'A', side: 0, pilot: '_mark', frame: '_plain', weapons: ['m2_kit_atgm_tubes', 'm30_hand_cannon'], hex: toAxial(4, 11) });
+      const d = mk({ id: 'd', cs: 'D', side: 1, pilot: '_tgt', frame: '_plain', weapons: [], hex: east(toAxial(4, 11), 4), facing: 4 });
+      const pd = mk({ id: 'pd', cs: 'PD', side: 1, pilot: 'anvil', frame: 'hx11_harrier', weapons: [], hex: step(step(d.hex, 2), 2) });
+      const withPd = hitTarget(a, d, 'm2_kit_atgm_tubes'), gun = hitTarget(a, d, 'm30_hand_cannon'), fPd = forecast(a, d, 'm2_kit_atgm_tubes').exp;
+      pd.hex = east(d.hex, 3);
+      const noPd = hitTarget(a, d, 'm2_kit_atgm_tubes'), fNo = forecast(a, d, 'm2_kit_atgm_tubes').exp;
+      ok('Point defence: an explosive ranged attack on an ally within 2 of the Harrier is −2; ballistic and out of reach are not', withPd.t === noPd.t - 2 && withPd.parts.some(p => /Point defence/.test(p[0])) && !gun.parts.some(p => /Point defence/.test(p[0])) && fPd < fNo, `${withPd.t} vs ${noPd.t}`);
+    }
+    {
+      S = world0();
+      const a = mk({ id: 'a', cs: 'A', side: 0, pilot: '_mark', frame: '_plain', weapons: ['m30_hand_cannon', 'g35_telescoped_rifle'], hex: toAxial(4, 11) });
+      const d = mk({ id: 'd', cs: 'D', side: 1, pilot: '_tgt', frame: 'vk8_destrier', weapons: [], hex: east(toAxial(4, 11), 3), facing: 4 });
+      const facing = coverInfo(a, d, W.m30_hand_cannon).total, ht1 = hitTarget(a, d, 'm30_hand_cannon').t;
+      d.facing = 1;
+      const away = coverInfo(a, d, W.m30_hand_cannon).total, ht2 = hitTarget(a, d, 'm30_hand_cannon').t;
+      ok('Front cover: the Destrier\'s shield gives +1 cover only to attacks from its Front arc', facing === 1 && away === 0 && ht1 === ht2 - 1, `facing ${facing}, turned away ${away}`);
+      S.testTerrain[key(step(d.hex, 4))] = 'light';
+      const ig = coverInfo(a, d, W.g35_telescoped_rifle), plain = coverInfo(a, d, W.m30_hand_cannon);
+      ok('Ignore cover: the G35 ignores 1 cover', plain.total === 1 && ig.total === 0 && ig.cut === 1, `${plain.total} vs ${ig.total}`);
+      const tb = mk({ id: 'tb', cs: 'TB', side: 1, pilot: '_tgt', frame: 'type15_tiebi', weapons: [], hex: east(toAxial(4, 15), 3), facing: 4 });
+      const a2 = mk({ id: 'a2', cs: 'A2', side: 0, pilot: '_mark', frame: '_plain', weapons: ['m30_hand_cannon'], hex: toAxial(4, 15) });
+      const dug = coverInfo(a2, tb, W.m30_hand_cannon).total; tb.moved = true;
+      ok('Dug in: +1 cover only if it did not move this round', dug === 1 && coverInfo(a2, tb, W.m30_hand_cannon).total === 0, `${dug}`);
+      const al = mk({ id: 'al', cs: 'AL', side: 1, pilot: '_tgt', frame: '_plain', weapons: [], hex: east(toAxial(4, 19), 4), facing: 4 });
+      const hm = mk({ id: 'hm', cs: 'HM', side: 1, pilot: '_tgt', frame: 'qf6_harmattan', weapons: [], hex: east(toAxial(4, 19), 3), facing: 4 });
+      const a3 = mk({ id: 'a3', cs: 'A3', side: 0, pilot: '_mark', frame: '_plain', weapons: ['m30_hand_cannon'], hex: toAxial(4, 19) });
+      const sheltered = coverInfo(a3, al, W.m30_hand_cannon).total; hm.hex = east(al.hex, 1);
+      ok('Shelter: +2 cover to an ally within 1 behind the Harmattan, not when it stands on the far side', sheltered === 2 && coverInfo(a3, al, W.m30_hand_cannon).total === 0, `${sheltered}`);
+    }
+    {
+      S = world0();
+      W._t8 = Object.assign({}, W.ar40_longhorn_rifle, { name: 'Test 3 × 8 energy', dmg: 8, type: 'energy', ap: 0, special: '', onHit: undefined, tags: {} });
+      const a = mk({ id: 'a', cs: 'A', side: 0, pilot: '_mark', frame: '_plain', weapons: ['_t8'], hex: toAxial(4, 11) });
+      const d = mk({ id: 'd', cs: 'D', side: 1, pilot: '_tgt', frame: 'ob17_mamont', weapons: [], hex: east(toAxial(4, 11), 4), facing: 4 });
+      const fc = forecast(a, d, '_t8');
+      const r = rollAttack(a, d, '_t8', {}, seq([10, 2, 2, 9, 1, 5]));
+      d.stance = 'brace'; a.attacked = false;
+      const rb = rollAttack(a, d, '_t8', {}, seq([10, 2, 2, 10, 1, 5, 1]));
+      ok('Damage floor: the Mamont takes nothing from 4-damage hits; a crit of 8 lands, and Brace halves it after the floor', fc.dH === 0 && fc.dC === 8 && r.total === 8 && rb.total === 4 && rb.shots[0].halved, `forecast per hit ${fc.dH}, crit ${fc.dC}; rolled ${r.total}, braced ${rb.total}`);
+      delete W._t8;
+    }
+    {
+      S = world0(); S.phase = 'plan';
+      const bg = mk({ id: 'bg', cs: 'BG', side: 0, pilot: 'anvil', frame: 'kh5_burged', weapons: [], hex: toAxial(3, 11), noJam: true });
+      const near = mk({ id: 'n', cs: 'N', side: 1, pilot: 'anvil', frame: 'm4_garrison', weapons: [], hex: east(toAxial(3, 11), 8), facing: 4 });
+      const inReach = chargeTargets(bg).includes(near); near.hex = east(near.hex, 1);
+      ok('Charge reach: the Bürged\'s Charge reaches Move 5 + 2 = 7, not 8', chargeReach(bg) === 7 && inReach && !chargeTargets(bg).includes(near), `reach ${chargeReach(bg)}`);
+    }
+    {
+      S = world0();
+      const a = mk({ id: 'a', cs: 'A', side: 0, pilot: '_mark', frame: '_plain', weapons: ['lanzehl_heat_lance', 'pb1_pile_bunker'], hex: toAxial(4, 11) });
+      const d = mk({ id: 'd', cs: 'D', side: 1, pilot: '_tgt', frame: '_plain', weapons: [], hex: east(toAxial(4, 11), 2), facing: 4 });
+      const lance = attackError(a, d, 'lanzehl_heat_lance'), bunker = attackError(a, d, 'pb1_pile_bunker');
+      d.hex = east(a.hex, 3);
+      ok('Reach: the heat lance strikes 2 hexes away, a pile bunker only 1, and neither 3', lance === '' && /adjacent/.test(bunker) && /2 hexes/.test(attackError(a, d, 'lanzehl_heat_lance')), `lance: ${lance || 'strikes'}; bunker: ${bunker}`);
+    }
+    {
+      S = world0();
+      const a = mk({ id: 'a', cs: 'A', side: 0, pilot: '_mark', frame: '_plain', weapons: ['bx0_beam_rifle'], hex: toAxial(4, 11) });
+      const d = mk({ id: 'd', cs: 'D', side: 1, pilot: '_tgt', frame: '_plain', weapons: [], hex: east(toAxial(4, 11), 4), facing: 4 });
+      const errs = [];
+      for (let r = 1; r <= 5; r++) {
+        S.round = r; a.attacked = false; a.energy = F._plain.energy;
+        const e = attackError(a, d, 'bx0_beam_rifle'); errs.push(e ? 'cool' : 'fire');
+        if (!e) rollAttack(a, d, 'bx0_beam_rifle', {}, seq([10, 10, 10]));
+      }
+      ok('Cooldown: the BX-0 fires twice, cools down for two rounds, then fires again', errs.join(' ') === 'fire fire cool cool fire', errs.join(' '));
+    }
+    {
+      S = world0();
+      const a = mk({ id: 'a', cs: 'A', side: 0, pilot: '_mark', frame: '_plain', weapons: ['fenrir_homeonjam_missiles', 'kalibr305_siege_mortar'], hex: toAxial(4, 11) });
+      const d = mk({ id: 'd', cs: 'D', side: 1, pilot: '_tgt', frame: '_plain', weapons: [], hex: east(toAxial(4, 11), 6), facing: 4 });
+      const base = hitTarget(a, d, 'fenrir_homeonjam_missiles').t; d.usedProto = S.round;
+      ok('Vs Protocol user: the Fenrir is +2 against a unit that used a Protocol this round', hitTarget(a, d, 'fenrir_homeonjam_missiles').t === base + 2, '');
+      S.testTerrain[key(east(a.hex, 3))] = 'tallobs';
+      const blind = attackError(a, d, 'kalibr305_siege_mortar');
+      mk({ id: 'sp', cs: 'SP', side: 0, pilot: 'anvil', frame: '_plain', weapons: [], hex: east(d.hex, 2), facing: 4 });
+      const spotted = attackError(a, d, 'kalibr305_siege_mortar'); a.moved = true;
+      ok('Indirect: the Kalibr fires without line of sight when an ally sees the target; anchor stops it after a move', /no ally/.test(blind) && spotted === '' && /did not move/.test(attackError(a, d, 'kalibr305_siege_mortar')), `alone: ${blind}; spotted: ${spotted || 'fires'}`);
+    }
+    {
+      S = world0();
+      const ts = mk({ id: 'ts', cs: 'TS', side: 0, pilot: 'anvil', frame: 'ob21_tsar', weapons: ['m30_hand_cannon'], hex: toAxial(4, 11) });
+      const d = mk({ id: 'd', cs: 'D', side: 1, pilot: '_tgt', frame: '_plain', weapons: [], hex: east(toAxial(4, 11), 3), facing: 4 });
+      const still = attackError(ts, d, 'm30_hand_cannon'); ts.moved = true;
+      ok('Anchor (frame): the Tsar fires only if it did not move this round', still === '' && /Anchor/.test(attackError(ts, d, 'm30_hand_cannon')), '');
+      const wv = mk({ id: 'wv', cs: 'WV', side: 1, pilot: '_tgt', frame: 'bd7_wolverine', weapons: [], hex: east(toAxial(4, 15), 5), facing: 4 });
+      const a2 = mk({ id: 'a2', cs: 'A2', side: 0, pilot: '_mark', frame: '_plain', weapons: ['m2_kit_atgm_tubes'], hex: toAxial(4, 15) });
+      const hid = attackError(a2, wv, 'm2_kit_atgm_tubes'); wv.moved = true;
+      ok('Still stealth: the Wolverine cannot be targeted beyond 4 while it has not moved', /Still/.test(hid) && attackError(a2, wv, 'm2_kit_atgm_tubes') === '', hid);
+      const bw = mk({ id: 'bw', cs: 'BW', side: 0, pilot: 'anvil', frame: 'm12_bulwark', weapons: ['hornet_missile_pod'], hex: toAxial(4, 19) });
+      const tg = mk({ id: 'tg', cs: 'TG', side: 1, pilot: '_tgt', frame: '_plain', weapons: [], hex: east(toAxial(4, 19), 4), facing: 4 });
+      const n = W.hornet_missile_pod.shots, mag = bw.ammo.hornet_missile_pod.mag;
+      const rl = rollAttack(bw, tg, 'hornet_missile_pod', {}, seq(Array(4 * n + 4).fill(10)));
+      ok('Linked fire: the Bulwark fires both Hornet pods as one attack, double the shots, one load from each', shotsOf(bw, 'hornet_missile_pod') === 2 * n && rl.shots.length === 2 * n && bw.ammo.hornet_missile_pod.mag === mag - 1, `${rl.shots.length} shots`);
+    }
+    {
+      S = world0();
+      const tk = mk({ id: 'tk', cs: 'TK', side: 0, pilot: 'anvil', frame: 'kh2_takhi', weapons: F.kh2_takhi.loadout, hex: toAxial(4, 11), noJam: true });
+      ok('Extra spare: the Takhi carries one more spare for its rifle', tk.ammo.type07_drum_rifle.spares === W.type07_drum_rifle.spares + 1, `${tk.ammo.type07_drum_rifle.spares}`);
+      const mv = moveOf(tk); tk.rattled = rollRattletrap(F.kh2_takhi, {}, seq([1]));
+      ok('Rattletrap: a 1 at mission start is −1 Move for the mission; a 2 is fine', tk.rattled && moveOf(tk) === mv - 1 && !rollRattletrap(F.kh2_takhi, {}, seq([2])), `Move ${mv} → ${moveOf(tk)}`);
+      const vk = mk({ id: 'vk', cs: 'VK', side: 0, pilot: 'ace', frame: 'ob19_volk', weapons: [], hex: toAxial(4, 15) });
+      const un = stat(vk, 'reflex'); vk.augmented = true;
+      ok('Augmented only: an unaugmented pilot\'s Reflex counts as 5 in the Volk', un === 5 + F.ob19_volk.hw.reflex && stat(vk, 'reflex') === Math.min(7 + F.ob19_volk.hw.reflex, F.ob19_volk.th.reflex), `${un} unaugmented, ${stat(vk, 'reflex')} augmented`);
+      const lf = mk({ id: 'lf', cs: 'LF', side: 0, pilot: 'anvil', frame: 'fk2_laufer', weapons: ['m30_hand_cannon'], hex: toAxial(4, 19) });
+      const tg = mk({ id: 'tg', cs: 'TG', side: 1, pilot: '_tgt', frame: '_plain', weapons: [], hex: east(toAxial(4, 19), 3), facing: 4 });
+      rollAttack(lf, tg, 'm30_hand_cannon', {}, seq(Array(8).fill(10)));
+      const ends = [...scootEnds(lf).keys()].map(unkey), from = lf.hex;
+      const moved = lf.scoot === 1 && ends.length > 0 && ends.every(h => hdist(h, from) === 1) && doScoot(lf, ends[0]) && lf.moved && lf.scoot === 0;
+      lf.attacked = false; lf.moveM = 'charge'; rollAttack(lf, tg, 'm30_hand_cannon', {}, seq(Array(8).fill(10)));
+      ok('Shoot and scoot: after its attack the Läufer may move 1 hex, but not after a charge', moved && lf.scoot === 0, `${ends.length} hexes`);
+      const notes = specialNotes(mk({ id: 'tz', cs: 'TZ', side: 0, pilot: 'anvil', frame: 'type20_tianyan', weapons: [], hex: toAxial(20, 3) }));
+      ok('A tag the page does not apply shows as "Not applied here"', notes.gaps.includes('drone_command') && !specialNotes(lf).gaps.length, notes.gaps.join(', '));
+      const unknown = CATALOGUE.frames.flatMap(c => Object.keys(c.tags || {}).filter(k => !TAG_SUPPORT.frame[k])).concat(CATALOGUE.weapons.flatMap(c => Object.keys(c.tags || {}).filter(k => !TAG_SUPPORT.weapon[k])));
+      ok('Every catalogue tag is applied, noted or listed as not applied', [...new Set(unknown)].sort().join() === 'battery_crane,drone_command,shared_lock', [...new Set(unknown)].sort().join(', '));
+    }
   } catch (e) {
     ok('Checks ran to the end', false, e.message);
   } finally {
@@ -1990,6 +2349,7 @@ const $ = id => document.getElementById(id);
 
 function selected() { const u = S.sel && U(S.sel); return u && (alive(u) || S.gm) ? u : null; }
 function currentEnds() {
+  { const su = selected(); if (su && alive(su) && S.phase === 'attack' && su.scoot) return scootEnds(su); }
   const u = selected(); if (!u || !alive(u) || S.phase !== 'plan' || isEngaged(u) || !canOrder(u)) return null;
   if (!S.ui.m) return autoEnds(u);
   if (S.ui.m === 'charge' || manoError(u, S.ui.m)) return null;
@@ -2010,7 +2370,7 @@ function weaponReach() {
   for (const h of ALL_HEXES) {
     if (same(h, u.hex) || blocks(terrainAt(h), 0)) continue;
     const probe = { hex: h, band: 0 };
-    if (w.melee) { if (u.band !== 0 || hdist(u.hex, h) !== 1 || !inArc(u, h, w.arc)) continue; }
+    if (w.melee) { if (u.band !== 0 || hdist(u.hex, h) > meleeReach(w) || !inArc(u, h, w.arc)) continue; }
     else { const R = rangeOf(u, probe); if (R < Math.ceil(w.rmin) || R > Math.floor(w.rmax) || !inArc(u, h, w.arc)) continue; }
     out.set(key(h), losClear(u, probe) ? 'wrange' : 'wblocked');
   }
@@ -2150,6 +2510,7 @@ function unitSheet(u) {
   <div class="sheet-head"><span class="dot ${sideCls(u)}" style="width:12px;height:12px;border-radius:50%;display:inline-block"></span><h2>${u.cs}</h2><span class="role">${p.role}</span><span class="sub">${p.name} · ${u.faction && FACTION[u.faction] ? FACTION[u.faction].name + ' ' : ''}${f.name}</span></div>
   <p class="note">${p.plays}. <i>${f.lore || ''}</i></p>
   ${f.special ? `<p class="note"><b>Special:</b> ${f.special}</p>` : ''}
+  ${specialsBox(u)}
   ${u.jammed ? `<p class="prov">${W[u.jammed].name} is jammed until repaired.</p>` : ''}
   ${aftermathNote(u)}
   <div class="meters">
@@ -2193,7 +2554,7 @@ function planBox(u) {
     extra += `<p class="note">${ends && ends.size ? `Click a highlighted hex to move there. The cheapest manoeuvre that reaches it is used${fr(u).bands.length > 1 ? '; pick one below to change band' : ''}, or pick Charge.` : 'No hex is reachable in this band; pick a manoeuvre below.'}</p>`;
     if (u.order && u.order.path && ends) extra += facingPicker(u, ends);
   }
-  if (S.ui.m === 'charge') extra += `<p class="note">Click a highlighted enemy to charge it. Reach is Move + 1 = ${moveOf(u) + 1}.</p>`;
+  if (S.ui.m === 'charge') extra += `<p class="note">Click a highlighted enemy to charge it. Reach is Move + ${chargeReach(u) - moveOf(u)} = ${chargeReach(u)}.</p>`;
   const cur = u.order ? `<p class="note">Order: <b>${MANO[u.order.m].name}</b>${u.order.m === 'charge' ? ` at ${U(u.order.target).cs}` : ` → ${BANDS[u.order.band]}, facing ${ARROWS[u.order.facing]}${u.order.leaves ? ', leaves the map' : ''}`}. <button data-act="clearorder">Clear</button></p>`
     : mustMove(u) ? `<p class="warn">No order. ${isAir(u) ? 'Aircraft' : 'A Kestrel off the ground'} cannot hover, so it will fly straight on if you leave it.</p>` : `<p class="note">No order: holds position.</p>`;
   return stanceBox(u) + `<div class="box"><h3>Movement order</h3>${cur}<div class="list">${opts}</div>${extra}</div>`;
@@ -2253,7 +2614,7 @@ function attackBox(u) {
     const w = W[S.ui.w];
     fc = `<div class="forecast"><div><span class="label">Hit on</span><div class="big">${f.ht.t}</div></div>
       <div class="parts">${f.ht.parts.map(([n, v], i) => `${i ? (v < 0 ? '− ' : '+ ') : ''}${Math.abs(v)} ${n}`).join(' ')}${f.ht.raw !== f.ht.t ? ` = ${f.ht.raw}, limited to ${f.ht.t}` : ''}<br>
-      Range ${rangeOf(u, t)} · cover ${cover(u, t)} · Armour ${f.ea}${w.ap ? ` (AP ${w.ap})` : ''}
+      Range ${rangeOf(u, t)} · cover ${coverInfo(u, t, w).total} · Armour ${f.ea}${w.ap ? ` (AP ${w.ap})` : ''}${linkedFire(u, S.ui.w) ? ` · linked fire: ${shotsOf(u, S.ui.w)} shots` : ''}${ftag(t, 'damage_floor') ? ` · ${t.cs} shrugs off hits of ${ftag(t, 'damage_floor')} or less` : ''}${!losClear(u, t) && spotterFor(u, t) ? ` · indirect, spotted by ${spotterFor(u, t).cs}` : ''}
       ${f.bt !== null ? `<br><b>${t.cs} is bracing:</b> Reflex counts 2 lower; each damaging hit or glance is halved on ${f.bt >= 1 ? `${f.bt} or less` : 'a target of 0, so never'}.` : ''}${f.fm ? `<br><b>${t.cs} made a full move:</b> your first hit is rerolled.` : ''}${w.special ? `<br>Special: ${w.special}` : ''}</div></div>
       <div class="stats3">
         <div><span class="label">Lock</span><b>${f.li.ok ? f.li.t : '—'}</b><span class="note">${f.li.ok ? `against CM ${f.li.cm}${f.li.tu > f.li.t ? `; countered on ${f.li.t + 1}–${f.li.tu}` : ''}${f.li.field ? ` · ${f.li.field.cs}'s field` : ''}` : f.li.why}</span></div>
@@ -2449,6 +2810,29 @@ function screenClick(d, u) {
   }
 }
 
+// The unit card's specials: a note for each tag the page applies, the controls some need (Limits off, the augmented
+// box, Shoot and scoot), and a warning for tags the page does not apply.
+function specialsBox(u) {
+  const { notes, gaps } = specialNotes(u), ctl = [];
+  if (ftag(u, 'augmented_only')) ctl.push(`<label><input type="checkbox" id="augmented" ${u.augmented ? 'checked' : ''}> Augmented pilot</label>`);
+  if (ftag(u, 'limits_off') && alive(u)) {
+    const on = u.effects.some(e => e.pid === 'limits_off');
+    ctl.push(S.phase === 'plan' ? `<button data-special="limits" class="${on ? 'on' : ''}" ${!on && u.will < 1 ? 'disabled' : ''}>${on ? 'Limits off: on (undo)' : 'Limits off (1 Will, +1 Reflex)'}</button>` : on ? '<span class="pill buff">Limits off this round</span>' : '');
+  }
+  if (u.scoot && alive(u) && S.phase === 'attack') {
+    const n = scootEnds(u).size;
+    ctl.push(`<span class="note">${n ? `Shoot and scoot: click a highlighted hex to move up to ${u.scoot}.` : 'Shoot and scoot: no hex to move to.'}</span><button data-special="noscoot">Stay</button>`);
+  }
+  if (!notes.length && !gaps.length && !ctl.length) return '';
+  return `<div class="box"><h3>Specials</h3>${notes.map(n => `<p class="note">${n}</p>`).join('')}${gaps.length ? `<p class="warn">Not applied here: ${gaps.join(', ')}. The GM handles ${gaps.length > 1 ? 'these' : 'this'}.</p>` : ''}${ctl.length ? `<div class="row">${ctl.join('')}</div>` : ''}</div>`;
+}
+function specialAction(u, a) {
+  if (a === 'limits' && S.phase === 'plan') {
+    const i = u.effects.findIndex(e => e.pid === 'limits_off');
+    if (i >= 0) { u.effects.splice(i, 1); u.will++; log(`${u.cs} keeps its limits on (1 Will back).`); }
+    else if (u.will >= 1) { u.will--; addEffect(u, { pid: 'limits_off', name: 'Limits off', stat: 'reflex', amt: 1, expires: S.round, strength: 0, kind: 'buff' }); log(`${u.cs} takes its <b>limits off</b>: +1 Reflex this round (1 Will).`); }
+  } else if (a === 'noscoot') { u.scoot = 0; log(`${u.cs} stays put.`); }
+}
 function checksBox() {
   const res = runChecks(), pass = res.filter(r => r.pass).length;
   return `<div class="box checks"><h3>Rules checks · ${pass}/${res.length} pass</h3>
@@ -2565,7 +2949,7 @@ function renderSide() {
   if (S.tab === 'unit') {
     const u = selected();
     if (!u) body = `<p class="note">Select a unit on the map or in the initiative bar.</p>
-      <div class="box"><h3>How a round runs</h3><p class="note"><b>Plan &amp; move:</b> pick each unit's stance (Evade or Brace) and give it a manoeuvre, then resolve. Units move in initiative order (highest Reflex total, fixed at the start of the round) and collisions stop them short.<br><b>Action:</b> one Protocol, reload or break-off each.<br><b>Attack:</b> in initiative order, pick a weapon, click a target, check the forecast, roll.<br><b>End:</b> Energy recharges, effects count down, Charge bonuses end.</p><p class="note">Rules: Player's Guide, playtest edition. Numbers: the Frames and Weapons sheet, built into this page from tabletop/data/catalogue.json. Turn on <b>GM screen</b> for hidden orders: each side enters its orders and stances, then declares its attacks, behind a cover panel; stances show at <b>Reveal stances</b>. Attacks always go strictly in initiative order.<br><b>Aftermath</b> tab: withdrawn units, ejection and injury rolls, task checks, the lethal-fight switch, and mission mode with Downtime.</p></div>${rosterBox()}`;
+      <div class="box"><h3>How a round runs</h3><p class="note"><b>Plan &amp; move:</b> pick each unit's stance (Evade or Brace) and give it a manoeuvre, then resolve. Units move in initiative order (highest Reflex total, fixed at the start of the round) and collisions stop them short.<br><b>Action:</b> one Protocol, reload or break-off each.<br><b>Attack:</b> in initiative order, pick a weapon, click a target, check the forecast, roll.<br><b>End:</b> Energy recharges, effects count down, Charge bonuses end.</p><p class="note">Rules: Player's Guide, playtest edition. Numbers: the Frames and Weapons sheet, built into this page from tabletop/data/catalogue.json. Turn on <b>GM screen</b> for hidden orders: each side enters its orders and stances, then declares its attacks, behind a cover panel; stances show at <b>Reveal stances</b>. Attacks always go strictly in initiative order.<br><b>Aftermath</b> tab: withdrawn units, ejection and injury rolls, task checks, the lethal-fight switch, and mission mode with Downtime.<br>Frame and weapon tags the page cannot apply (battery crane, drone command, shared lock) show a "Not applied here" warning on the unit card; the GM handles them.</p></div>${rosterBox()}`;
     else {
       body = unitSheet(u);
       if (alive(u)) body += screenBox(u) || (S.phase === 'plan' ? planBox(u) : S.phase === 'action' ? actionBox(u) : attackBox(u));
@@ -2609,6 +2993,7 @@ function onMapClick(e) {
     log(`Added <b>${(a.cs || 'UNIT').toUpperCase()}</b> (${f.gen === 1 && FACTION[a.faction] ? FACTION[a.faction].name + ' ' : ''}${f.name}, ${P[a.pilot].name}).`);
     S.placing = null; selectUnit(id); render(); return;
   }
+  if (u && S.phase === 'attack' && u.scoot && doScoot(u, h)) { render(); return; }
   const ends = currentEnds();
   if (u && ends && ends.has(key(h))) {
     const list = ends.get(key(h));
@@ -2639,6 +3024,7 @@ function onClick(e) {
   else if (d.reload) { const a = u.ammo[d.reload]; a.spares--; a.mag = W[d.reload].mag; u.acted = true; log(`${u.cs} reloads ${W[d.reload].name} (${a.spares} spare left).`); }
   else if (d.newtype) { u.will--; u.newtypeUsed = true; u.facing = fmod(u.facing + Number(d.newtype)); log(`${u.cs} uses Newtype Reflexes: turns to ${ARROWS[u.facing]} (1 Will).`); }
   else if (d.gm) gmAction(u, d.gm);
+  else if (d.special) specialAction(u, d.special);
   else if (d.gmband !== undefined) { const nb = Number(d.gmband); if (unitAt(u.hex, nb, u)) log(`GM: that band is occupied in this hex.`); else { u.band = nb; cleanEngagements(); } }
   else if (d.act) {
     switch (d.act) {
@@ -2672,7 +3058,7 @@ function gmAction(u, a) {
   else if (a === 'e+1') u.energy = Math.min(fr(u).energy, u.energy + 1);
   else if (a === 'w+1') u.will = Math.min(pl(u).stats.spirit, u.will + 1);
   else if (a === 'clearfx') u.effects = [];
-  else if (a === 'refit') { for (const w of Object.keys(u.ammo)) u.ammo[w] = { mag: W[w].mag, spares: fr(u).noSpares ? 0 : W[w].spares }; }
+  else if (a === 'refit') { for (const w of Object.keys(u.ammo)) u.ammo[w] = { mag: W[w].mag, spares: fr(u).noSpares ? 0 : W[w].spares }; addExtraSpares(fr(u), u.weapons, u.ammo); }
   else if (a === 'remove') { S.units = S.units.filter(x => x !== u); for (const o of S.units) o.engaged = o.engaged.filter(id => id !== u.id); S.sel = null; }
 }
 function onChange(e) {
@@ -2682,6 +3068,7 @@ function onChange(e) {
   else if (t.id === 'push') S.ui.push = t.checked;
   else if (t.id === 'see') S.ui.see = t.checked;
   else if (t.id === 'ppush') S.ui.ppush = t.checked;
+  else if (t.id === 'augmented' && u) u.augmented = t.checked;
   else if (t.id === 'gmpilot' && u) { u.pilot = t.value; u.will = Math.min(u.will, pl(u).stats.spirit); }
   else if (t.id === 'addcs') { S.ui.add.cs = t.value; return; }
   else if (t.id === 'addside') S.ui.add.side = Number(t.value);
