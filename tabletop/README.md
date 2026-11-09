@@ -12,6 +12,9 @@ Python (3.12 or later, standard library only) for the Discord tabletop game. The
 | `rules_ref.py` | Reference rules engine written from the Player's Guide: exact forecasts and scripted attack resolution. The bot and the sandbox are checked against it. |
 | `build_vectors.py` | Builds the generated test vectors from the legacy cases, the catalogue and the engine. |
 | `vectors/` | Test vectors the bot must reproduce; see [vectors/README.md](vectors/README.md). `vectors/legacy/` holds the old-scale Godot files. |
+| `sandbox/combat-sandbox.html` | The [combat sandbox](https://claude.ai/artifact/JgqktsdJAv71A8j6XkpviL) page, published as an artifact. Its frame, weapon and Protocol numbers come from the embedded catalogue. |
+| `sandbox/build.py` | Writes `data/catalogue.json` into the sandbox page between the `CATALOGUE:BEGIN` and `CATALOGUE:END` markers. |
+| `sandbox/run_checks.js` | Runs the sandbox's built-in rules checks in node (`test_sandbox.py` runs it). |
 | `test_*.py` | Unit tests for the above. |
 
 ```powershell
@@ -41,6 +44,27 @@ py tabletop/sheet_export.py                     # re-check the committed snapsho
 Then run `py tabletop/build_vectors.py` so the catalogue test vectors follow the sheet.
 The export refuses to write anything if there are errors. Budget and limit flags from the sheet's
 own checks are printed as warnings; the GR-2 Guided Rifle's "Over limit" is intended.
+
+## Building the combat sandbox
+
+The sandbox takes its frames, weapons and Protocols from the catalogue, so a sheet change reaches it
+without copying numbers by hand:
+
+1. Change the sheet and export it with `sheet_export.py` (above).
+2. Embed the new catalogue in the page and run the tests:
+
+   ```powershell
+   py tabletop/sandbox/build.py           # writes data/catalogue.json into the page
+   py -m unittest discover -s tabletop    # includes the page's rules checks, run in node
+   ```
+
+   `test_sandbox.py` fails if the page's catalogue is older than `data/catalogue.json`, and skips the
+   rules checks with a message if node is not installed. `node tabletop/sandbox/run_checks.js` runs
+   them on their own.
+3. Publish `tabletop/sandbox/combat-sandbox.html` to the same artifact URL.
+
+Pilots, squads, presets, terrain, art, frame lore, manoeuvre lists and the Add unit tab's weapon sizes
+are the page's own data and are edited in the page.
 
 ## Test vectors
 

@@ -231,59 +231,190 @@ td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-nume
 
 <script>
 'use strict';
-// ---------- Catalogue: numbers from the Google Sheet "No Haven on Earth: Frames and Weapons" (read 9 November 2026) ----------
-// Weapons: shots × damage, armour piercing, aim, heavy, melee, range in hexes, arc, magazine, spares, Energy and Special
-// are the sheet's. `size` is the sandbox's own carry rule for the Add unit tab (the sheet has no weapon size).
-// A weapon marked `old` is not on the sheet and keeps its 26 October numbers.
-const ARC_DEG = { Narrow: 90, Front: 120, Half: 180, All: 360 };
-const sw = (name, type, shots, dmg, ap, aim, heavy, melee, rmin, rmax, arc, mag, spares, energy, size, extra) =>
-  Object.assign({ name, type, shots, dmg, ap, aim, heavy, melee, rmin: melee ? 0 : rmin, rmax: melee ? 0 : rmax, arc: ARC_DEG[arc], mag, spares, energy, size }, extra || {});
-const W0 = {
-  // Gen 2 and vehicles
-  lr3_rifle: sw('LR-3 Linear Rifle', 'energy', 2, 8, 2, 1, true, false, 2, 6, 'Narrow', 4, 1, 1, 'medium', { special: 'Powered: 1 Energy and a load per attack' }),
-  agm_stores: sw('AGM-M Wing Stores', 'explosive', 4, 7, 0, 0, false, false, 2, 6, 'Front', 2, 1, 0, 'medium', { special: 'Proposed. Shred: on a hit, the target has 1 less Armour for the rest of the fight', onHit: 'shred' }),
-  vb2_knife: sw('VB-2 Vibro Knife', 'energy', 3, 8, 1, 0, false, true, 1, 1, 'Narrow', 0, 0, 1, 'small'),
-  ar40_rifle: sw('AR-40 Longhorn Rifle', 'ballistic', 3, 6, 1, 0, false, false, 1, 6, 'Front', 4, 2, 0, 'medium'),
-  hornet_pod: sw('Hornet Missile Pod', 'explosive', 5, 6, 0, 0, false, false, 2, 6, 'Front', 2, 1, 0, 'medium'),
-  m140_bazooka: sw('M140 Rocket Bazooka', 'explosive', 1, 15, 3, 0, true, false, 1, 5, 'Narrow', 5, 1, 0, 'medium'),
-  pb4_stake: sw('PB-4 Stake Driver', 'ballistic', 1, 19, 3, 0, true, true, 1, 1, 'Narrow', 3, 1, 0, 'medium', { special: 'Cartridge: one load per strike' }),
-  grad_m: sw('Grad-M Rocket Battery', 'explosive', 7, 5, 0, 0, false, false, 2, 7, 'Front', 1, 3, 0, 'large'),
-  gsh6m_rotary: sw('GSh-6M Rotary Cannon', 'ballistic', 6, 5, 1, 0, false, false, 1, 3, 'Narrow', 3, 2, 0, 'medium'),
-  molot_ram: sw('Molot Hydraulic Ram', 'ballistic', 2, 10, 2, 0, true, true, 1, 1, 'Narrow', 0, 0, 0, 'large'),
-  type11_dao: sw('Type-11 Dao Blade', 'energy', 2, 11, 1, 0, false, true, 1, 1, 'Narrow', 0, 0, 1, 'medium', { special: 'Powered: 1 Energy per attack' }),
-  type09_cannon: sw('Type-09 Long Cannon', 'explosive', 1, 13, 3, 0, true, false, 2, 7, 'Narrow', 3, 2, 0, 'large', { special: 'Proposed. Stagger: on a hit, the target has 1 less Move next round and cannot earn the full-Move reroll. A bracing target ignores this on its Brace target', onHit: 'stagger' }),
-  type07_rifle: sw('Type-07 Drum Rifle', 'ballistic', 4, 6, 1, 0, false, false, 1, 4, 'Front', 5, 1, 0, 'medium'),
-  type08_blade: sw('Type-08 Carbon Blade', 'ballistic', 3, 7, 1, 0, false, true, 1, 1, 'Narrow', 0, 0, 0, 'medium'),
-  type99_gun: sw('125mm Tank Gun', 'explosive', 1, 11, 3, 0, true, false, 1, 6, 'All', 3, 2, 0, 'large', { special: 'Turret' }),
-  type99_mg: sw('Coaxial Machine Gun', 'ballistic', 4, 5, 0, 0, false, false, 1, 3, 'All', 6, 1, 0, 'small', { special: 'Turret' }),
-  autocannon: sw('Nose Autocannon', 'ballistic', 5, 6, 1, 0, false, false, 1, 4, 'Narrow', 4, 0, 0, 'small'),
-  missiles: sw('Guided Missiles', 'explosive', 2, 9, 1, 1, false, false, 2, 6, 'Front', 2, 0, 0, 'small'),
-  // Gen 1
-  m30_cannon: sw('M30 Hand Cannon', 'ballistic', 3, 7, 0, 0, false, false, 1, 4, 'Front', 4, 2, 0, 'medium'),
-  lr1_rifle: sw('LR-1 Linear Rifle', 'energy', 1, 13, 2, 1, true, false, 2, 5, 'Narrow', 3, 1, 1, 'medium', { special: 'Powered: 1 Energy and a load per attack' }),
-  m2_atgm: sw('M2 Kit ATGM Tubes', 'explosive', 1, 13, 2, 0, false, false, 2, 6, 'Front', 2, 1, 0, 'small'),
-  m105_recoilless: sw('M105 Recoilless Rifle', 'explosive', 1, 14, 2, 0, true, false, 1, 5, 'Narrow', 1, 5, 0, 'medium', { special: 'Single shot: reload after every attack' }),
-  pb1_bunker: sw('PB-1 Pile Bunker', 'ballistic', 1, 14, 2, 0, true, true, 1, 1, 'Narrow', 0, 0, 0, 'medium'),
-  tl1_lance: sw('TL-1 Thermite Lance', 'energy', 1, 16, 2, 0, true, true, 1, 1, 'Narrow', 3, 0, 0, 'medium', { special: 'Thermite charge: one load per strike' }),
-  fp1_flamer: sw('FP-1 Flame Projector', 'energy', 4, 6, 1, 0, false, false, 1, 2, 'Front', 3, 1, 0, 'medium', { special: 'Chemical fuel tanks: no Energy to fire' }),
-  type01_cannon: sw('Type-01 Shoulder Cannon', 'explosive', 1, 13, 2, 0, true, false, 2, 6, 'Narrow', 3, 2, 0, 'large', { still: true, kneel: true, special: 'Fires only from a kneel: brace and do not move' }),
-  type02_blade: sw('Type-02 Steel Blade', 'ballistic', 2, 8, 0, 0, false, true, 1, 1, 'Narrow', 0, 0, 0, 'medium'),
-  type03_rack: sw('Type-03 Rocket Rack', 'explosive', 4, 6, 0, 0, false, false, 2, 6, 'Front', 2, 1, 0, 'medium'),
-  gsh30f_cannon: sw('GSh-30F Forearm Twin Cannon', 'ballistic', 4, 5, 1, 0, false, false, 1, 3, 'Narrow', 3, 2, 0, 'medium'),
-  rd9_driver: sw('RD-9 Rivet Driver', 'ballistic', 3, 6, 1, 0, false, false, 1, 2, 'Narrow', 4, 2, 0, 'small', { special: 'Station tool' }),
-  pt4_torch: sw('PT-4 Plasma Torch', 'energy', 2, 9, 2, 0, false, true, 1, 1, 'Narrow', 0, 0, 1, 'small', { special: 'Powered: 1 Energy per attack. Station tool' }),
-  // Not on the sheet: 26 October numbers, kept so old loadouts still load.
-  br90_rifle: { name: 'BR-90 Marksman Rifle', shots: 2, dmg: 11, ap: 2, aim: 1, type: 'ballistic', heavy: true, rmin: 2, rmax: 8, arc: 90, mag: 3, spares: 2, size: 'medium', old: true },
-  ac30_cannon: { name: 'AC-30 Rotary Cannon', shots: 6, dmg: 4, type: 'ballistic', rmin: 0, rmax: 4.5, arc: 120, mag: 3, spares: 2, size: 'medium', old: true },
-  sg12_breacher: { name: 'SG-12 Breaching Shotgun', shots: 5, dmg: 4, ap: 1, type: 'ballistic', rmin: 0, rmax: 2.5, arc: 120, mag: 3, spares: 2, size: 'medium', old: true },
-  gsh6m_twin: { name: 'Twin GSh-6M Rotary Cannons', shots: 16, dmg: 3, type: 'ballistic', rmin: 0, rmax: 3, arc: 90, mag: 3, spares: 2, size: 'large', note: 'Both forearm cannons as one attack', old: true },
-  // Hands: the sandbox's own profile (the sheet's Hands row agrees: 2 × 4, Large 2 × 5, Small 2 × 3).
-  hands_small: { name: 'Hands', shots: 2, dmg: 3, type: 'ballistic', melee: true, arc: 90, size: 'small', builtin: true },
-  hands_medium: { name: 'Hands', shots: 2, dmg: 4, type: 'ballistic', melee: true, arc: 90, size: 'medium', builtin: true },
-  hands_large: { name: 'Hands', shots: 2, dmg: 5, type: 'ballistic', melee: true, arc: 90, size: 'large', builtin: true },
+// ---------- Catalogue: numbers from the Google Sheet "No Haven on Earth: Frames and Weapons" ----------
+// tabletop/sheet_export.py exports the sheet to tabletop/data/catalogue.json, and tabletop/sandbox/build.py writes that
+// file between these markers. Never edit the block by hand: change the sheet, export it and run build.py.
+/* CATALOGUE:BEGIN */
+const CATALOGUE = {
+ "about": "Built by tabletop/sheet_export.py from the Frames and Weapons sheet. Do not edit by hand.",
+ "spreadsheet": "1-5qpooUhSsjcMrzQWp6DiSxTNM7Y1OZav0AaZKeT00E",
+ "revision": "APfK_pAQcuz3vLebAFLB_H3DNvxjc8X2oiYy7087NssQuS25WqpAcWGxz7ClunKJ-y5HMJAMB2tyYm1RbCBJULcotkNhIZVHK7HBYUjLifM",
+ "frames": [
+  {"id":"m4_garrison","name":"M4 Garrison","class":"Mech","gen":1,"role":"Heavy line","bloc":"US, Union, Pact","size":"Medium","movement":"Ground","structure":68,"armour":2,"armour_type":"Ballistic","move":2,"energy":2,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":1},"limits":{"gunnery":7,"melee":7,"precision":7,"reflex":6,"systems":7,"countermeasures":7,"brace":8},"protocols":[],"special":"","tags":{},"weapons":["m30_hand_cannon","pb1_pile_bunker"],"production":"Line","price":1013},
+  {"id":"hx4_merlin","name":"HX-4 Merlin","class":"Mech","gen":1,"role":"Variable","bloc":"United States","size":"Medium","movement":"Variable","structure":42,"armour":1,"armour_type":"Energy","move":4,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":8,"melee":6,"precision":7,"reflex":8,"systems":7,"countermeasures":7,"brace":6},"protocols":[],"special":"Transforming takes a full round: it cannot attack in a round it changes band.","tags":{"transform_no_attack":true},"weapons":["lr1_linear_rifle"],"production":"Prototype","price":2771},
+  {"id":"hx2_sparrowhawk","name":"HX-2 Sparrowhawk","class":"Mech","gen":1,"role":"Skirmisher","bloc":"United States","size":"Medium","movement":"Ground","structure":52,"armour":1,"armour_type":"Ballistic","move":3,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":7,"melee":6,"precision":7,"reflex":8,"systems":7,"countermeasures":7,"brace":6},"protocols":[],"special":"Air-droppable from a tiltrotor.","tags":{},"weapons":["m105_recoilless_rifle","m2_kit_atgm_tubes"],"production":"Line","price":1011},
+  {"id":"vk1_ecuyer","name":"VK-1 Écuyer","class":"Mech","gen":1,"role":"Marksman","bloc":"Continental Union","size":"Medium","movement":"Ground","structure":56,"armour":2,"armour_type":"Ballistic","move":2,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":1,"reflex":0,"systems":0,"countermeasures":0,"brace":1},"limits":{"gunnery":7,"melee":7,"precision":8,"reflex":6,"systems":7,"countermeasures":7,"brace":8},"protocols":[],"special":"Silent running: it cannot be targeted beyond 6 hexes until it attacks.","tags":{"stealth_range":6},"weapons":["m30_hand_cannon","tl1_thermite_lance"],"production":"Line","price":1018},
+  {"id":"vk1b_ecuyer_blitz","name":"VK-1B Écuyer Blitz","class":"Mech","gen":1,"role":"Scout","bloc":"Continental Union","size":"Medium","movement":"Ground","structure":48,"armour":1,"armour_type":"Ballistic","move":3,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":1,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":7,"melee":6,"precision":8,"reflex":8,"systems":7,"countermeasures":7,"brace":6},"protocols":[],"special":"A refit of the Écuyer. Silent running.","tags":{"stealth_range":6},"weapons":["m30_hand_cannon","m2_kit_atgm_tubes"],"production":"Limited","price":1525},
+  {"id":"type01_tieniu","name":"Type-01 Tieniu","class":"Mech","gen":1,"role":"Artillery","bloc":"Eurasian Pact","size":"Large","movement":"Ground","structure":70,"armour":2,"armour_type":"Explosive","move":2,"energy":2,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":1},"limits":{"gunnery":8,"melee":7,"precision":6,"reflex":6,"systems":7,"countermeasures":7,"brace":8},"protocols":[],"special":"","tags":{},"weapons":["type01_shoulder_cannon","type03_rocket_rack"],"production":"Mass","price":589},
+  {"id":"ob4_korsak","name":"OB-4 Korsak","class":"Mech","gen":1,"role":"Raider","bloc":"Eurasian Pact","size":"Medium","movement":"Ground","structure":42,"armour":1,"armour_type":"Ballistic","move":4,"energy":2,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":7,"melee":7,"precision":6,"reflex":8,"systems":7,"countermeasures":7,"brace":6},"protocols":[],"special":"Airborne drop; Limits off: 1 Will for +1 Reflex this round.","tags":{"limits_off":true},"weapons":["gsh30f_forearm_twin_cannon","type03_rocket_rack"],"production":"Limited","price":1502},
+  {"id":"bd2_tundra","name":"BD-2 Tundra","class":"Mech","gen":1,"role":"Heavy line","bloc":"Canada","size":"Medium","movement":"Ground","structure":66,"armour":2,"armour_type":"Ballistic","move":2,"energy":2,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":1},"limits":{"gunnery":7,"melee":7,"precision":7,"reflex":6,"systems":7,"countermeasures":7,"brace":8},"protocols":[],"special":"Arctic: ignores snow and ice terrain penalties.","tags":{},"weapons":["m105_recoilless_rifle"],"production":"Line","price":940},
+  {"id":"mr1_kizuna","name":"MR-1 Kizuna","class":"Mech","gen":1,"role":"Scout","bloc":"Japan","size":"Small","movement":"Ground","structure":36,"armour":0,"armour_type":"None","move":3,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":1,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":7,"melee":6,"precision":8,"reflex":8,"systems":7,"countermeasures":7,"brace":6},"protocols":[],"special":"Unarmed rescue frame: +2 on any task check that uses its hands.","tags":{"unarmed":true},"weapons":[],"production":"Line","price":748},
+  {"id":"technical_refit","name":"Technical Refit","class":"Mech","gen":1,"role":"Heavy line","bloc":"Pan-African League","size":"Medium","movement":"Ground","structure":58,"armour":2,"armour_type":"Ballistic","move":2,"energy":2,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":1},"limits":{"gunnery":7,"melee":7,"precision":7,"reflex":6,"systems":7,"countermeasures":7,"brace":8},"protocols":[],"special":"Either FP-1, M30 or Type-01 Shoulder Cannon. Built from what is to hand: d10 at mission start, on a 1 one weapon is jammed until repaired.","tags":{"jury_rigged":true},"weapons":["fp1_flame_projector"],"production":"Mass","price":513},
+  {"id":"aw3_lifter","name":"AW-3 Lifter","class":"Mech","gen":1,"role":"Boarder","bloc":"Any","size":"Small","movement":"Zero-g","structure":30,"armour":1,"armour_type":"Ballistic","move":3,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":6,"melee":8,"precision":7,"reflex":7,"systems":7,"countermeasures":7,"brace":6},"protocols":[],"special":"Space only. Four arms: one tool attack and a grapple or hold in the same round.","tags":{"space_only":true},"weapons":["rd9_rivet_driver","pt4_plasma_torch"],"production":"Mass","price":530},
+  {"id":"hx7_kestrel","name":"HX-7 Kestrel","class":"Mech","gen":2,"role":"Variable","bloc":"United States","size":"Medium","movement":"Variable","structure":50,"armour":1,"armour_type":"Energy","move":4,"energy":4,"recharge":2,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":1,"systems":1,"countermeasures":0,"brace":0},"limits":{"gunnery":9,"melee":7,"precision":8,"reflex":9,"systems":8,"countermeasures":7,"brace":7},"protocols":["sensor_link","target_painter"],"special":"Protocols: Sensor Link, Target Painter. Needs a swap pit between missions.","tags":{"swap_pit":true},"weapons":["lr3_linear_rifle","agmm_wing_stores","vb2_vibro_knife"],"production":"Limited","price":2032},
+  {"id":"m9_teamster","name":"M9 Teamster","class":"Mech","gen":2,"role":"Brawler","bloc":"United States","size":"Medium","movement":"Ground","structure":72,"armour":2,"armour_type":"Explosive","move":3,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":1,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":2},"limits":{"gunnery":8,"melee":9,"precision":8,"reflex":7,"systems":8,"countermeasures":8,"brace":9},"protocols":[],"special":"Quiet running: it cannot be targeted beyond 6 hexes until it attacks.","tags":{"stealth_range":6},"weapons":["ar40_longhorn_rifle","m140_rocket_bazooka","pb4_stake_driver"],"production":"Line","price":1375},
+  {"id":"type09_tieshan","name":"Type-09 Tieshan","class":"Mech","gen":2,"role":"Gunline","bloc":"Eurasian Pact","size":"Large","movement":"Ground","structure":76,"armour":2,"armour_type":"Explosive","move":2,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":1,"reflex":0,"systems":1,"countermeasures":0,"brace":2},"limits":{"gunnery":9,"melee":8,"precision":9,"reflex":7,"systems":8,"countermeasures":7,"brace":9},"protocols":["jam","power_siphon"],"special":"Protocols: Jam, Power Siphon. Multi-fuel.","tags":{},"weapons":["type09_long_cannon","type07_drum_rifle","type11_dao_blade"],"production":"Mass","price":793},
+  {"id":"ob12_medved","name":"OB-12 Medved","class":"Mech","gen":2,"role":"Assault","bloc":"Eurasian Pact","size":"Large","movement":"Ground","structure":80,"armour":3,"armour_type":"Ballistic","move":2,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":2},"limits":{"gunnery":9,"melee":8,"precision":8,"reflex":7,"systems":7,"countermeasures":9,"brace":9},"protocols":["purge"],"special":"Protocol: Purge. Countermeasure field, radius 2.","tags":{"cm_field":2},"weapons":["gradm_rocket_battery","gsh6m_rotary_cannon","molot_hydraulic_ram"],"production":"Line","price":1381},
+  {"id":"vk3_haubert","name":"VK-3 Haubert","class":"Mech","gen":2,"role":"Marksman","bloc":"Continental Union","size":"Medium","movement":"Ground","structure":64,"armour":2,"armour_type":"Ballistic","move":3,"energy":4,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":1,"reflex":0,"systems":1,"countermeasures":0,"brace":2},"limits":{"gunnery":8,"melee":8,"precision":9,"reflex":7,"systems":8,"countermeasures":8,"brace":9},"protocols":["target_painter"],"special":"Protocol: Target Painter. Standard hardpoints: between missions, swap any weapon for another of the same size at no cost.","tags":{},"weapons":["g35_telescoped_rifle","lanzehl_heat_lance"],"production":"Line","price":1236},
+  {"id":"vk3m_mistral","name":"VK-3M Mistral","class":"Mech","gen":2,"role":"Marksman","bloc":"Pan-African League","size":"Medium","movement":"Ground","structure":64,"armour":2,"armour_type":"Ballistic","move":3,"energy":4,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":1,"reflex":0,"systems":1,"countermeasures":0,"brace":2},"limits":{"gunnery":8,"melee":8,"precision":9,"reflex":7,"systems":8,"countermeasures":8,"brace":9},"protocols":["target_painter"],"special":"Protocol: Target Painter. Sealed for sand: ignores sand terrain penalties. Standard hardpoints, as the Haubert.","tags":{},"weapons":["g35_telescoped_rifle","lanzehl_heat_lance"],"production":"Line","price":1249},
+  {"id":"bd5_caribou","name":"BD-5 Caribou","class":"Mech","gen":2,"role":"Marksman","bloc":"Canada","size":"Medium","movement":"Ground","structure":72,"armour":2,"armour_type":"Explosive","move":3,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":1,"reflex":0,"systems":0,"countermeasures":0,"brace":2},"limits":{"gunnery":8,"melee":8,"precision":9,"reflex":7,"systems":8,"countermeasures":8,"brace":9},"protocols":[],"special":"Arctic: ignores snow and ice terrain penalties.","tags":{},"weapons":["ar40_longhorn_rifle","hornet_missile_pod"],"production":"Line","price":1215},
+  {"id":"type09i_tieshani","name":"Type-09I Tieshan-I","class":"Mech","gen":2,"role":"Gunline","bloc":"India","size":"Large","movement":"Ground","structure":74,"armour":2,"armour_type":"Explosive","move":2,"energy":3,"recharge":2,"hardware":{"gunnery":0,"melee":0,"precision":1,"reflex":0,"systems":1,"countermeasures":0,"brace":2},"limits":{"gunnery":9,"melee":8,"precision":9,"reflex":7,"systems":8,"countermeasures":7,"brace":9},"protocols":[],"special":"Multi-fuel. Scheduled spares: repairs and refits cost half as much again, and none arrive after the Sealed Session.","tags":{},"weapons":["type09_long_cannon","type07_drum_rifle"],"production":"Mass","price":716},
+  {"id":"mx01_hayate","name":"MX-01 Hayate","class":"Mech","gen":2,"role":"Duelist","bloc":"Japan","size":"Medium","movement":"Ground","structure":58,"armour":1,"armour_type":"Energy","move":3,"energy":4,"recharge":2,"hardware":{"gunnery":0,"melee":1,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":8,"melee":9,"precision":8,"reflex":9,"systems":7,"countermeasures":8,"brace":7},"protocols":[],"special":"","tags":{},"weapons":["typel_coil_carbine","hf1_sonic_blade"],"production":"Line","price":1126},
+  {"id":"qf2_haboob","name":"QF-2 Haboob","class":"Mech","gen":2,"role":"Heavy line","bloc":"Pan-African League","size":"Large","movement":"Ground","structure":74,"armour":2,"armour_type":"Ballistic","move":2,"energy":2,"recharge":1,"hardware":{"gunnery":1,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":2},"limits":{"gunnery":8,"melee":8,"precision":8,"reflex":7,"systems":8,"countermeasures":8,"brace":9},"protocols":[],"special":"Desert feet: ignores sand terrain penalties.","tags":{},"weapons":["type07_drum_rifle","type01_shoulder_cannon"],"production":"Mass","price":690},
+  {"id":"aw5_rigger","name":"AW-5 Rigger","class":"Mech","gen":2,"role":"Utility","bloc":"Any","size":"Small","movement":"Zero-g","structure":46,"armour":1,"armour_type":"Ballistic","move":3,"energy":4,"recharge":2,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":1,"systems":1,"countermeasures":0,"brace":0},"limits":{"gunnery":7,"melee":8,"precision":8,"reflex":8,"systems":9,"countermeasures":9,"brace":8},"protocols":[],"special":"Space only. Multi-day shifts: never short of Energy between missions.","tags":{"space_only":true},"weapons":["th2_tether_harpoon","pt4_plasma_torch"],"production":"Mass","price":648},
+  {"id":"fk2_laufer","name":"FK-2 Läufer","class":"Mech","gen":2,"role":"Skirmisher","bloc":"Continental Union","size":"Medium","movement":"Ground","structure":56,"armour":1,"armour_type":"Ballistic","move":4,"energy":4,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":8,"melee":7,"precision":8,"reflex":9,"systems":8,"countermeasures":8,"brace":7},"protocols":[],"special":"Shoot and scoot: after its attack it may move 1 hex, unless it charged. Open drawings: repairs and refits between missions cost half.","tags":{"shoot_and_scoot":1},"weapons":["ac2_arc_projector"],"production":"Line","price":1078},
+  {"id":"kh2_takhi","name":"KH-2 Takhi","class":"Mech","gen":2,"role":"Raider","bloc":"Eurasian Pact","size":"Medium","movement":"Ground","structure":58,"armour":1,"armour_type":"Ballistic","move":4,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":1,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":8,"melee":8,"precision":7,"reflex":9,"systems":8,"countermeasures":8,"brace":7},"protocols":[],"special":"Saddle stores: one extra spare magazine for its rifle. Rattletrap: d10 at mission start, on a 1 it has −1 Move for the mission.","tags":{"extra_spare":1,"rattletrap":true},"weapons":["type07_drum_rifle","type08_carbon_blade"],"production":"Mass","price":688},
+  {"id":"type99_tank","name":"Type-99 tank","class":"Vehicle","gen":2,"role":"Tank","bloc":"Eurasian Pact","size":"Large","movement":"Ground","structure":24,"armour":3,"armour_type":"Ballistic","move":3,"energy":2,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":2},"limits":{"gunnery":9,"melee":5,"precision":8,"reflex":7,"systems":8,"countermeasures":8,"brace":9},"protocols":[],"special":"Ground Move only.","tags":{"tank":true,"no_hands":true,"ground_move_only":true},"weapons":["125mm_tank_gun","coaxial_machine_gun"],"production":"Mass","price":512},
+  {"id":"f12_peregrine","name":"F-12 Peregrine","class":"Vehicle","gen":2,"role":"Fighter","bloc":"Any","size":"Small","movement":"Aircraft","structure":14,"armour":0,"armour_type":"None","move":5,"energy":2,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":8,"melee":5,"precision":8,"reflex":9,"systems":8,"countermeasures":8,"brace":7},"protocols":[],"special":"Flies aircraft paths at LOW and HIGH; carries no spare magazines.","tags":{"aircraft":true,"no_spares":true,"no_hands":true},"weapons":["nose_autocannon","guided_missiles"],"production":"Line","price":874},
+  {"id":"hx11_harrier","name":"HX-11 Harrier","class":"Mech","gen":3,"role":"Variable","bloc":"United States","size":"Medium","movement":"Variable","structure":58,"armour":1,"armour_type":"Energy","move":4,"energy":5,"recharge":2,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":2,"systems":1,"countermeasures":0,"brace":0},"limits":{"gunnery":10,"melee":8,"precision":9,"reflex":10,"systems":9,"countermeasures":9,"brace":8},"protocols":["ghost_return"],"special":"Protocol: Ghost Return. PL-2 point-defence laser: explosive ranged attacks against it, or an ally within 2, are −2.","tags":{"point_defence":2},"weapons":["lr3_linear_rifle","agmm_wing_stores","vb2_vibro_knife"],"production":"Line","price":1556},
+  {"id":"hx9_osprey","name":"HX-9 Osprey","class":"Mech","gen":3,"role":"Command","bloc":"United States","size":"Medium","movement":"Ground","structure":74,"armour":2,"armour_type":"Explosive","move":3,"energy":4,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":2,"countermeasures":1,"brace":3},"limits":{"gunnery":9,"melee":9,"precision":9,"reflex":8,"systems":10,"countermeasures":9,"brace":10},"protocols":["ammo_relay"],"special":"Protocol: Ammo Relay. Battery crane: once per round an ally within 1 regains 2 Energy instead of reloading.","tags":{"battery_crane":true},"weapons":["mw3_microwave_emitter"],"production":"Line","price":1282},
+  {"id":"m12_bulwark","name":"M12 Bulwark","class":"Mech","gen":3,"role":"Heavy line","bloc":"United States","size":"Large","movement":"Ground","structure":96,"armour":3,"armour_type":"Explosive","move":2,"energy":3,"recharge":1,"hardware":{"gunnery":1,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":3},"limits":{"gunnery":10,"melee":9,"precision":9,"reflex":8,"systems":9,"countermeasures":9,"brace":10},"protocols":["ammo_relay"],"special":"Protocol: Ammo Relay. Two Hornet pods: may fire both as one attack.","tags":{"linked_fire":true},"weapons":["hornet_missile_pod","hornet_missile_pod","pb4_stake_driver"],"production":"Line","price":1546},
+  {"id":"vk8_destrier","name":"VK-8 Destrier","class":"Mech","gen":3,"role":"Brawler","bloc":"Continental Union","size":"Medium","movement":"Ground","structure":78,"armour":3,"armour_type":"Ballistic","move":3,"energy":4,"recharge":1,"hardware":{"gunnery":0,"melee":2,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":3},"limits":{"gunnery":9,"melee":10,"precision":9,"reflex":8,"systems":9,"countermeasures":9,"brace":10},"protocols":[],"special":"Tower shield: +1 cover against attacks from its front arc. Multi-fuel.","tags":{"front_cover":1},"weapons":["lanzehl_heat_lance","g35_telescoped_rifle"],"production":"Line","price":1451},
+  {"id":"vk5_pavise","name":"VK-5 Pavise","class":"Mech","gen":3,"role":"Electronic warfare","bloc":"Continental Union","size":"Medium","movement":"Ground","structure":70,"armour":2,"armour_type":"Ballistic","move":3,"energy":5,"recharge":2,"hardware":{"gunnery":0,"melee":0,"precision":1,"reflex":0,"systems":2,"countermeasures":1,"brace":1},"limits":{"gunnery":9,"melee":8,"precision":9,"reflex":9,"systems":10,"countermeasures":10,"brace":9},"protocols":["jam","target_painter","purge"],"special":"Protocols: Jam, Target Painter, Purge. Countermeasure field, radius 3.","tags":{"cm_field":3},"weapons":["spiegel_coilgun","fenrir_homeonjam_missiles"],"production":"Limited","price":2251},
+  {"id":"ca3_falco","name":"CA-3 Falco","class":"Mech","gen":3,"role":"Duelist","bloc":"Continental Union","size":"Medium","movement":"Ground","structure":64,"armour":1,"armour_type":"Ballistic","move":4,"energy":5,"recharge":2,"hardware":{"gunnery":1,"melee":1,"precision":0,"reflex":2,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":9,"melee":10,"precision":9,"reflex":10,"systems":8,"countermeasures":9,"brace":8},"protocols":[],"special":"Hand-built for one named ace: refits cost double, and any other pilot gets none of its Reflex hardware.","tags":{},"weapons":["pj3_plasma_projector","lanzehl_heat_lance"],"production":"Limited","price":2180},
+  {"id":"bd7_wolverine","name":"BD-7 Wolverine","class":"Mech","gen":3,"role":"Marksman","bloc":"Canada","size":"Medium","movement":"Ground","structure":70,"armour":2,"armour_type":"Ballistic","move":3,"energy":4,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":2,"reflex":0,"systems":0,"countermeasures":2,"brace":3},"limits":{"gunnery":9,"melee":9,"precision":10,"reflex":8,"systems":9,"countermeasures":9,"brace":10},"protocols":["ghost_return"],"special":"Protocol: Ghost Return. Cold hide: while it has not moved this round it cannot be targeted beyond 4 hexes. Arctic.","tags":{"still_stealth_range":4},"weapons":["spiegel_coilgun"],"production":"Line","price":1301},
+  {"id":"type09a_tieshankai","name":"Type-09A Tieshan-Kai","class":"Mech","gen":3,"role":"Command","bloc":"Eurasian Pact","size":"Large","movement":"Ground","structure":84,"armour":2,"armour_type":"Explosive","move":2,"energy":3,"recharge":1,"hardware":{"gunnery":1,"melee":0,"precision":0,"reflex":0,"systems":2,"countermeasures":0,"brace":3},"limits":{"gunnery":9,"melee":9,"precision":9,"reflex":8,"systems":10,"countermeasures":9,"brace":10},"protocols":["sensor_link"],"special":"Protocol: Sensor Link. Tianshu link: allies on the same link share Target Lock results against a target they can both see.","tags":{"shared_lock":true},"weapons":["type09_long_cannon","type07_drum_rifle","type08_carbon_blade"],"production":"Mass","price":886},
+  {"id":"type15_tiebi","name":"Type-15 Tiebi","class":"Mech","gen":3,"role":"Heavy line","bloc":"Eurasian Pact","size":"Large","movement":"Ground","structure":96,"armour":4,"armour_type":"Explosive","move":2,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":3},"limits":{"gunnery":9,"melee":9,"precision":9,"reflex":8,"systems":9,"countermeasures":9,"brace":10},"protocols":[],"special":"Dug in: if it did not move this round, +1 cover. Anti-air racks: its Type-03 can target aircraft.","tags":{"dug_in_cover":1},"weapons":["type09_long_cannon","type03_rocket_rack"],"production":"Mass","price":873},
+  {"id":"ob17_mamont","name":"OB-17 Mamont","class":"Mech","gen":3,"role":"Breakthrough","bloc":"Eurasian Pact","size":"Super heavy","movement":"Ground","structure":104,"armour":4,"armour_type":"Ballistic","move":2,"energy":3,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":3},"limits":{"gunnery":10,"melee":9,"precision":9,"reflex":8,"systems":9,"countermeasures":9,"brace":10},"protocols":[],"special":"Shrugs off rifle fire: hits of 4 damage or less deal none.","tags":{"damage_floor":4},"weapons":["2am_molot_autoloading_cannon","gradm_rocket_battery","gsh6m_rotary_cannon"],"production":"Line","price":1623},
+  {"id":"ob19_volk","name":"OB-19 Volk","class":"Mech","gen":3,"role":"Skirmisher","bloc":"Eurasian Pact","size":"Large","movement":"Ground","structure":80,"armour":2,"armour_type":"Ballistic","move":3,"energy":4,"recharge":2,"hardware":{"gunnery":1,"melee":0,"precision":0,"reflex":2,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":10,"melee":8,"precision":9,"reflex":10,"systems":9,"countermeasures":9,"brace":8},"protocols":["ghost_return"],"special":"Protocol: Ghost Return. Augmented pilots only: an unaugmented pilot's Reflex counts as 5 in this frame.","tags":{"augmented_only":true},"weapons":["type12_rail_rifle","gsh6m_rotary_cannon"],"production":"Limited","price":2236},
+  {"id":"nk12_medvedn","name":"NK-12 Medved-N","class":"Mech","gen":3,"role":"Assault","bloc":"Eurasian Pact","size":"Large","movement":"Ground","structure":100,"armour":3,"armour_type":"Ballistic","move":2,"energy":4,"recharge":2,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":3},"limits":{"gunnery":10,"melee":9,"precision":9,"reflex":8,"systems":8,"countermeasures":10,"brace":10},"protocols":[],"special":"Monsoon-sealed: ignores mud and flooding.","tags":{},"weapons":["gsh6m_rotary_cannon","gsh6m_rotary_cannon","gradm_rocket_battery"],"production":"Line","price":1569},
+  {"id":"mx05_shiden","name":"MX-05 Shiden","class":"Mech","gen":3,"role":"Duelist","bloc":"Japan","size":"Medium","movement":"Ground","structure":64,"armour":1,"armour_type":"Energy","move":4,"energy":5,"recharge":2,"hardware":{"gunnery":0,"melee":1,"precision":1,"reflex":2,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":9,"melee":10,"precision":9,"reflex":10,"systems":8,"countermeasures":9,"brace":8},"protocols":["actuator_lockout"],"special":"Protocol: Actuator Lockout. Test mounts: it can carry one prototype weapon from any generation.","tags":{},"weapons":["typel_coil_carbine","hf1_sonic_blade"],"production":"Limited","price":2108},
+  {"id":"qf4_sirocco","name":"QF-4 Sirocco","class":"Mech","gen":3,"role":"Heavy line","bloc":"Pan-African League","size":"Medium","movement":"Ground","structure":82,"armour":2,"armour_type":"Ballistic","move":3,"energy":3,"recharge":1,"hardware":{"gunnery":1,"melee":0,"precision":1,"reflex":0,"systems":0,"countermeasures":0,"brace":3},"limits":{"gunnery":10,"melee":9,"precision":9,"reflex":8,"systems":9,"countermeasures":9,"brace":10},"protocols":[],"special":"Two-bloc mounts: it can carry any medium weapon from any bloc.","tags":{},"weapons":["qr30_composite_rifle","type01q_refurbished_cannon","hornetq_hybrid_pod"],"production":"Mass","price":905},
+  {"id":"glc_lantern_custom","name":"GL-C Lantern Custom","class":"Mech","gen":3,"role":"Scout","bloc":"Grey Lantern","size":"Medium","movement":"Ground","structure":60,"armour":1,"armour_type":"Energy","move":4,"energy":5,"recharge":2,"hardware":{"gunnery":0,"melee":0,"precision":1,"reflex":2,"systems":1,"countermeasures":0,"brace":0},"limits":{"gunnery":9,"melee":8,"precision":10,"reflex":10,"systems":9,"countermeasures":9,"brace":8},"protocols":["jam","feed_jam","overload_spike"],"special":"Protocols: Jam, Feed Jam, Overload Spike. No two alike: swap one Protocol for any other from the starter list.","tags":{},"weapons":["lr3_linear_rifle","fenrir_homeonjam_missiles","hf1_sonic_blade"],"production":"Limited","price":2328},
+  {"id":"ca5m_ghibli","name":"CA-5M Ghibli","class":"Mech","gen":3,"role":"Scout","bloc":"Pan-African League","size":"Medium","movement":"Ground","structure":66,"armour":2,"armour_type":"Ballistic","move":4,"energy":4,"recharge":2,"hardware":{"gunnery":0,"melee":0,"precision":1,"reflex":1,"systems":1,"countermeasures":0,"brace":0},"limits":{"gunnery":9,"melee":8,"precision":10,"reflex":10,"systems":9,"countermeasures":9,"brace":8},"protocols":[],"special":"Sensor mast: +1 to Target Lock rolls in open terrain. Multi-fuel.","tags":{},"weapons":["g35_telescoped_rifle","lanzehl_heat_lance"],"production":"Line","price":1379},
+  {"id":"aw5s_rigger_security","name":"AW-5S Rigger Security","class":"Mech","gen":3,"role":"Boarder","bloc":"Any","size":"Small","movement":"Zero-g","structure":50,"armour":2,"armour_type":"Ballistic","move":4,"energy":4,"recharge":2,"hardware":{"gunnery":0,"melee":2,"precision":0,"reflex":1,"systems":1,"countermeasures":0,"brace":0},"limits":{"gunnery":8,"melee":10,"precision":9,"reflex":9,"systems":9,"countermeasures":9,"brace":8},"protocols":[],"special":"Space only. Boarding: after a harpoon hit it can close and attack in the same round.","tags":{"space_only":true},"weapons":["rd12_spike_driver","th2_tether_harpoon"],"production":"Mass","price":823},
+  {"id":"lw3_tellus","name":"LW-3 Tellus","class":"Mech","gen":3,"role":"Guardian","bloc":"United Nations","size":"Medium","movement":"Ground","structure":78,"armour":2,"armour_type":"Ballistic","move":3,"energy":4,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":1,"countermeasures":2,"brace":3},"limits":{"gunnery":9,"melee":9,"precision":8,"reflex":9,"systems":9,"countermeasures":10,"brace":10},"protocols":["purge"],"special":"Protocol: Purge. Sealed cockpit: immune to smoke, gas and fallout. Rescue cradle.","tags":{},"weapons":["typel_coil_carbine","th2_tether_harpoon"],"production":"Line","price":1342},
+  {"id":"lw5_albedo","name":"LW-5 Albedo","class":"Mech","gen":3,"role":"Utility","bloc":"United Nations","size":"Medium","movement":"Ground","structure":86,"armour":3,"armour_type":"Energy","move":3,"energy":4,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":1},"limits":{"gunnery":8,"melee":9,"precision":9,"reflex":9,"systems":10,"countermeasures":10,"brace":9},"protocols":[],"special":"Firebreak frame: mirror heat shields, dozer blade, trenching cutters, water bladders. Unarmed apart from its hands.","tags":{"unarmed":true},"weapons":[],"production":"Line","price":1177},
+  {"id":"fk5_querschlager","name":"FK-5 Querschläger","class":"Mech","gen":3,"role":"Skirmisher","bloc":"Funkenwerk","size":"Medium","movement":"Ground","structure":60,"armour":2,"armour_type":"Ballistic","move":4,"energy":5,"recharge":2,"hardware":{"gunnery":1,"melee":0,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":10,"melee":8,"precision":9,"reflex":10,"systems":9,"countermeasures":9,"brace":8},"protocols":["jam"],"special":"Protocol: Jam. Shoot and scoot. Reformer stack: never short of Energy between missions. Open drawings.","tags":{"shoot_and_scoot":1},"weapons":["g35_telescoped_rifle","fenrir_homeonjam_missiles"],"production":"Line","price":1477},
+  {"id":"kh5_burged","name":"KH-5 Bürged","class":"Mech","gen":3,"role":"Raider","bloc":"Khiimori","size":"Medium","movement":"Ground","structure":64,"armour":1,"armour_type":"Ballistic","move":5,"energy":5,"recharge":1,"hardware":{"gunnery":1,"melee":1,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":9,"melee":10,"precision":8,"reflex":10,"systems":9,"countermeasures":9,"brace":8},"protocols":[],"special":"Stoop: its Charge reaches Move + 2 instead of Move + 1. Saddle stores and Rattletrap, as the Takhi.","tags":{"charge_reach":2,"extra_spare":1,"rattletrap":true},"weapons":["type07_drum_rifle","type03_rocket_rack","type08_carbon_blade"],"production":"Line","price":1459},
+  {"id":"hxx_skyline_testbed","name":"HX-X SKYLINE Testbed","class":"Mech","gen":4,"role":"Variable","bloc":"United States","size":"Medium","movement":"Variable","structure":64,"armour":1,"armour_type":"Energy","move":4,"energy":6,"recharge":3,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":2,"systems":2,"countermeasures":1,"brace":0},"limits":{"gunnery":11,"melee":9,"precision":10,"reflex":11,"systems":10,"countermeasures":10,"brace":9},"protocols":["sensor_link","ghost_return"],"special":"Protocols: Sensor Link, Ghost Return. Flies HIGH as well as LOW. Beamed power: recharge +4 under the relay, +1 away from it (costed at +3). PL-2 point defence, as the Harrier.","tags":{"point_defence":2,"flies_high":true},"weapons":["lr3_linear_rifle"],"production":"Prototype","price":4644},
+  {"id":"m15_pathfinder","name":"M15 Pathfinder","class":"Mech","gen":4,"role":"Gunline","bloc":"United States","size":"Large","movement":"Ground","structure":90,"armour":3,"armour_type":"Explosive","move":3,"energy":5,"recharge":2,"hardware":{"gunnery":2,"melee":0,"precision":1,"reflex":0,"systems":0,"countermeasures":0,"brace":4},"limits":{"gunnery":11,"melee":10,"precision":11,"reflex":9,"systems":10,"countermeasures":9,"brace":11},"protocols":["power_siphon"],"special":"Protocol: Power Siphon.","tags":{},"weapons":["ar40e_electrothermal_rifle","pb4_stake_driver"],"production":"Limited","price":2538},
+  {"id":"cax_saetta","name":"CA-X Saetta","class":"Mech","gen":4,"role":"Duelist","bloc":"Continental Union","size":"Medium","movement":"Ground","structure":70,"armour":1,"armour_type":"Ballistic","move":5,"energy":7,"recharge":2,"hardware":{"gunnery":0,"melee":2,"precision":1,"reflex":2,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":10,"melee":11,"precision":10,"reflex":11,"systems":9,"countermeasures":10,"brace":9},"protocols":[],"special":"Built for the Union's top ace.","tags":{},"weapons":["lama_ardente_plasma_blade","g35_telescoped_rifle"],"production":"Prototype","price":4811},
+  {"id":"fkx_aufbruch","name":"FK-X Aufbruch","class":"Mech","gen":4,"role":"Skirmisher","bloc":"Funkenwerk","size":"Medium","movement":"Ground","structure":72,"armour":2,"armour_type":"Ballistic","move":5,"energy":6,"recharge":2,"hardware":{"gunnery":1,"melee":0,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":11,"melee":9,"precision":10,"reflex":11,"systems":10,"countermeasures":10,"brace":9},"protocols":["jam","ghost_return"],"special":"Protocols: Jam, Ghost Return. Shoot and scoot. Capacitor buffer: the Spiegel costs 1 Energy instead of 2. Reformer stack.","tags":{"shoot_and_scoot":1},"weapons":["spiegel_coilgun","fenrir_homeonjam_missiles"],"production":"Prototype","price":5145},
+  {"id":"khx_tsagaan_salkhi","name":"KH-X Tsagaan Salkhi","class":"Mech","gen":4,"role":"Raider","bloc":"Khiimori","size":"Small","movement":"Ground","structure":58,"armour":1,"armour_type":"Ballistic","move":6,"energy":6,"recharge":2,"hardware":{"gunnery":1,"melee":0,"precision":0,"reflex":1,"systems":0,"countermeasures":0,"brace":0},"limits":{"gunnery":10,"melee":11,"precision":9,"reflex":11,"systems":10,"countermeasures":10,"brace":9},"protocols":["sensor_link","ammo_relay"],"special":"Protocols: Sensor Link, Ammo Relay. Shoot and scoot. Stoop. Saddle stores. Never short of Energy between missions.","tags":{"shoot_and_scoot":1,"charge_reach":2,"extra_spare":1},"weapons":["g35_telescoped_rifle","type08_carbon_blade"],"production":"Prototype","price":4718},
+  {"id":"bdx_polaris","name":"BD-X Polaris","class":"Mech","gen":4,"role":"Utility","bloc":"Canada","size":"Medium","movement":"Ground","structure":80,"armour":3,"armour_type":"Energy","move":3,"energy":8,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":2,"countermeasures":2,"brace":2},"limits":{"gunnery":9,"melee":10,"precision":10,"reflex":10,"systems":11,"countermeasures":11,"brace":10},"protocols":["sensor_link","purge"],"special":"Protocols: Sensor Link, Purge. Sealed cab for two with a month of life support. Unarmed apart from its hands.","tags":{"unarmed":true},"weapons":[],"production":"Prototype","price":4056},
+  {"id":"type20_tianyan","name":"Type-20 Tianyan","class":"Mech","gen":4,"role":"Command","bloc":"Eurasian Pact","size":"Large","movement":"Ground","structure":90,"armour":2,"armour_type":"Explosive","move":2,"energy":4,"recharge":2,"hardware":{"gunnery":1,"melee":0,"precision":0,"reflex":0,"systems":2,"countermeasures":1,"brace":4},"limits":{"gunnery":10,"melee":10,"precision":10,"reflex":9,"systems":11,"countermeasures":11,"brace":11},"protocols":["sensor_link","target_painter"],"special":"Protocols: Sensor Link, Target Painter. Commands six uncrewed Tieshans (bought separately, pilot stats 6). If it is destroyed or jammed, they hold and fire at the nearest enemy.","tags":{"drone_command":true},"weapons":["type09_long_cannon","type07_drum_rifle"],"production":"Limited","price":2395},
+  {"id":"ob21_tsar","name":"OB-21 Tsar","class":"Mech","gen":4,"role":"Artillery","bloc":"Eurasian Pact","size":"Super heavy","movement":"Ground","structure":120,"armour":5,"armour_type":"Ballistic","move":1,"energy":4,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":4},"limits":{"gunnery":11,"melee":10,"precision":9,"reflex":9,"systems":10,"countermeasures":10,"brace":11},"protocols":[],"special":"Spades: it must spend its move anchoring before firing. Can swap the Kalibr-305 for the Iskra Particle Cannon.","tags":{"anchor":true},"weapons":["kalibr305_siege_mortar"],"production":"Limited","price":2291},
+  {"id":"obx_pamir","name":"OB-X Pamir","class":"Mech","gen":4,"role":"Breakthrough","bloc":"Eurasian Pact","size":"Super heavy","movement":"Ground","structure":110,"armour":4,"armour_type":"Ballistic","move":2,"energy":6,"recharge":2,"hardware":{"gunnery":1,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":0,"brace":4},"limits":{"gunnery":11,"melee":10,"precision":10,"reflex":9,"systems":10,"countermeasures":10,"brace":11},"protocols":[],"special":"Fission core: it never runs short of Energy. Each mission the pilot takes a radiation dose.","tags":{},"weapons":["2am_molot_autoloading_cannon","gsh6m_rotary_cannon"],"production":"Prototype","price":5095},
+  {"id":"nkx_ashvin","name":"NK-X Ashvin","class":"Mech","gen":4,"role":"Skirmisher","bloc":"Eurasian Pact","size":"Large","movement":"Ground","structure":80,"armour":3,"armour_type":"Ballistic","move":3,"energy":5,"recharge":2,"hardware":{"gunnery":1,"melee":0,"precision":0,"reflex":2,"systems":1,"countermeasures":0,"brace":0},"limits":{"gunnery":11,"melee":9,"precision":10,"reflex":11,"systems":10,"countermeasures":10,"brace":9},"protocols":["sensor_link"],"special":"Protocol: Sensor Link. Sworn pair, priced per frame: either may use the other's Target Lock roll.","tags":{"shared_lock":true},"weapons":["type12_rail_rifle","gsh6m_rotary_cannon"],"production":"Prototype","price":5076},
+  {"id":"ptx_raijin","name":"PT-X Raijin","class":"Mech","gen":4,"role":"Gunline","bloc":"Japan","size":"Medium","movement":"Ground","structure":70,"armour":2,"armour_type":"Energy","move":4,"energy":8,"recharge":3,"hardware":{"gunnery":1,"melee":0,"precision":2,"reflex":0,"systems":1,"countermeasures":0,"brace":4},"limits":{"gunnery":11,"melee":10,"precision":11,"reflex":9,"systems":10,"countermeasures":9,"brace":11},"protocols":[],"special":"Built around one weapon: if the BX-0 is lost, it has only its hands.","tags":{},"weapons":["bx0_beam_rifle"],"production":"Prototype","price":4532},
+  {"id":"qf6_harmattan","name":"QF-6 Harmattan","class":"Mech","gen":4,"role":"Guardian","bloc":"Pan-African League","size":"Medium","movement":"Ground","structure":92,"armour":3,"armour_type":"Explosive","move":3,"energy":4,"recharge":1,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":0,"systems":0,"countermeasures":1,"brace":4},"limits":{"gunnery":10,"melee":10,"precision":9,"reflex":10,"systems":10,"countermeasures":11,"brace":11},"protocols":["purge"],"special":"Protocol: Purge. Shelter: +2 cover to allies within 1 behind it. Water tank and field medical bay.","tags":{"shelter_cover":2},"weapons":["qr30_composite_rifle","type01q_refurbished_cannon"],"production":"Line","price":1569},
+  {"id":"qt1_elissa","name":"QT-1 Elissa","class":"Mech","gen":4,"role":"Guardian","bloc":"Pan-African League","size":"Medium","movement":"Ground","structure":90,"armour":2,"armour_type":"Ballistic","move":3,"energy":5,"recharge":2,"hardware":{"gunnery":0,"melee":2,"precision":0,"reflex":0,"systems":0,"countermeasures":1,"brace":4},"limits":{"gunnery":10,"melee":11,"precision":9,"reflex":10,"systems":10,"countermeasures":11,"brace":11},"protocols":[],"special":"Shield arm: +1 cover from the front. Evacuation cradle and room in the cab for a medic.","tags":{"front_cover":1},"weapons":["qr30_composite_rifle","lanzehl_heat_lance"],"production":"Limited","price":2369},
+  {"id":"awx1_marlinspike","name":"AWX-1 Marlinspike","class":"Mech","gen":4,"role":"Skirmisher","bloc":"United Nations","size":"Small","movement":"Zero-g","structure":56,"armour":1,"armour_type":"Energy","move":5,"energy":7,"recharge":2,"hardware":{"gunnery":1,"melee":0,"precision":0,"reflex":2,"systems":1,"countermeasures":0,"brace":0},"limits":{"gunnery":11,"melee":9,"precision":10,"reflex":11,"systems":10,"countermeasures":10,"brace":9},"protocols":[],"special":"Space only. Catapult launch: on the first round it may move twice.","tags":{"space_only":true},"weapons":["lr3_linear_rifle","rd12_spike_driver","th2_tether_harpoon"],"production":"Limited","price":2528},
+  {"id":"lwx_earthrise","name":"LW-X Earthrise","class":"Mech","gen":4,"role":"Electronic warfare","bloc":"United Nations","size":"Medium","movement":"Ground","structure":76,"armour":2,"armour_type":"Ballistic","move":3,"energy":6,"recharge":3,"hardware":{"gunnery":0,"melee":0,"precision":0,"reflex":1,"systems":2,"countermeasures":2,"brace":2},"limits":{"gunnery":10,"melee":9,"precision":10,"reflex":10,"systems":11,"countermeasures":11,"brace":10},"protocols":["purge","sensor_link"],"special":"Protocols: Purge, Sensor Link. Beamed power: recharge +4 under a Republic relay, +1 away from one (costed at +3). Countermeasure field, radius 3. Rescue capsule for four.","tags":{"cm_field":3},"weapons":["lcr1_lunar_coil_rifle","th2_tether_harpoon"],"production":"Prototype","price":4967}
+ ],
+ "weapons": [
+  {"id":"m30_hand_cannon","name":"M30 Hand Cannon","gen":1,"role":"Rifle","class":"Primary","damage_type":"Ballistic","shots":3,"damage":7,"ap":0,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":4,"arc":"Front","magazine":4,"spares":2,"energy":0,"special":"","tags":{},"price":94},
+  {"id":"lr1_linear_rifle","name":"LR-1 Linear Rifle","gen":1,"role":"Precision","class":"Primary","damage_type":"Energy","shots":1,"damage":13,"ap":2,"aim":1,"heavy":true,"melee":false,"min_range":2,"max_range":5,"arc":"Narrow","magazine":3,"spares":1,"energy":1,"special":"Powered: 1 Energy and a load per attack","tags":{},"price":85},
+  {"id":"m2_kit_atgm_tubes","name":"M2 Kit ATGM Tubes","gen":1,"role":"Anti-armour","class":"Primary","damage_type":"Explosive","shots":1,"damage":13,"ap":2,"aim":0,"heavy":false,"melee":false,"min_range":2,"max_range":6,"arc":"Front","magazine":2,"spares":1,"energy":0,"special":"","tags":{},"price":84},
+  {"id":"pb1_pile_bunker","name":"PB-1 Pile Bunker","gen":1,"role":"Heavy melee","class":"Primary","damage_type":"Ballistic","shots":1,"damage":14,"ap":2,"aim":0,"heavy":true,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":0,"spares":0,"energy":0,"special":"","tags":{},"price":81},
+  {"id":"type01_shoulder_cannon","name":"Type-01 Shoulder Cannon","gen":1,"role":"Artillery","class":"Primary","damage_type":"Explosive","shots":1,"damage":13,"ap":2,"aim":0,"heavy":true,"melee":false,"min_range":2,"max_range":6,"arc":"Narrow","magazine":3,"spares":2,"energy":0,"special":"Fires only from a kneel: brace and do not move","tags":{"kneel_only":true},"price":91},
+  {"id":"type02_steel_blade","name":"Type-02 Steel Blade","gen":1,"role":"Melee","class":"Secondary","damage_type":"Ballistic","shots":2,"damage":8,"ap":0,"aim":0,"heavy":false,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":0,"spares":0,"energy":0,"special":"","tags":{},"price":55},
+  {"id":"type03_rocket_rack","name":"Type-03 Rocket Rack","gen":1,"role":"Support","class":"Primary","damage_type":"Explosive","shots":4,"damage":6,"ap":0,"aim":0,"heavy":false,"melee":false,"min_range":2,"max_range":6,"arc":"Front","magazine":2,"spares":1,"energy":0,"special":"","tags":{},"price":91},
+  {"id":"gsh30f_forearm_twin_cannon","name":"GSh-30F Forearm Twin Cannon","gen":1,"role":"Close support","class":"Primary","damage_type":"Ballistic","shots":4,"damage":5,"ap":1,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":3,"arc":"Narrow","magazine":3,"spares":2,"energy":0,"special":"","tags":{},"price":78},
+  {"id":"rd9_rivet_driver","name":"RD-9 Rivet Driver","gen":1,"role":"Sidearm","class":"Secondary","damage_type":"Ballistic","shots":3,"damage":6,"ap":1,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":2,"arc":"Narrow","magazine":4,"spares":2,"energy":0,"special":"Station tool","tags":{},"price":70},
+  {"id":"pt4_plasma_torch","name":"PT-4 Plasma Torch","gen":1,"role":"Melee","class":"Secondary","damage_type":"Energy","shots":2,"damage":9,"ap":2,"aim":0,"heavy":false,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":0,"spares":0,"energy":1,"special":"Powered: 1 Energy per attack. Station tool","tags":{},"price":65},
+  {"id":"m105_recoilless_rifle","name":"M105 Recoilless Rifle","gen":1,"role":"Anti-armour","class":"Primary","damage_type":"Explosive","shots":1,"damage":14,"ap":2,"aim":0,"heavy":true,"melee":false,"min_range":1,"max_range":5,"arc":"Narrow","magazine":1,"spares":5,"energy":0,"special":"Single shot: reload after every attack","tags":{},"price":102},
+  {"id":"fp1_flame_projector","name":"FP-1 Flame Projector","gen":1,"role":"Close support","class":"Primary","damage_type":"Energy","shots":4,"damage":6,"ap":1,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":2,"arc":"Front","magazine":3,"spares":1,"energy":0,"special":"Chemical fuel tanks: no Energy to fire","tags":{},"price":95},
+  {"id":"tl1_thermite_lance","name":"TL-1 Thermite Lance","gen":1,"role":"Heavy melee","class":"Primary","damage_type":"Energy","shots":1,"damage":16,"ap":2,"aim":0,"heavy":true,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":3,"spares":0,"energy":0,"special":"Thermite charge: one load per strike","tags":{},"price":79},
+  {"id":"lr3_linear_rifle","name":"LR-3 Linear Rifle","gen":2,"role":"Precision","class":"Primary","damage_type":"Energy","shots":2,"damage":8,"ap":2,"aim":1,"heavy":true,"melee":false,"min_range":2,"max_range":6,"arc":"Narrow","magazine":4,"spares":1,"energy":1,"special":"Powered: 1 Energy and a load per attack","tags":{},"price":125},
+  {"id":"agmm_wing_stores","name":"AGM-M Wing Stores","gen":2,"role":"Support","class":"Primary","damage_type":"Explosive","shots":4,"damage":7,"ap":0,"aim":0,"heavy":false,"melee":false,"min_range":2,"max_range":6,"arc":"Front","magazine":2,"spares":1,"energy":0,"special":"Proposed. Shred: on a hit, the target has 1 less Armour for the rest of the fight","tags":{"on_hit":"shred"},"price":126},
+  {"id":"hornet_missile_pod","name":"Hornet Missile Pod","gen":2,"role":"Support","class":"Primary","damage_type":"Explosive","shots":5,"damage":6,"ap":0,"aim":0,"heavy":false,"melee":false,"min_range":2,"max_range":6,"arc":"Front","magazine":2,"spares":1,"energy":0,"special":"","tags":{},"price":114},
+  {"id":"ar40_longhorn_rifle","name":"AR-40 Longhorn Rifle","gen":2,"role":"Rifle","class":"Primary","damage_type":"Ballistic","shots":3,"damage":6,"ap":1,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":6,"arc":"Front","magazine":4,"spares":2,"energy":0,"special":"","tags":{},"price":106},
+  {"id":"type07_drum_rifle","name":"Type-07 Drum Rifle","gen":2,"role":"Rifle","class":"Primary","damage_type":"Ballistic","shots":4,"damage":6,"ap":1,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":4,"arc":"Front","magazine":5,"spares":1,"energy":0,"special":"","tags":{},"price":123},
+  {"id":"type09_long_cannon","name":"Type-09 Long Cannon","gen":2,"role":"Artillery","class":"Primary","damage_type":"Explosive","shots":1,"damage":13,"ap":3,"aim":0,"heavy":true,"melee":false,"min_range":2,"max_range":7,"arc":"Narrow","magazine":3,"spares":2,"energy":0,"special":"Proposed. Stagger: on a hit, the target has 1 less Move next round and cannot earn the full-Move reroll. A bracing target ignores this on its Brace target","tags":{"on_hit":"stagger"},"price":129},
+  {"id":"gradm_rocket_battery","name":"Grad-M Rocket Battery","gen":2,"role":"Support","class":"Primary","damage_type":"Explosive","shots":7,"damage":5,"ap":0,"aim":0,"heavy":false,"melee":false,"min_range":2,"max_range":7,"arc":"Front","magazine":1,"spares":3,"energy":0,"special":"","tags":{},"price":119},
+  {"id":"gsh6m_rotary_cannon","name":"GSh-6M Rotary Cannon","gen":2,"role":"Close support","class":"Primary","damage_type":"Ballistic","shots":6,"damage":5,"ap":1,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":3,"arc":"Narrow","magazine":3,"spares":2,"energy":0,"special":"","tags":{},"price":117},
+  {"id":"pb4_stake_driver","name":"PB-4 Stake Driver","gen":2,"role":"Heavy melee","class":"Primary","damage_type":"Ballistic","shots":1,"damage":19,"ap":3,"aim":0,"heavy":true,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":3,"spares":1,"energy":0,"special":"Cartridge: one load per strike","tags":{},"price":108},
+  {"id":"molot_hydraulic_ram","name":"Molot Hydraulic Ram","gen":2,"role":"Heavy melee","class":"Primary","damage_type":"Ballistic","shots":2,"damage":10,"ap":2,"aim":0,"heavy":true,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":0,"spares":0,"energy":0,"special":"","tags":{},"price":111},
+  {"id":"vb2_vibro_knife","name":"VB-2 Vibro Knife","gen":2,"role":"Melee","class":"Secondary","damage_type":"Energy","shots":3,"damage":8,"ap":1,"aim":0,"heavy":false,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":0,"spares":0,"energy":1,"special":"","tags":{},"price":77},
+  {"id":"type11_dao_blade","name":"Type-11 Dao Blade","gen":2,"role":"Melee","class":"Secondary","damage_type":"Energy","shots":2,"damage":11,"ap":1,"aim":0,"heavy":false,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":0,"spares":0,"energy":1,"special":"Powered: 1 Energy per attack","tags":{},"price":76},
+  {"id":"hands","name":"Hands","gen":1,"role":"Hands","class":"Fixed","damage_type":"Ballistic","shots":2,"damage":4,"ap":0,"aim":0,"heavy":false,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":0,"spares":0,"energy":0,"special":"Large frames 2 × 5, Small 2 × 3","tags":{"hands_by_size":true},"price":14},
+  {"id":"125mm_tank_gun","name":"125mm Tank Gun","gen":2,"role":"Artillery","class":"Primary","damage_type":"Explosive","shots":1,"damage":11,"ap":3,"aim":0,"heavy":true,"melee":false,"min_range":1,"max_range":6,"arc":"All","magazine":3,"spares":2,"energy":0,"special":"Turret","tags":{},"price":130},
+  {"id":"coaxial_machine_gun","name":"Coaxial Machine Gun","gen":2,"role":"Sidearm","class":"Secondary","damage_type":"Ballistic","shots":4,"damage":5,"ap":0,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":3,"arc":"All","magazine":6,"spares":1,"energy":0,"special":"Turret","tags":{},"price":73},
+  {"id":"nose_autocannon","name":"Nose Autocannon","gen":2,"role":"Close support","class":"Primary","damage_type":"Ballistic","shots":5,"damage":6,"ap":1,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":4,"arc":"Narrow","magazine":4,"spares":0,"energy":0,"special":"","tags":{},"price":118},
+  {"id":"guided_missiles","name":"Guided Missiles","gen":2,"role":"Anti-armour","class":"Primary","damage_type":"Explosive","shots":2,"damage":9,"ap":1,"aim":1,"heavy":false,"melee":false,"min_range":2,"max_range":6,"arc":"Front","magazine":2,"spares":0,"energy":0,"special":"","tags":{},"price":106},
+  {"id":"g35_telescoped_rifle","name":"G35 Telescoped Rifle","gen":2,"role":"Rifle","class":"Primary","damage_type":"Explosive","shots":4,"damage":5,"ap":1,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":5,"arc":"Front","magazine":4,"spares":2,"energy":0,"special":"Airburst: ignores 1 cover","tags":{"ignore_cover":1},"price":114},
+  {"id":"typel_coil_carbine","name":"Type-L Coil Carbine","gen":2,"role":"Rifle","class":"Primary","damage_type":"Energy","shots":4,"damage":6,"ap":1,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":5,"arc":"Front","magazine":5,"spares":2,"energy":1,"special":"Powered: 1 Energy per attack","tags":{},"price":113},
+  {"id":"lanzehl_heat_lance","name":"Lanze-HL HEAT Lance","gen":2,"role":"Heavy melee","class":"Primary","damage_type":"Explosive","shots":1,"damage":18,"ap":3,"aim":0,"heavy":true,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":3,"spares":0,"energy":0,"special":"Reaches 1 hex further than other melee. Cartridge: one load per strike","tags":{"reach":2},"price":108},
+  {"id":"type08_carbon_blade","name":"Type-08 Carbon Blade","gen":2,"role":"Melee","class":"Secondary","damage_type":"Ballistic","shots":3,"damage":7,"ap":1,"aim":0,"heavy":false,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":0,"spares":0,"energy":0,"special":"","tags":{},"price":81},
+  {"id":"hf1_sonic_blade","name":"HF-1 Sonic Blade","gen":2,"role":"Melee","class":"Secondary","damage_type":"Energy","shots":3,"damage":8,"ap":1,"aim":0,"heavy":false,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":0,"spares":0,"energy":1,"special":"Powered: 1 Energy per attack","tags":{},"price":77},
+  {"id":"th2_tether_harpoon","name":"TH-2 Tether Harpoon","gen":2,"role":"Sidearm","class":"Secondary","damage_type":"Ballistic","shots":1,"damage":5,"ap":0,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":4,"arc":"Front","magazine":2,"spares":1,"energy":0,"special":"On a hit the target cannot move next round","tags":{"on_hit":"tether"},"price":79},
+  {"id":"type01q_refurbished_cannon","name":"Type-01Q Refurbished Cannon","gen":2,"role":"Artillery","class":"Primary","damage_type":"Explosive","shots":1,"damage":13,"ap":2,"aim":0,"heavy":true,"melee":false,"min_range":2,"max_range":6,"arc":"Narrow","magazine":3,"spares":2,"energy":0,"special":"Type-01 rebuilt to fire on the move","tags":{},"price":104},
+  {"id":"hornetq_hybrid_pod","name":"Hornet-Q Hybrid Pod","gen":2,"role":"Support","class":"Primary","damage_type":"Explosive","shots":5,"damage":6,"ap":0,"aim":0,"heavy":false,"melee":false,"min_range":2,"max_range":6,"arc":"Front","magazine":2,"spares":1,"energy":0,"special":"Takes US or Eurasian rounds","tags":{},"price":114},
+  {"id":"m140_rocket_bazooka","name":"M140 Rocket Bazooka","gen":2,"role":"Anti-armour","class":"Primary","damage_type":"Explosive","shots":1,"damage":15,"ap":3,"aim":0,"heavy":true,"melee":false,"min_range":1,"max_range":5,"arc":"Narrow","magazine":5,"spares":1,"energy":0,"special":"","tags":{},"price":127},
+  {"id":"gr2_guided_rifle","name":"GR-2 Guided Rifle","gen":2,"role":"Precision","class":"Primary","damage_type":"Ballistic","shots":2,"damage":7,"ap":1,"aim":2,"heavy":false,"melee":false,"min_range":1,"max_range":6,"arc":"Front","magazine":4,"spares":1,"energy":0,"special":"Proposed. Rare: guided rounds, issued only when the GM allows. Aim 2 is above the Gen 2 limit of 1","tags":{"gm_issue":true},"price":123},
+  {"id":"ac2_arc_projector","name":"AC-2 Arc Projector","gen":2,"role":"Close support","class":"Primary","damage_type":"Energy","shots":3,"damage":8,"ap":2,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":3,"arc":"Front","magazine":0,"spares":0,"energy":1,"special":"Powered: 1 Energy per attack. Proposed. Dazzle: on a hit, the target makes no lock rolls next round","tags":{"on_hit":"dazzle"},"price":129},
+  {"id":"qr30_composite_rifle","name":"QR-30 Composite Rifle","gen":3,"role":"Rifle","class":"Primary","damage_type":"Ballistic","shots":4,"damage":6,"ap":1,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":5,"arc":"Front","magazine":4,"spares":2,"energy":0,"special":"","tags":{},"price":132},
+  {"id":"type12_rail_rifle","name":"Type-12 Rail Rifle","gen":3,"role":"Precision","class":"Primary","damage_type":"Energy","shots":2,"damage":10,"ap":2,"aim":1,"heavy":true,"melee":false,"min_range":2,"max_range":6,"arc":"Narrow","magazine":3,"spares":1,"energy":1,"special":"Powered: 1 Energy per attack","tags":{},"price":151},
+  {"id":"spiegel_coilgun","name":"Spiegel Coilgun","gen":3,"role":"Precision","class":"Primary","damage_type":"Energy","shots":1,"damage":17,"ap":4,"aim":1,"heavy":true,"melee":false,"min_range":3,"max_range":9,"arc":"Narrow","magazine":3,"spares":1,"energy":2,"special":"Powered: 2 Energy per attack","tags":{},"price":150},
+  {"id":"2am_molot_autoloading_cannon","name":"2A-M Molot Autoloading Cannon","gen":3,"role":"Artillery","class":"Primary","damage_type":"Explosive","shots":2,"damage":10,"ap":2,"aim":0,"heavy":true,"melee":false,"min_range":1,"max_range":6,"arc":"Narrow","magazine":2,"spares":2,"energy":0,"special":"","tags":{},"price":151},
+  {"id":"fenrir_homeonjam_missiles","name":"Fenrir Home-on-Jam Missiles","gen":3,"role":"Anti-armour","class":"Primary","damage_type":"Explosive","shots":2,"damage":10,"ap":2,"aim":0,"heavy":false,"melee":false,"min_range":2,"max_range":7,"arc":"Front","magazine":2,"spares":1,"energy":0,"special":"+2 to hit a unit that used a Protocol this round","tags":{"vs_protocol_user":2},"price":135},
+  {"id":"rd12_spike_driver","name":"RD-12 Spike Driver","gen":3,"role":"Close support","class":"Primary","damage_type":"Ballistic","shots":4,"damage":7,"ap":2,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":3,"arc":"Narrow","magazine":3,"spares":2,"energy":0,"special":"","tags":{},"price":149},
+  {"id":"mw3_microwave_emitter","name":"MW-3 Microwave Emitter","gen":3,"role":"Close support","class":"Primary","damage_type":"Energy","shots":3,"damage":9,"ap":1,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":4,"arc":"Front","magazine":0,"spares":0,"energy":1,"special":"Powered: 1 Energy per attack","tags":{},"price":138},
+  {"id":"pj3_plasma_projector","name":"PJ-3 Plasma Projector","gen":3,"role":"Anti-armour","class":"Primary","damage_type":"Energy","shots":2,"damage":10,"ap":3,"aim":0,"heavy":true,"melee":false,"min_range":1,"max_range":4,"arc":"Front","magazine":3,"spares":2,"energy":1,"special":"Powered: 1 Energy and a load per attack","tags":{},"price":156},
+  {"id":"ar40e_electrothermal_rifle","name":"AR-40E Electrothermal Rifle","gen":4,"role":"Rifle","class":"Primary","damage_type":"Energy","shots":3,"damage":8,"ap":2,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":6,"arc":"Front","magazine":4,"spares":1,"energy":1,"special":"Powered: 1 Energy per attack","tags":{},"price":160},
+  {"id":"lcr1_lunar_coil_rifle","name":"LCR-1 Lunar Coil Rifle","gen":4,"role":"Rifle","class":"Primary","damage_type":"Energy","shots":4,"damage":7,"ap":2,"aim":0,"heavy":false,"melee":false,"min_range":1,"max_range":5,"arc":"Front","magazine":5,"spares":2,"energy":1,"special":"Powered: 1 Energy per attack","tags":{},"price":172},
+  {"id":"bx0_beam_rifle","name":"BX-0 Beam Rifle","gen":4,"role":"Precision","class":"Primary","damage_type":"Energy","shots":2,"damage":10,"ap":4,"aim":1,"heavy":true,"melee":false,"min_range":2,"max_range":8,"arc":"Narrow","magazine":0,"spares":0,"energy":2,"special":"After two attacks it cools down for two rounds","tags":{"cooldown":2},"price":172},
+  {"id":"lama_ardente_plasma_blade","name":"Lama Ardente Plasma Blade","gen":4,"role":"Heavy melee","class":"Primary","damage_type":"Energy","shots":3,"damage":14,"ap":3,"aim":0,"heavy":true,"melee":true,"min_range":1,"max_range":1,"arc":"Narrow","magazine":2,"spares":0,"energy":2,"special":"Two attacks per mission","tags":{},"price":158},
+  {"id":"kalibr305_siege_mortar","name":"Kalibr-305 Siege Mortar","gen":4,"role":"Artillery","class":"Primary","damage_type":"Explosive","shots":1,"damage":20,"ap":4,"aim":0,"heavy":true,"melee":false,"min_range":4,"max_range":12,"arc":"Narrow","magazine":1,"spares":4,"energy":0,"special":"Indirect with a spotter; fires only after anchoring (no move that round)","tags":{"anchor":true,"indirect":true},"price":176},
+  {"id":"iskra_particle_cannon","name":"Iskra Particle Cannon","gen":4,"role":"Artillery","class":"Primary","damage_type":"Energy","shots":1,"damage":24,"ap":5,"aim":0,"heavy":true,"melee":false,"min_range":2,"max_range":10,"arc":"Narrow","magazine":0,"spares":0,"energy":3,"special":"Needs the MTU-7 generator truck within 3; fires only after anchoring","tags":{"anchor":true,"needs_generator":true},"price":176}
+ ],
+ "foot_weapons": [
+  {"id":"hands","name":"Hands","shots":1,"damage":1,"ap":0,"aim":0,"heavy":false,"melee":true,"min_range":"Reach","max_range":"Reach","magazine":0,"spares":0,"special":"","tags":{}},
+  {"id":"knife","name":"Knife","shots":2,"damage":2,"ap":0,"aim":0,"heavy":false,"melee":true,"min_range":"Reach","max_range":"Reach","magazine":0,"spares":0,"special":"","tags":{}},
+  {"id":"heavy_tool","name":"Heavy tool","shots":1,"damage":4,"ap":0,"aim":0,"heavy":true,"melee":true,"min_range":"Reach","max_range":"Reach","magazine":0,"spares":0,"special":"","tags":{}},
+  {"id":"stun_baton","name":"Stun baton","shots":1,"damage":0,"ap":0,"aim":0,"heavy":false,"melee":true,"min_range":"Reach","max_range":"Reach","magazine":0,"spares":0,"special":"Stun: rolls against Brace instead of Reflex and deals no damage. A hit costs the target their next turn.","tags":{"stun":true}},
+  {"id":"sidearm","name":"Sidearm","shots":1,"damage":3,"ap":0,"aim":0,"heavy":false,"melee":false,"min_range":"Reach","max_range":"Near","magazine":4,"spares":1,"special":"","tags":{}},
+  {"id":"smg","name":"SMG","shots":3,"damage":2,"ap":0,"aim":0,"heavy":false,"melee":false,"min_range":"Reach","max_range":"Close","magazine":3,"spares":2,"special":"","tags":{}},
+  {"id":"shotgun","name":"Shotgun","shots":1,"damage":5,"ap":0,"aim":1,"heavy":true,"melee":false,"min_range":"Reach","max_range":"Close","magazine":3,"spares":2,"special":"","tags":{}},
+  {"id":"carbine","name":"Carbine","shots":2,"damage":2,"ap":1,"aim":0,"heavy":false,"melee":false,"min_range":"Close","max_range":"Far","magazine":4,"spares":2,"special":"","tags":{}},
+  {"id":"marksman_rifle","name":"Marksman rifle","shots":1,"damage":4,"ap":1,"aim":0,"heavy":true,"melee":false,"min_range":"Near","max_range":"Far","magazine":3,"spares":1,"special":"Steady: give up your move to roll on Precision instead of Gunnery.","tags":{"steady":true}}
+ ],
+ "protocols": [
+  {"id":"sensor_link","name":"Sensor Link","type":"Buff","difficulty":"Easy","modifier":2,"energy":1,"range":6,"radius":0,"duration":1,"channelled":false,"effect":"Ally +1 Gunnery","tags":{"target":"ally","stat":"gunnery+1"}},
+  {"id":"ghost_return","name":"Ghost Return","type":"Buff","difficulty":"Standard","modifier":0,"energy":1,"range":0,"radius":0,"duration":1,"channelled":false,"effect":"#ERROR!","tags":{"target":"self","stat":"reflex+1"}},
+  {"id":"ammo_relay","name":"Ammo Relay","type":"Buff","difficulty":"Easy","modifier":2,"energy":1,"range":4,"radius":0,"duration":0,"channelled":false,"effect":"Ally reloads one weapon from its spares without using its action","tags":{"target":"ally","reload":true}},
+  {"id":"target_painter","name":"Target Painter","type":"Debuff","difficulty":"Standard","modifier":0,"energy":1,"range":8,"radius":0,"duration":2,"channelled":false,"effect":"−1 Reflex","tags":{"target":"enemy","stat":"reflex-1"}},
+  {"id":"jam","name":"Jam","type":"Debuff","difficulty":"Standard","modifier":0,"energy":1,"range":8,"radius":0,"duration":1,"channelled":false,"effect":"No lock rolls","tags":{"target":"enemy","no_lock":true}},
+  {"id":"feed_jam","name":"Feed Jam","type":"Debuff","difficulty":"Standard","modifier":0,"energy":1,"range":6,"radius":0,"duration":1,"channelled":false,"effect":"Target cannot reload","tags":{"target":"enemy","no_reload":true}},
+  {"id":"power_siphon","name":"Power Siphon","type":"Debuff","difficulty":"Hard","modifier":-2,"energy":2,"range":6,"radius":0,"duration":0,"channelled":false,"effect":"Target −2 Energy; you +1","tags":{"target":"enemy","energy":-2,"self_energy":1}},
+  {"id":"actuator_lockout","name":"Actuator Lockout","type":"Debuff","difficulty":"Very hard","modifier":-4,"energy":3,"range":6,"radius":0,"duration":1,"channelled":false,"effect":"−1 Move and no advanced manoeuvres","tags":{"target":"enemy","stat":"move-1","no_advanced":true}},
+  {"id":"overload_spike","name":"Overload Spike","type":"Damage","difficulty":"Hard","modifier":-2,"energy":2,"range":6,"radius":0,"duration":0,"channelled":true,"effect":"6 damage, ignores Armour, never crits","tags":{"target":"enemy","damage":6}},
+  {"id":"cascade_burst","name":"Cascade Burst","type":"Damage","difficulty":"Very hard","modifier":-4,"energy":3,"range":6,"radius":2,"duration":0,"channelled":true,"effect":"4 damage to each enemy in radius, ignores Armour, never crits","tags":{"target":"enemies_in_radius","damage":4}},
+  {"id":"purge","name":"Purge","type":"Dispel","difficulty":"Standard","modifier":0,"energy":1,"range":6,"radius":0,"duration":0,"channelled":false,"effect":"Removes one effect. Rolls 5 + Countermeasures − effect strength + difficulty; succeeds or fails only","tags":{"target":"any","dispel":true}}
+ ]
 };
+/* CATALOGUE:END */
+// The page's tables below are built from CATALOGUE. Page-only data stays here: the weapon sizes for the Add unit
+// tab, frame lore, manoeuvre lists by movement type, art, pilots, squads, presets and terrain.
+const ARC_DEG = { Narrow: 90, Front: 120, Half: 180, All: 360 };
+const lc = s => String(s).toLowerCase().replace(/[ -]/g, '_');
+// Weapons: shots × damage, armour piercing, aim, heavy, melee, range in hexes, arc, magazine, spares, Energy and Special
+// are the sheet's. `size` is the sandbox's own carry rule for the Add unit tab (the sheet has no weapon size): a frame
+// carries weapons of its size or smaller, plus its standard loadout. Weapons not listed here are medium.
+const WEAPON_SIZE = {
+  vb2_vibro_knife: 'small', coaxial_machine_gun: 'small', nose_autocannon: 'small', guided_missiles: 'small', m2_kit_atgm_tubes: 'small',
+  rd9_rivet_driver: 'small', pt4_plasma_torch: 'small',
+  gradm_rocket_battery: 'large', molot_hydraulic_ram: 'large', type09_long_cannon: 'large', '125mm_tank_gun': 'large', type01_shoulder_cannon: 'large',
+  '2am_molot_autoloading_cannon': 'large', kalibr305_siege_mortar: 'large', iskra_particle_cannon: 'large',
+};
+// The sheet's one Hands row (tag hands_by_size) gives Medium frames 2 × 4; Large and super-heavy frames get 2 × 5 and
+// Small frames 2 × 3, as its Special says. They are fitted automatically (`builtin`).
+const HANDS_BY_SIZE = { small: ['hands_small', 3], large: ['hands_large', 5] };
 const W = {};
-for (const [id, w] of Object.entries(W0)) W[id] = Object.assign({ ap: 0, aim: 0, energy: 0, rmin: 0, rmax: 0, mag: 0, spares: 0, heavy: false, melee: false, special: '', old: false }, w);
+for (const c of CATALOGUE.weapons) {
+  const t = c.tags || {};
+  const w = { name: c.name, type: lc(c.damage_type), shots: c.shots, dmg: c.damage, ap: c.ap, aim: c.aim, heavy: c.heavy, melee: c.melee,
+    rmin: c.melee ? 0 : c.min_range, rmax: c.melee ? 0 : c.max_range, arc: ARC_DEG[c.arc], mag: c.magazine, spares: c.spares, energy: c.energy,
+    size: WEAPON_SIZE[c.id] || 'medium', special: c.special || '', gen: c.gen, tags: t };
+  if (t.kneel_only) Object.assign(w, { still: true, kneel: true });
+  if (t.on_hit) w.onHit = t.on_hit;
+  if (t.hands_by_size) {
+    W[c.id] = Object.assign(w, { name: 'Hands', size: 'medium', special: '', builtin: true });
+    for (const [size, [id, dmg]] of Object.entries(HANDS_BY_SIZE)) W[id] = Object.assign({}, w, { dmg, size });
+  } else W[c.id] = w;
+}
 
 // Frames: Structure, Armour and type, Move (hexes), Energy, Recharge, hardware and thresholds for the six frame
 // stats, and Brace [hardware, threshold], all from the sheet's Frames tab. Order of the six:
@@ -292,84 +423,77 @@ const SIX = ['gunnery', 'melee', 'precision', 'reflex', 'systems', 'countermeasu
 const six = a => Object.fromEntries(SIX.map((s, i) => [s, a[i]]));
 const sf = (name, gen, size, structure, armour, armourType, move, energy, recharge, hw, th, brace, extra) =>
   Object.assign({ name, gen, type: 'ground', size, structure, armour, armourType, move, energy, recharge, hw: six(hw), th: six(th), brace,
-    bands: [0], manos: ['ground', 'charge'], melee: size === 'large' || size === 'super_heavy' ? 'hands_large' : size === 'small' ? 'hands_small' : 'hands_medium', protos: [] }, extra || {});
+    bands: [0], manos: ['ground', 'charge'], melee: size === 'large' || size === 'super_heavy' ? 'hands_large' : size === 'small' ? 'hands_small' : 'hands', protos: [] }, extra || {});
+// Manoeuvres by the sheet's movement type: Ground and Zero-g frames walk, Variable frames fly vector manoeuvres at
+// GROUND and LOW (HIGH too with flies_high), Aircraft fly aircraft paths at LOW and HIGH.
 const VECTOR = ['ground', 'charge', 'cruise', 'combat_turn', 'brake', 'lateral', 'reverse'];
-const F = {
-  hx7_kestrel: sf('HX-7 Kestrel', 2, 'medium', 50, 1, 'energy', 4, 4, 2, [0, 0, 0, 1, 1, 0], [9, 7, 8, 9, 8, 7], [0, 7], {
-    type: 'flying', bands: [0, 1], manos: VECTOR, loadout: ['lr3_rifle', 'agm_stores', 'vb2_knife'], protos: ['sensor_link', 'target_painter'],
-    lore: 'Halcyon · 36 t. America’s signature frame: the Merlin’s flight mode on a real ground frame.', special: 'Protocols: Sensor Link, Target Painter. Needs a swap pit between missions.' }),
-  m9_teamster: sf('M9 Teamster', 2, 'medium', 72, 2, 'explosive', 3, 3, 1, [0, 1, 0, 0, 0, 0], [8, 9, 8, 7, 8, 8], [2, 9], {
-    silent: true, loadout: ['ar40_rifle', 'm140_bazooka', 'pb4_stake'],
-    lore: 'Brannock-Hale · 63 t. The US Army’s workhorse, rebuilt from the Garrison for fire teams.', special: 'Quiet running: it cannot be targeted beyond 6 hexes until it attacks.' }),
-  ob12_medved: sf('OB-12 Medved', 2, 'large', 80, 3, 'ballistic', 2, 3, 1, [0, 0, 0, 0, 0, 0], [9, 8, 8, 7, 7, 9], [2, 9], {
-    loadout: ['grad_m', 'gsh6m_rotary', 'molot_ram'], protos: ['purge'], field: 2,
-    lore: 'Kirov-Mikoyan OKB-7 · 96 t. A bigger Tieshan with built-in guns.', special: 'Protocol: Purge. Countermeasure field, radius 2.' }),
-  type09_tieshan: sf('Type-09 Tieshan', 2, 'large', 76, 2, 'explosive', 2, 3, 1, [0, 0, 1, 0, 1, 0], [9, 8, 9, 7, 8, 7], [2, 9], {
-    loadout: ['type09_cannon', 'type07_rifle', 'type11_dao'], protos: ['jam', 'power_siphon'],
-    lore: 'Tianlong · 68 t. “Iron Mountain”, the most-built mech in the world.', special: 'Protocols: Jam, Power Siphon. Multi-fuel.' }),
-  type99_tank: sf('Type-99 Tank', 0, 'large', 24, 3, 'ballistic', 3, 2, 1, [0, 0, 0, 0, 0, 0], [9, 5, 8, 7, 8, 8], [2, 9], {
-    manos: ['ground'], melee: null, loadout: ['type99_gun', 'type99_mg'], lore: 'Conventional armour support.', special: 'Ground Move only.' }),
-  fighter: sf('F-12 Peregrine', 0, 'small', 14, 0, 'none', 5, 2, 1, [0, 0, 0, 1, 0, 0], [8, 5, 8, 9, 8, 8], [0, 7], {
-    type: 'aircraft', bands: [1, 2], manos: ['straight4', 'straight5', 'bank_l', 'bank_r', 'hard_l', 'hard_r', 'highg_l', 'highg_r'], melee: null,
-    loadout: ['autocannon', 'missiles'], lore: 'Conventional air support.', special: 'Flies aircraft paths at LOW and HIGH; carries no spare magazines.' }),
-  // Gen 1: no Systems or Countermeasures hardware and no Protocols. Pilots lock and resist with their own stat, up to 7.
-  hx4_merlin: sf('HX-4 Merlin', 1, 'medium', 42, 1, 'energy', 4, 3, 1, [0, 0, 0, 1, 0, 0], [8, 6, 7, 8, 7, 7], [0, 6], {
-    type: 'flying', bands: [0, 1], manos: VECTOR, transformLock: true, loadout: ['lr1_rifle'],
-    lore: 'Halcyon · 39 t. The first frame that could fold into a flight mode, and the slowest to do it.', special: 'Transforming takes a full round: it cannot attack in a round it changes band.' }),
-  hx2_sparrowhawk: sf('HX-2 Sparrowhawk', 1, 'medium', 52, 1, 'ballistic', 3, 3, 1, [0, 0, 0, 1, 0, 0], [7, 6, 7, 8, 7, 7], [0, 6], {
-    loadout: ['m105_recoilless', 'm2_atgm'],
-    lore: 'Halcyon · 44 t. A licensed Garrison, its armour pared back until a tiltrotor could carry it.', special: 'Air-droppable from a tiltrotor.' }),
-  m4_garrison: sf('M4 Garrison', 1, 'medium', 68, 2, 'ballistic', 2, 2, 1, [0, 0, 0, 0, 0, 0], [7, 7, 7, 6, 7, 7], [1, 8], {
-    loadout: ['m30_cannon', 'pb1_bunker'],
-    lore: 'Brannock-Hale · 61 t. A construction walker’s legs under a tank’s armour. Slow, loud and very hard to kill.' }),
-  vk1_ecuyer: sf('VK-1 Écuyer', 1, 'medium', 56, 2, 'ballistic', 2, 3, 1, [0, 0, 1, 0, 0, 0], [7, 7, 8, 6, 7, 7], [1, 8], {
-    silent: true, loadout: ['m30_cannon', 'tl1_lance'],
-    lore: 'Vauclair-Ehrlich · 59 t. A licence-built Garrison with a VEK sensor head and a submarine fuel cell.', special: 'Silent running: it cannot be targeted beyond 6 hexes until it attacks.' }),
-  vk1b_blitz: sf('VK-1B Écuyer Blitz', 1, 'medium', 48, 1, 'ballistic', 3, 3, 1, [0, 0, 1, 1, 0, 0], [7, 6, 8, 8, 7, 7], [0, 6], {
-    silent: true, loadout: ['m30_cannon', 'm2_atgm'],
-    lore: 'Ehrlich works, Kassel · about 50 t. The German contingent’s cavalry refit of the Écuyer, run in pairs ahead of the tank columns.', special: 'A refit of the Écuyer. Silent running: it cannot be targeted beyond 6 hexes until it attacks.' }),
-  bd2_tundra: sf('BD-2 Tundra', 1, 'medium', 66, 2, 'ballistic', 2, 2, 1, [0, 0, 0, 0, 0, 0], [7, 7, 7, 6, 7, 7], [1, 8], {
-    loadout: ['m105_recoilless'],
-    lore: 'Boreal Dynamics · 64 t. Canada’s licensed Garrison, winterised.', special: 'Arctic: ignores snow and ice terrain penalties.' }),
-  type01_tieniu: sf('Type-01 Tieniu', 1, 'large', 70, 2, 'explosive', 2, 2, 1, [0, 0, 0, 0, 0, 0], [8, 7, 6, 6, 7, 7], [1, 8], {
-    loadout: ['type01_cannon', 'type03_rack'],
-    lore: 'Tianlong · 72 t. “Iron Ox”: an excavator drive in an egg-shaped torso.', special: 'The shoulder cannon fires only from a kneel: the Tieniu must Brace and not move that round.' }),
-  mr1_kizuna: sf('MR-1 Kizuna', 1, 'small', 36, 0, 'none', 3, 3, 1, [0, 0, 1, 1, 0, 0], [7, 6, 8, 8, 7, 7], [0, 6], {
-    loadout: [],
-    lore: 'Mitsurugi · 30 t. An unarmed rescue frame, built for earthquakes and tsunamis.', special: 'Unarmed rescue frame: +2 on any task check that uses its hands.' }),
-  technical_refit: sf('Technical Refit', 1, 'medium', 58, 2, 'ballistic', 2, 2, 1, [0, 0, 0, 0, 0, 0], [7, 7, 7, 6, 7, 7], [1, 8], {
-    jamRisk: true, loadout: ['fp1_flamer'],
-    lore: 'League workshops · around 60 t. Surplus Garrisons and Tieniu rebuilt from whatever was on the shelf.', special: 'Either FP-1, M30 or Type-01 Shoulder Cannon. Built from what is to hand: d10 at mission start, on a 1 one weapon is jammed until repaired.' }),
-  ob4_korsak: sf('OB-4 Korsak', 1, 'medium', 42, 1, 'ballistic', 4, 2, 1, [0, 0, 0, 1, 0, 0], [7, 7, 6, 8, 7, 7], [0, 6], {
-    loadout: ['gsh30f_cannon', 'type03_rack'],
-    lore: 'Kirov-Mikoyan OKB-7 · 41 t. An airborne raider on interceptor landing gear, and the Volk’s ancestor.', special: 'Airborne drop; Limits off: 1 Will for +1 Reflex this round. Neither is automated here yet.' }),
-  aw3_lifter: sf('AW-3 Lifter', 1, 'small', 30, 1, 'ballistic', 3, 3, 1, [0, 0, 0, 1, 0, 0], [6, 8, 7, 7, 7, 7], [0, 6], {
-    type: 'flying', bands: [0, 1], manos: ['ground', 'cruise', 'brake', 'lateral', 'reverse'], melee: null, loadout: ['rd9_driver', 'pt4_torch'],
-    lore: 'Ascension Works · 22 t. The four-armed station worker frame the workers armed.', special: 'Space only (the map stands in for a station hull here). Four arms: one tool attack and a grapple or hold in the same round.' }),
+const AIR_MANOS = ['straight4', 'straight5', 'bank_l', 'bank_r', 'hard_l', 'hard_r', 'highg_l', 'highg_r'];
+const FRAME_LORE = {
+  hx7_kestrel: 'Halcyon · 36 t. America’s signature frame: the Merlin’s flight mode on a real ground frame.',
+  m9_teamster: 'Brannock-Hale · 63 t. The US Army’s workhorse, rebuilt from the Garrison for fire teams.',
+  ob12_medved: 'Kirov-Mikoyan OKB-7 · 96 t. A bigger Tieshan with built-in guns.',
+  type09_tieshan: 'Tianlong · 68 t. “Iron Mountain”, the most-built mech in the world.',
+  type99_tank: 'Conventional armour support.',
+  f12_peregrine: 'Conventional air support.',
+  hx4_merlin: 'Halcyon · 39 t. The first frame that could fold into a flight mode, and the slowest to do it.',
+  hx2_sparrowhawk: 'Halcyon · 44 t. A licensed Garrison, its armour pared back until a tiltrotor could carry it.',
+  m4_garrison: 'Brannock-Hale · 61 t. A construction walker’s legs under a tank’s armour. Slow, loud and very hard to kill.',
+  vk1_ecuyer: 'Vauclair-Ehrlich · 59 t. A licence-built Garrison with a VEK sensor head and a submarine fuel cell.',
+  vk1b_ecuyer_blitz: 'Ehrlich works, Kassel · about 50 t. The German contingent’s cavalry refit of the Écuyer, run in pairs ahead of the tank columns.',
+  bd2_tundra: 'Boreal Dynamics · 64 t. Canada’s licensed Garrison, winterised.',
+  type01_tieniu: 'Tianlong · 72 t. “Iron Ox”: an excavator drive in an egg-shaped torso.',
+  mr1_kizuna: 'Mitsurugi · 30 t. An unarmed rescue frame, built for earthquakes and tsunamis.',
+  technical_refit: 'League workshops · around 60 t. Surplus Garrisons and Tieniu rebuilt from whatever was on the shelf.',
+  ob4_korsak: 'Kirov-Mikoyan OKB-7 · 41 t. An airborne raider on interceptor landing gear, and the Volk’s ancestor.',
+  aw3_lifter: 'Ascension Works · 22 t. The four-armed station worker frame the workers armed.',
 };
-const FACTIONS = [
-  { id: 'us', name: 'United States', frames: ['hx4_merlin', 'hx2_sparrowhawk'] },
-  { id: 'cu', name: 'Continental Union', frames: ['vk1_ecuyer', 'vk1b_blitz'] },
-  { id: 'ca', name: 'Canada', frames: ['bd2_tundra'] },
-  { id: 'ep', name: 'Eurasian Pact', frames: ['type01_tieniu', 'ob4_korsak'] },
-  { id: 'jp', name: 'Japan', frames: ['mr1_kizuna'] },
-  { id: 'pal', name: 'Pan-African League', frames: ['technical_refit'] },
-  { id: 'orb', name: 'Station militias', frames: ['aw3_lifter'] },
-];
-for (const fa of FACTIONS) fa.frames.unshift('m4_garrison');
+// The sheet's short bloc names.
+const BLOC_NAME = { US: 'United States', Union: 'Continental Union', Pact: 'Eurasian Pact' };
+const F = {};
+for (const c of CATALOGUE.frames) {
+  const t = c.tags || {}, h = c.hardware, lim = c.limits;
+  const air = c.movement === 'Aircraft' || !!t.aircraft, flying = c.movement === 'Variable';
+  F[c.id] = sf(c.name, c.gen, lc(c.size), c.structure, c.armour, lc(c.armour_type), c.move, c.energy, c.recharge,
+    SIX.map(s => h[s] || 0), SIX.map(s => lim[s]), [h.brace || 0, lim.brace], Object.assign({
+      cls: c.class, role: c.role, blocs: c.bloc.split(',').map(b => BLOC_NAME[b.trim()] || b.trim()),
+      type: air ? 'aircraft' : flying ? 'flying' : 'ground',
+      bands: air ? [1, 2] : flying ? (t.flies_high ? [0, 1, 2] : [0, 1]) : [0],
+      manos: air ? AIR_MANOS : flying ? VECTOR : t.ground_move_only || t.tank ? ['ground'] : ['ground', 'charge'],
+      // One entry per weapon: the page keys ammunition by weapon ID, so a twin mount shows once.
+      loadout: [...new Set(c.weapons)], protos: c.protocols.slice(), special: c.special, lore: FRAME_LORE[c.id] || `${c.role}.`, tags: t,
+      silent: t.stealth_range || 0, field: t.cm_field || 0, transformLock: !!t.transform_no_attack, jamRisk: !!t.jury_rigged, noSpares: air || !!t.no_spares,
+    }, air || t.no_hands ? { melee: null } : {}));
+}
+// Blocs for the Add unit list, in the sheet's order with "Any" last. A frame on several blocs is listed under each.
+const BLOC_ID = { 'United States': 'us', 'Continental Union': 'cu', 'Eurasian Pact': 'ep', Canada: 'ca', Japan: 'jp', 'Pan-African League': 'pal', Any: 'any' };
+const FACTIONS = [];
+for (const [k, f] of Object.entries(F)) for (const b of f.blocs) {
+  const id = BLOC_ID[b] || lc(b);
+  let fa = FACTIONS.find(x => x.id === id);
+  if (!fa) FACTIONS.push(fa = { id, name: b === 'Any' ? 'Any bloc' : b, frames: [] });
+  fa.frames.push(k);
+}
+FACTIONS.sort((a, b) => (a.id === 'any') - (b.id === 'any'));
 const FACTION = Object.fromEntries(FACTIONS.map(fa => [fa.id, fa]));
-// Gen 1 faction squads from the playtests, one pilot role per frame. The Pact always fields one frame
-// more than its opponent (Order 3, Conscript Wave): its fifth is a rookie in a cannon Tieniu.
-const sq = (frame, pilot, weapons, band = 0) => ({ frame, pilot, weapons, band });
+// Gen 1 faction squads from the playtests, one pilot role per frame, with the sheet's standard loadouts. The Pact
+// always fields one frame more than its opponent (Order 3, Conscript Wave): its fifth is a rookie in a Tieniu.
+const sq = (frame, pilot, weapons, band = 0) => ({ frame, pilot, weapons: (weapons || F[frame].loadout).slice(), band });
 const SQUADS = {
-  us: [sq('m4_garrison', 'anchor', ['pb1_bunker', 'm30_cannon']), sq('m4_garrison', 'bulwark', ['m30_cannon', 'm2_atgm']),
-    sq('hx2_sparrowhawk', 'rook', ['m30_cannon', 'm2_atgm']), sq('hx4_merlin', 'kestrel', ['lr1_rifle'], 1)],
-  cu: [sq('vk1_ecuyer', 'kestrel', ['m30_cannon', 'm2_atgm']), sq('vk1_ecuyer', 'anchor', ['pb1_bunker', 'm30_cannon']),
-    sq('vk1b_blitz', 'rook', ['m30_cannon', 'm2_atgm']), sq('m4_garrison', 'bulwark', ['m30_cannon', 'm2_atgm'])],
-  ep: [sq('type01_tieniu', 'kestrel', ['type01_cannon', 'type03_rack']), sq('type01_tieniu', 'anchor', ['type02_blade', 'type03_rack']),
-    sq('ob4_korsak', 'rook', ['gsh30f_cannon', 'type03_rack']), sq('m4_garrison', 'bulwark', ['m30_cannon', 'm2_atgm']),
-    sq('type01_tieniu', 'anvil', ['type01_cannon', 'type03_rack'])],
+  us: [sq('m4_garrison', 'anchor'), sq('m4_garrison', 'bulwark'), sq('hx2_sparrowhawk', 'rook'), sq('hx4_merlin', 'kestrel', null, 1)],
+  cu: [sq('vk1_ecuyer', 'kestrel'), sq('vk1_ecuyer', 'anchor'), sq('vk1b_ecuyer_blitz', 'rook'), sq('m4_garrison', 'bulwark')],
+  ep: [sq('type01_tieniu', 'kestrel'), sq('type01_tieniu', 'anchor'), sq('ob4_korsak', 'rook'), sq('m4_garrison', 'bulwark'), sq('type01_tieniu', 'anvil')],
 };
+// The same squads with the weapons they carried in the October playtests.
+const OCTOBER_SQUADS = {
+  us: [sq('m4_garrison', 'anchor', ['pb1_pile_bunker', 'm30_hand_cannon']), sq('m4_garrison', 'bulwark', ['m30_hand_cannon', 'm2_kit_atgm_tubes']),
+    sq('hx2_sparrowhawk', 'rook', ['m30_hand_cannon', 'm2_kit_atgm_tubes']), sq('hx4_merlin', 'kestrel', ['lr1_linear_rifle'], 1)],
+  cu: [sq('vk1_ecuyer', 'kestrel', ['m30_hand_cannon', 'm2_kit_atgm_tubes']), sq('vk1_ecuyer', 'anchor', ['pb1_pile_bunker', 'm30_hand_cannon']),
+    sq('vk1b_ecuyer_blitz', 'rook', ['m30_hand_cannon', 'm2_kit_atgm_tubes']), sq('m4_garrison', 'bulwark', ['m30_hand_cannon', 'm2_kit_atgm_tubes'])],
+  ep: [sq('type01_tieniu', 'kestrel', ['type01_shoulder_cannon', 'type03_rocket_rack']), sq('type01_tieniu', 'anchor', ['type02_steel_blade', 'type03_rocket_rack']),
+    sq('ob4_korsak', 'rook', ['gsh30f_forearm_twin_cannon', 'type03_rocket_rack']), sq('m4_garrison', 'bulwark', ['m30_hand_cannon', 'm2_kit_atgm_tubes']),
+    sq('type01_tieniu', 'anvil', ['type01_shoulder_cannon', 'type03_rocket_rack'])],
+};
+const SQUAD_SETS = { sheet: SQUADS, october: OCTOBER_SQUADS };
 
 const st = (g, m, p, r, s, c, b, sp) => ({ gunnery: g, melee: m, precision: p, reflex: r, systems: s, countermeasures: c, brace: b, spirit: sp });
 // Pilot stats on the 1–14 scale (old rating + 5). Every pilot has a distinct build around one role. Max Will = Spirit.
@@ -393,19 +517,17 @@ const SIZE_ADJ = { small: -1, medium: 0, large: 1, super_heavy: 2 };
 const SIZE_ORDER = ['small', 'medium', 'large', 'super_heavy'];
 const DIFF = { Easy: 2, Standard: 0, Hard: -2, 'Very hard': -4, Exceptional: -6 };
 
-const PROTOS = {
-  sensor_link: { name: 'Sensor Link', kind: 'buff', diff: 'Easy', energy: 1, range: 6, text: 'Ally +1 Gunnery, 1 round' },
-  ghost_return: { name: 'Ghost Return', kind: 'buff', diff: 'Standard', energy: 1, range: 0, self: true, text: '+1 Reflex, 1 round' },
-  ammo_relay: { name: 'Ammo Relay', kind: 'buff', diff: 'Easy', energy: 1, range: 4, text: 'Ally reloads one weapon without using its own action' },
-  target_painter: { name: 'Target Painter', kind: 'debuff', diff: 'Standard', energy: 1, range: 8, text: '−1 Reflex, 2 rounds' },
-  jam: { name: 'Jam', kind: 'debuff', diff: 'Standard', energy: 1, range: 8, text: 'No lock rolls, 1 round' },
-  feed_jam: { name: 'Feed Jam', kind: 'debuff', diff: 'Standard', energy: 1, range: 6, text: 'Cannot reload, 1 round' },
-  power_siphon: { name: 'Power Siphon', kind: 'debuff', diff: 'Hard', energy: 2, range: 6, text: 'Target −2 Energy; user +1' },
-  actuator_lockout: { name: 'Actuator Lockout', kind: 'debuff', diff: 'Very hard', energy: 3, range: 6, text: '−1 Move, no advanced manoeuvres, 1 round' },
-  overload_spike: { name: 'Overload Spike', kind: 'damage', diff: 'Hard', energy: 2, range: 6, channelled: true, text: '6 damage, ignores Armour, never halved by Brace. Channelled.' },
-  cascade_burst: { name: 'Cascade Burst', kind: 'damage', diff: 'Very hard', energy: 3, range: 6, radius: 2, channelled: true, text: '4 damage to each enemy within 2. Channelled.' },
-  purge: { name: 'Purge', kind: 'dispel', diff: 'Standard', energy: 1, range: 6, text: 'Removes one effect (rolls on Countermeasures)' },
-};
+// Protocols from the sheet's Protocols tab. The text is the sheet's Effect and duration; a broken Effect cell falls
+// back to its stat tag.
+const PROTOS = {};
+for (const c of CATALOGUE.protocols) {
+  const t = c.tags || {}, m = /^(\w+)([+-])(\d+)$/.exec(t.stat || '');
+  let text = c.effect && !c.effect.startsWith('#') ? c.effect : m ? `${m[2] === '+' ? '+' : '−'}${m[3]} ${STAT_NAME[m[1]]}` : c.name;
+  if (c.duration) text += `, ${c.duration} round${c.duration > 1 ? 's' : ''}`;
+  if (c.channelled) text += '. Channelled.';
+  PROTOS[c.id] = Object.assign({ name: c.name, kind: c.type.toLowerCase(), diff: c.difficulty, energy: c.energy, range: c.range, text, tags: t },
+    t.target === 'self' ? { self: true } : {}, c.radius ? { radius: c.radius } : {}, c.channelled ? { channelled: true } : {});
+}
 
 const MANO = {
   ground: { name: 'Ground Move', kind: 'ground', cost: 0, text: 'Up to Move hexes, any path, any facing' },
@@ -425,7 +547,7 @@ const MANO = {
   highg_r: { name: 'High-G Right 2', kind: 'air', cost: 1, seq: 'FRRFR' },
 };
 
-ART.vk1b_blitz = ART.vk1_ecuyer;
+ART.vk1b_ecuyer_blitz = ART.vk1_ecuyer;
 
 // ---------- Hex geometry: pointy-top axial [q, r]; facings 0..5 = NE, E, SE, SW, W, NW ----------
 const SQ3 = Math.sqrt(3);
@@ -518,6 +640,9 @@ const PRESETS = {
   g1_us_ep: { name: 'Gen 1: United States v Eurasian Pact', squads: ['us', 'ep'] },
   g1_cu_ep: { name: 'Gen 1: Continental Union v Eurasian Pact', squads: ['cu', 'ep'] },
   g1_us_cu: { name: 'Gen 1: United States v Continental Union', squads: ['us', 'cu'] },
+  oct_us_ep: { name: 'October playtest loadouts: United States v Eurasian Pact', squads: ['us', 'ep'], set: 'october' },
+  oct_cu_ep: { name: 'October playtest loadouts: Continental Union v Eurasian Pact', squads: ['cu', 'ep'], set: 'october' },
+  oct_us_cu: { name: 'October playtest loadouts: United States v Continental Union', squads: ['us', 'cu'], set: 'october' },
 };
 // Every Gen 1 frame, Western licence-builds on Blue and the rest on Red, 8 hexes apart.
 const GEN1_ROSTER = [
@@ -532,13 +657,13 @@ const GEN1_ROSTER = [
   { id: 'ace', cs: 'ACE', side: 1, pilot: 'ace', frame: 'mr1_kizuna', x: 4, y: 4.5, band: 0 },
 ];
 const ROSTER = [
-  { id: 'ace', cs: 'ACE', side: 0, pilot: 'ace', frame: 'hx7_kestrel', weapons: ['lr3_rifle', 'agm_stores', 'vb2_knife'], y: -4.5, band: 1, protos: ['sensor_link', 'target_painter'] },
-  { id: 'anchor', cs: 'ANCHOR', side: 0, pilot: 'anchor', frame: 'm9_teamster', weapons: ['ar40_rifle', 'm140_bazooka', 'pb4_stake'], y: 0, band: 0, protos: [] },
-  { id: 'kite', cs: 'KITE', side: 0, pilot: 'kite', frame: 'fighter', weapons: ['autocannon', 'missiles'], y: 6, band: 1, protos: [], air: true },
-  { id: 'bulwark', cs: 'BULWARK', side: 1, pilot: 'bulwark', frame: 'ob12_medved', weapons: ['grad_m', 'gsh6m_rotary', 'molot_ram'], y: -4.5, band: 0, protos: ['purge'], field: 2 },
-  { id: 'wraith', cs: 'WRAITH', side: 1, pilot: 'wraith', frame: 'type09_tieshan', weapons: ['type09_cannon', 'type07_rifle', 'type11_dao'], y: 0, band: 0, protos: ['jam', 'power_siphon'] },
-  { id: 'razor', cs: 'RAZOR', side: 1, pilot: 'razor', frame: 'fighter', weapons: ['autocannon', 'missiles'], y: 6, band: 2, protos: [], air: true },
-  { id: 'anvil', cs: 'ANVIL', side: 1, pilot: 'anvil', frame: 'type99_tank', weapons: ['type99_gun', 'type99_mg'], y: -9, band: 0, protos: [] },
+  { id: 'ace', cs: 'ACE', side: 0, pilot: 'ace', frame: 'hx7_kestrel', weapons: ['lr3_linear_rifle', 'agmm_wing_stores', 'vb2_vibro_knife'], y: -4.5, band: 1, protos: ['sensor_link', 'target_painter'] },
+  { id: 'anchor', cs: 'ANCHOR', side: 0, pilot: 'anchor', frame: 'm9_teamster', weapons: ['ar40_longhorn_rifle', 'm140_rocket_bazooka', 'pb4_stake_driver'], y: 0, band: 0, protos: [] },
+  { id: 'kite', cs: 'KITE', side: 0, pilot: 'kite', frame: 'f12_peregrine', weapons: ['nose_autocannon', 'guided_missiles'], y: 6, band: 1, protos: [], air: true },
+  { id: 'bulwark', cs: 'BULWARK', side: 1, pilot: 'bulwark', frame: 'ob12_medved', weapons: ['gradm_rocket_battery', 'gsh6m_rotary_cannon', 'molot_hydraulic_ram'], y: -4.5, band: 0, protos: ['purge'], field: 2 },
+  { id: 'wraith', cs: 'WRAITH', side: 1, pilot: 'wraith', frame: 'type09_tieshan', weapons: ['type09_long_cannon', 'type07_drum_rifle', 'type11_dao_blade'], y: 0, band: 0, protos: ['jam', 'power_siphon'] },
+  { id: 'razor', cs: 'RAZOR', side: 1, pilot: 'razor', frame: 'f12_peregrine', weapons: ['nose_autocannon', 'guided_missiles'], y: 6, band: 2, protos: [], air: true },
+  { id: 'anvil', cs: 'ANVIL', side: 1, pilot: 'anvil', frame: 'type99_tank', weapons: ['125mm_tank_gun', 'coaxial_machine_gun'], y: -9, band: 0, protos: [] },
 ];
 function placeHex(x, y, band) {
   const r = clamp(Math.round(y / (SQ3 / 2)) + R0, 0, ROWS - 1);
@@ -553,7 +678,7 @@ function makeUnit(spec) {
   const weapons = spec.weapons.slice();
   if (fr.melee && !weapons.includes(fr.melee)) weapons.push(fr.melee);
   const ammo = {};
-  for (const w of weapons) if (W[w].mag) ammo[w] = { mag: W[w].mag, spares: fr.type === 'aircraft' ? 0 : W[w].spares };
+  for (const w of weapons) if (W[w].mag) ammo[w] = { mag: W[w].mag, spares: fr.noSpares ? 0 : W[w].spares };
   // Technical Refits: a d10 roll of 1 at mission start jams one weapon until repaired.
   const guns = weapons.filter(w => !W[w].builtin);
   const jammed = fr.jamRisk && !spec.noJam && guns.length && d10() === 1 ? guns[Math.floor(Math.random() * guns.length)] : null;
@@ -569,7 +694,7 @@ function newState(preset) {
   const pr = PRESETS[preset];
   if (pr.squads) {
     const ys = [-4.5, -1.5, 1.5, 4.5, 7.5];
-    pr.squads.forEach((fid, side) => SQUADS[fid].forEach((u, i) => S.units.push(makeUnit(Object.assign({}, u, {
+    pr.squads.forEach((fid, side) => SQUAD_SETS[pr.set || 'sheet'][fid].forEach((u, i) => S.units.push(makeUnit(Object.assign({}, u, {
       id: `${fid}${side}${i}`, cs: `${fid.toUpperCase()}-${i + 1}`, side, faction: fid,
       hex: placeHex(side === 0 ? -5 : 5, ys[i], u.band), facing: side === 0 ? 1 : 4 })))));
   } else if (preset === 'gen1') {
@@ -864,7 +989,7 @@ function attackError(a, d, wid) {
   if (w.still && a.moved) return 'Fires only if the unit did not move this round';
   if (w.kneel && !bracing(a)) return 'Fires only from a kneel: choose Brace in planning';
   if (fr(a).transformLock && a.bandChanged) return 'Transformed this round: cannot attack';
-  if (hiddenFrom(a, d)) return 'Silent running: cannot be targeted beyond 6 until it attacks';
+  if (hiddenFrom(a, d)) return `Silent running: cannot be targeted beyond ${fr(d).silent} until it attacks`;
   if (w.melee) {
     if (a.band !== d.band || hdist(a.hex, d.hex) !== 1) return 'Melee reaches adjacent hexes in the same band';
     if (!engagedWith(a, d) && !inArc(a, d.hex, w.arc)) return 'Outside the Narrow arc';
@@ -876,8 +1001,8 @@ function attackError(a, d, wid) {
   if (!losClear(a, d)) return 'No line of sight';
   return '';
 }
-// Silent-running frames cannot be targeted beyond 6 until they have attacked.
-const hiddenFrom = (a, d) => fr(d).silent && !d.revealed && rangeOf(a, d) > 6;
+// Silent-running frames (tag stealth_range) cannot be targeted beyond that range until they have attacked.
+const hiddenFrom = (a, d) => fr(d).silent > 0 && !d.revealed && rangeOf(a, d) > fr(d).silent;
 const bracing = u => u.stance === 'brace';
 // Brace halving roll: d10 ≤ Brace − 2. Not limited: 0 or less never halves.
 const braceTarget = u => stat(u, 'brace') - 2;
@@ -1001,7 +1126,7 @@ function rollAttack(a, d, wid, opts = {}, dice = d10) {
   if (w.special && shots.some(s => s.res === 'hit' || s.res === 'crit')) {
     if (w.onHit === 'shred' && !killed) { d.shred = (d.shred || 0) + 1; onHit = `Shred: ${d.cs} has Armour ${armourNow(d)} for the rest of the fight.`; }
     else if (w.onHit === 'stagger' && !killed) { addEffect(d, { pid: 'stagger', name: 'Stagger', flag: 'stagger', starts: S.round + 1, expires: S.round + 1, strength: 0, kind: 'debuff' }); onHit = `Stagger: ${d.cs} has 1 less Move next round and cannot earn the full-Move reroll.`; }
-    else if (!w.onHit && /on a hit/i.test(w.special)) onHit = `On hit: ${w.special}`;
+    else if (w.onHit !== 'shred' && w.onHit !== 'stagger' && /on a hit/i.test(w.special)) onHit = `On hit: ${w.special}`;
   }
   return { t, ht, li, lockRoll, lockRes, shots, total, killed, push, seeIt, will, ea, w, bt, fm, onHit };
 }
@@ -1191,7 +1316,7 @@ function runChecks() {
   P._tgt = { name: 'Test target', stats: st(5, 5, 5, 6, 5, 5, 7, 7), abilities: [] };
   P._low = { name: 'Test low', stats: st(5, 5, 5, 5, 5, 5, 2, 7), abilities: [] };
   F._plain = sf('Test frame', 2, 'medium', 60, 2, 'none', 3, 5, 1, [0, 0, 0, 0, 0, 0], [14, 14, 14, 14, 14, 14], [0, 14], { melee: null });
-  W._t36 = Object.assign({}, W.ar40_rifle, { name: 'Test 3 × 6 AP 0', ap: 0, special: '', onHit: undefined });
+  W._t36 = Object.assign({}, W.ar40_longhorn_rifle, { name: 'Test 3 × 6 AP 0', ap: 0, special: '', onHit: undefined });
   const world0 = () => ({ ver: 3, round: 1, phase: 'attack', units: [], wrecks: [], log: [], tiebreak: {}, initRef: {}, testTerrain: {}, ui: {} });
   const mk = spec => { const u = makeUnit(Object.assign({ facing: 1, band: 0, weapons: [] }, spec)); S.units.push(u); return u; };
   const east = (h, n) => { for (let i = 0; i < n; i++) h = step(h, 1); return h; };
@@ -1250,8 +1375,8 @@ function runChecks() {
     ok('Glances: at target 8 or 9 a 10 glances; never on a light weapon', classify(10, 8, true) === 'glance' && classify(10, 9, true) === 'glance' && classify(10, 9, false) === 'miss', '');
     // (c) Charge: ANCHOR in a Teamster (Melee 6 + 1) against BULWARK in a Medved (Large, Reflex 6).
     S = world0(); S.phase = 'plan';
-    const anc = mk({ id: 'anc', cs: 'ANCHOR', side: 0, pilot: 'anchor', frame: 'm9_teamster', weapons: ['pb4_stake'], hex: toAxial(6, 11) });
-    const bul = mk({ id: 'bul', cs: 'BULWARK', side: 1, pilot: 'bulwark', frame: 'ob12_medved', weapons: ['molot_ram'], hex: east(toAxial(6, 11), 4), facing: 4 });
+    const anc = mk({ id: 'anc', cs: 'ANCHOR', side: 0, pilot: 'anchor', frame: 'm9_teamster', weapons: ['pb4_stake_driver'], hex: toAxial(6, 11) });
+    const bul = mk({ id: 'bul', cs: 'BULWARK', side: 1, pilot: 'bulwark', frame: 'ob12_medved', weapons: ['molot_hydraulic_ram'], hex: east(toAxial(6, 11), 4), facing: 4 });
     S.tiebreak = { anc: 1, bul: 0 };
     ok('Example (c): Melee 7 against Reflex 6', stat(anc, 'melee') === 7 && stat(bul, 'reflex') === 6, `${stat(anc, 'melee')} vs ${stat(bul, 'reflex')}`);
     ok('Example (c): BULWARK is a legal charge target', chargeTargets(anc).includes(bul), '');
@@ -1261,10 +1386,10 @@ function runChecks() {
     const startB = bul.hex;
     resolveMovement();
     ok('Example (c): ANCHOR ends adjacent and engaged; BULWARK’s order is lost', engagedWith(anc, bul) && hdist(anc.hex, bul.hex) === 1 && same(bul.hex, startB) && anc.energy === F.m9_teamster.energy - 1, `distance ${hdist(anc.hex, bul.hex)}, Energy ${anc.energy}`);
-    ok('Example (c): Stake Driver target 5 + 7 − 6 + 1 + 2 = 9', hitTarget(anc, bul, 'pb4_stake').t === 9, `got ${hitTarget(anc, bul, 'pb4_stake').t}`);
-    ok('Parting strike does not stack with the Charge bonus', hitTarget(anc, bul, 'pb4_stake', { parting: true }).t === 9, '');
+    ok('Example (c): Stake Driver target 5 + 7 − 6 + 1 + 2 = 9', hitTarget(anc, bul, 'pb4_stake_driver').t === 9, `got ${hitTarget(anc, bul, 'pb4_stake_driver').t}`);
+    ok('Parting strike does not stack with the Charge bonus', hitTarget(anc, bul, 'pb4_stake_driver', { parting: true }).t === 9, '');
     anc.chargeTarget = null;
-    ok('Next round, the parting strike alone gives 9', hitTarget(anc, bul, 'pb4_stake', { parting: true }).t === 9, '');
+    ok('Next round, the parting strike alone gives 9', hitTarget(anc, bul, 'pb4_stake_driver', { parting: true }).t === 9, '');
     // Bracing movement.
     S = world0(); S.phase = 'plan';
     const tm = mk({ id: 'tm', cs: 'TM', side: 0, pilot: 'anvil', frame: 'm9_teamster', weapons: [], hex: toAxial(6, 11) });
@@ -1310,18 +1435,21 @@ function runChecks() {
     ok('Every pilot has a different stat build', new Set(builds).size === builds.length, `${builds.length} pilots`);
     const gen1 = Object.keys(F).filter(k => F[k].gen === 1);
     ok('Every Gen 1 frame has stats and loadouts; all but the Korsak have counter art', gen1.length === 11 && gen1.every(k => F[k].loadout.every(w => W[w]) && (ART[k] || k === 'ob4_korsak')), gen1.filter(k => !ART[k]).join(', '));
-    ok('Every Gen 1 frame belongs to a faction, and every faction fields the Garrison', gen1.every(k => FACTIONS.some(fa => fa.frames.includes(k))) && FACTIONS.every(fa => fa.frames.includes('m4_garrison')), `${FACTIONS.length} factions`);
-    ok('Every frame loadout and playtest squad uses sheet weapons', Object.keys(F).filter(k => !k.startsWith('_')).every(k => F[k].loadout.every(w => !W[w].old)) && Object.values(SQUADS).every(sqd => sqd.every(x => x.weapons.every(w => !W[w].old))), '');
-    ok('M30 deals 3 per hit to a Garrison (7 against Armour 2 + 2 ballistic)', W.m30_cannon.dmg - effArmour(W.m30_cannon, { frame: 'm4_garrison' }) === 3, `${W.m30_cannon.dmg - effArmour(W.m30_cannon, { frame: 'm4_garrison' })} per hit`);
-    ok('LR-1: Narrow arc, 1 Energy an attack', ARC_HEX[W.lr1_rifle.arc] === 60 && W.lr1_rifle.energy === 1, '');
-    ok('Every faction squad preset gives the Pact one frame more', Object.values(PRESETS).filter(p => p.squads && p.squads.includes('ep')).every(p => SQUADS.ep.length === SQUADS[p.squads.find(x => x !== 'ep')].length + 1), `Pact ${SQUADS.ep.length}`);
+    ok('Every Gen 1 frame belongs to a faction, and the Garrison serves the US, Union and Pact', gen1.every(k => FACTIONS.some(fa => fa.frames.includes(k))) && ['us', 'cu', 'ep'].every(id => FACTION[id].frames.includes('m4_garrison')), `${FACTIONS.length} blocs`);
+    const sheetW = new Set(CATALOGUE.weapons.map(w => w.id));
+    ok('Every frame loadout and playtest squad uses sheet weapons', Object.keys(F).filter(k => !k.startsWith('_')).every(k => F[k].loadout.every(w => sheetW.has(w))) && Object.values(SQUAD_SETS).every(set => Object.values(set).every(sqd => sqd.every(x => x.weapons.every(w => sheetW.has(w))))), '');
+    ok('All 62 sheet frames are in the Add unit list, each with its standard loadout', CATALOGUE.frames.length === 62 && CATALOGUE.frames.every(c => F[c.id] && FACTIONS.some(fa => fa.frames.includes(c.id)) && c.weapons.every(w => F[c.id].loadout.includes(w))), `${CATALOGUE.frames.length} frames`);
+    ok('Playtest squads carry the sheet’s standard loadouts', Object.values(SQUADS).every(sqd => sqd.every(x => x.weapons.join() === F[x.frame].loadout.join())), '');
+    ok('M30 deals 3 per hit to a Garrison (7 against Armour 2 + 2 ballistic)', W.m30_hand_cannon.dmg - effArmour(W.m30_hand_cannon, { frame: 'm4_garrison' }) === 3, `${W.m30_hand_cannon.dmg - effArmour(W.m30_hand_cannon, { frame: 'm4_garrison' })} per hit`);
+    ok('LR-1: Narrow arc, 1 Energy an attack', ARC_HEX[W.lr1_linear_rifle.arc] === 60 && W.lr1_linear_rifle.energy === 1, '');
+    ok('Every faction squad preset gives the Pact one frame more', Object.values(PRESETS).filter(p => p.squads && p.squads.includes('ep')).every(p => { const set = SQUAD_SETS[p.set || 'sheet']; return set.ep.length === set[p.squads.find(x => x !== 'ep')].length + 1; }), `Pact ${SQUADS.ep.length}`);
     {
       S = world0();
-      const tn = mk({ id: 'tn', cs: 'TN', side: 0, pilot: 'kestrel', frame: 'type01_tieniu', weapons: ['type01_cannon'], hex: toAxial(6, 11) });
+      const tn = mk({ id: 'tn', cs: 'TN', side: 0, pilot: 'kestrel', frame: 'type01_tieniu', weapons: ['type01_shoulder_cannon'], hex: toAxial(6, 11) });
       const tg = mk({ id: 'tg', cs: 'TG', side: 1, pilot: 'anvil', frame: 'm4_garrison', weapons: [], hex: east(toAxial(6, 11), 4), facing: 4 });
-      const standing = attackError(tn, tg, 'type01_cannon');
-      tn.stance = 'brace'; const kneeling = attackError(tn, tg, 'type01_cannon');
-      tn.moved = true; const moved = attackError(tn, tg, 'type01_cannon');
+      const standing = attackError(tn, tg, 'type01_shoulder_cannon');
+      tn.stance = 'brace'; const kneeling = attackError(tn, tg, 'type01_shoulder_cannon');
+      tn.moved = true; const moved = attackError(tn, tg, 'type01_shoulder_cannon');
       ok('Type-01 fires only from a kneel: braced and not moved', /kneel/.test(standing) && kneeling === '' && /did not move/.test(moved), `standing: ${standing || 'fires'}; braced: ${kneeling || 'fires'}; braced after moving: ${moved || 'fires'}`);
     }
     {
@@ -1331,15 +1459,15 @@ function runChecks() {
       const ga = autoEnds(gu), ma = autoEnds(mu), ge = endpoints(gu, 'ground', 0);
       ok('Click-to-move: a ground frame reaches its Ground Move hexes', ga.size === ge.size && [...ga.values()].every(l => l.every(o => o.m === 'ground')), `${ga.size} hexes`);
       ok('Click-to-move: a flying Merlin uses vector manoeuvres in its band, Cruise first', ma.size > 0 && [...ma.values()].every(l => l.every(o => o.m !== 'ground')) && [...endpoints(mu, 'cruise', 1).keys()].every(k => ma.get(k).some(o => o.m === 'cruise')), `${ma.size} hexes`);
-      S.phase = 'attack'; S.sel = 'gu'; S.ui = { w: 'm30_cannon' }; gu.weapons = ['m30_cannon'];
+      S.phase = 'attack'; S.sel = 'gu'; S.ui = { w: 'm30_hand_cannon' }; gu.weapons = ['m30_hand_cannon'];
       const wr = weaponReach();
       ok('Weapon reach: M30 covers 1–4 hexes in its Front arc', wr.size > 0 && [...wr.keys()].map(unkey).every(h => hdist(h, gu.hex) <= 4 && inArc(gu, h, 120)), `${wr.size} hexes`);
       S.sel = null; S.ui = {};
     }
-    const g1u = mk({ id: 'g1', cs: 'G1', side: 0, pilot: 'kite', frame: 'vk1_ecuyer', weapons: ['m30_cannon'], hex: toAxial(3, 3) });
+    const g1u = mk({ id: 'g1', cs: 'G1', side: 0, pilot: 'kite', frame: 'vk1_ecuyer', weapons: ['m30_hand_cannon'], hex: toAxial(3, 3) });
     const g2u = mk({ id: 'g2', cs: 'G2', side: 1, pilot: 'wraith', frame: 'type09_tieshan', weapons: [], hex: east(toAxial(3, 3), 3), facing: 4 });
     ok('Gen 1: the pilot locks and resists with its own stat, up to 7', lockInfo(g1u, g2u).ok && lockInfo(g1u, g2u).t === 6 && cmEff(g1u) === 5 && protosOf(g1u).length === 0, `lock ${lockInfo(g1u, g2u).t}, CM ${cmEff(g1u)}`);
-    const air = mk({ id: 'air', cs: 'AIR', side: 1, pilot: 'razor', frame: 'fighter', weapons: [], hex: toAxial(20, 3), band: 1 });
+    const air = mk({ id: 'air', cs: 'AIR', side: 1, pilot: 'razor', frame: 'f12_peregrine', weapons: [], hex: toAxial(20, 3), band: 1 });
     air.moveM = 'straight4'; const airFm = fullMove(air); air.moveM = 'highg_l';
     ok('Aircraft earn the full-Move reroll unless they flew a High-G turn', airFm && !fullMove(air), '');
     // Destroyed units.
@@ -1511,7 +1639,7 @@ function unitSheet(u) {
     return `<tr><td>${STAT_NAME[s]}</td><td class="n">${pil}</td><td class="n">${frm === '' ? '—' : (frm > 0 ? '+' : '') + frm}</td><td class="n">${eff === '' || eff === 0 ? '—' : (eff > 0 ? '+' : '') + eff}</td><td class="n"><b>${stat(u, s)}</b></td><td class="n">${max}</td></tr>`;
   }).join('');
   const weapons = u.weapons.map(wid => { const w = W[wid], am = u.ammo[wid];
-    return `<tr><td title="${w.note || ''}">${w.name}${w.old ? ' <span class="pill debuff" title="Not on the Frames and Weapons sheet: 26 October numbers">old numbers</span>' : ''}${w.heavy ? ' <span class="pill">heavy</span>' : ''}${w.kneel ? ' <span class="pill">kneel</span>' : ''}${w.aim ? ` <span class="pill">aim ${w.aim > 0 ? '+' : '−'}${Math.abs(w.aim)}</span>` : ''}${w.special ? `<br><span class="note">${w.special}</span>` : ''}</td><td class="n">${w.shots}×${w.dmg}${w.ap ? ` AP${w.ap}` : ''}</td><td class="n">${rangeTxt(w)}</td><td>${ARC_NAME[ARC_HEX[w.arc]]}</td><td class="n">${am ? `${am.mag}/${w.mag} +${am.spares}` : w.energy ? `${w.energy} En` : '—'}</td></tr>`; }).join('');
+    return `<tr><td title="${w.note || ''}">${w.name}${w.heavy ? ' <span class="pill">heavy</span>' : ''}${w.kneel ? ' <span class="pill">kneel</span>' : ''}${w.aim ? ` <span class="pill">aim ${w.aim > 0 ? '+' : '−'}${Math.abs(w.aim)}</span>` : ''}${w.special ? `<br><span class="note">${w.special}</span>` : ''}</td><td class="n">${w.shots}×${w.dmg}${w.ap ? ` AP${w.ap}` : ''}</td><td class="n">${rangeTxt(w)}</td><td>${ARC_NAME[ARC_HEX[w.arc]]}</td><td class="n">${am ? `${am.mag}/${w.mag} +${am.spares}` : w.energy ? `${w.energy} En` : '—'}</td></tr>`; }).join('');
   const effects = u.effects.map(e => `<span class="pill ${e.kind}" title="Strength ${e.strength}">${e.name} · ends R${e.expires}</span>`).join(' ') || '<span class="note">None</span>';
   const foes = engagedFoes(u).map(o => o.cs).join(', ');
   const fs = fieldSource(u);
@@ -1612,7 +1740,7 @@ function attackBox(u) {
     const tg = living().filter(t => !attackError(u, t, wid));
     const any = living().filter(t => t.side !== u.side).map(t => attackError(u, t, wid));
     const why = tg.length ? `${tg.length} target${tg.length > 1 ? 's' : ''}` : (any.find(e => /Energy|empty|Dry|Engaged|attacked/.test(e)) || 'No legal target');
-    return `<button class="opt ${S.ui.w === wid ? 'on' : ''}" data-weapon="${wid}"><span>${w.name}${w.old ? ' <span class="pill debuff" title="Not on the Frames and Weapons sheet: 26 October numbers">old numbers</span>' : ''} <small>${w.shots}×${w.dmg}${w.ap ? ` AP${w.ap}` : ''} · ${rangeTxt(w)} · ${ARC_NAME[ARC_HEX[w.arc]]}</small><br><small>${tg.length ? why : `<span class="why">${why}</span>`}</small></span></button>`;
+    return `<button class="opt ${S.ui.w === wid ? 'on' : ''}" data-weapon="${wid}"><span>${w.name} <small>${w.shots}×${w.dmg}${w.ap ? ` AP${w.ap}` : ''} · ${rangeTxt(w)} · ${ARC_NAME[ARC_HEX[w.arc]]}</small><br><small>${tg.length ? why : `<span class="why">${why}</span>`}</small></span></button>`;
   }).join('');
   let fc = '';
   const t = S.ui.target && U(S.ui.target);
@@ -1653,9 +1781,9 @@ function addBox() {
   const a = S.ui.add || (S.ui.add = { side: 0, frame: 'm4_garrison', faction: 'us', pilot: 'rook', weapons: F.m4_garrison.loadout.slice(), cs: 'ROOK' });
   const f = F[a.frame];
   const carry = Object.entries(W).filter(([k, w]) => !w.builtin && (SIZE_ORDER.indexOf(w.size) <= SIZE_ORDER.indexOf(f.size) || (f.loadout || []).includes(k)));
-  const g1Opts = FACTIONS.map(fa => `<optgroup label="Gen 1 · ${fa.name}">${fa.frames.map(k => `<option value="${k}@${fa.id}" ${a.frame === k && a.faction === fa.id ? 'selected' : ''}>${F[k].name}</option>`).join('')}</optgroup>`).join('');
-  const groups = [[2, 'Gen 2'], [0, 'Vehicles']];
-  const frameOpts = g1Opts + groups.map(([g, n]) => `<optgroup label="${n}">${Object.entries(F).filter(([k, x]) => !k.startsWith('_') && x.gen === g).map(([k, x]) => `<option value="${k}" ${a.frame === k ? 'selected' : ''}>${x.name}</option>`).join('')}</optgroup>`).join('');
+  // Every sheet frame, by generation then bloc; a frame on several blocs is listed under each.
+  const gens = [...new Set(Object.values(F).map(x => x.gen))].sort((x, y) => x - y);
+  const frameOpts = gens.map(g => FACTIONS.map(fa => { const ks = fa.frames.filter(k => F[k].gen === g); return ks.length ? `<optgroup label="Gen ${g} · ${fa.name}">${ks.map(k => `<option value="${k}@${fa.id}" ${a.frame === k && a.faction === fa.id ? 'selected' : ''}>${F[k].name}${F[k].cls === 'Vehicle' ? ' (vehicle)' : ''}</option>`).join('')}</optgroup>` : ''; }).join('')).join('');
   return `<div class="box"><h3>Add a unit</h3>
     <div class="formgrid">
       <label for="addcs">Callsign</label><input id="addcs" value="${a.cs}" maxlength="8">
@@ -1666,7 +1794,7 @@ function addBox() {
     ${ART[a.frame] ? `<img src="data:image/jpeg;base64,${ART[a.frame].scene}" alt="${f.name} concept art" style="width:100%;height:auto;border-radius:3px">` : ''}
     <p class="note"><i>${f.lore || ''}</i></p>
     <span class="label">Weapons (${f.size} frame carries ${f.size} or smaller)</span>
-    <div class="weaponpick">${carry.map(([k, w]) => `<label><input type="checkbox" data-addw="${k}" ${a.weapons.includes(k) ? 'checked' : ''}> ${w.name}${w.old ? ' <span class="pill debuff" title="Not on the Frames and Weapons sheet: 26 October numbers">old numbers</span>' : ''} <span class="note">${w.shots}×${w.dmg}${w.ap ? ` AP${w.ap}` : ''} · ${rangeTxt(w)}</span></label>`).join('')}</div>
+    <div class="weaponpick">${carry.map(([k, w]) => `<label><input type="checkbox" data-addw="${k}" ${a.weapons.includes(k) ? 'checked' : ''}> ${w.name} <span class="note">${w.shots}×${w.dmg}${w.ap ? ` AP${w.ap}` : ''} · ${rangeTxt(w)}</span></label>`).join('')}</div>
     <div class="row"><button class="primary" data-act="place" ${S.placing === 'add' ? 'disabled' : ''}>${S.placing === 'add' ? 'Click a hex on the map' : 'Place on the map'}</button>${f.melee ? `<span class="note">Hands are fitted automatically.</span>` : ''}</div></div>
     ${rosterBox()}`;
 }
@@ -1694,7 +1822,7 @@ function renderSide() {
   if (S.tab === 'unit') {
     const u = selected();
     if (!u) body = `<p class="note">Select a unit on the map or in the initiative bar.</p>
-      <div class="box"><h3>How a round runs</h3><p class="note"><b>Plan &amp; move:</b> pick each unit's stance (Evade or Brace) and give it a manoeuvre, then resolve. Units move in initiative order (highest Reflex total, fixed at the start of the round) and collisions stop them short.<br><b>Action:</b> one Protocol, reload or break-off each.<br><b>Attack:</b> in initiative order, pick a weapon, click a target, check the forecast, roll.<br><b>End:</b> Energy recharges, effects count down, Charge bonuses end.</p><p class="note">Rules: Player's Guide, playtest edition. Numbers: the Frames and Weapons sheet, read 9 November 2026. Not built here: secret orders and the Declare step (stances show at once, and you pick targets after seeing them), switching targets when one is gone, withdrawing, and task checks.</p></div>${rosterBox()}`;
+      <div class="box"><h3>How a round runs</h3><p class="note"><b>Plan &amp; move:</b> pick each unit's stance (Evade or Brace) and give it a manoeuvre, then resolve. Units move in initiative order (highest Reflex total, fixed at the start of the round) and collisions stop them short.<br><b>Action:</b> one Protocol, reload or break-off each.<br><b>Attack:</b> in initiative order, pick a weapon, click a target, check the forecast, roll.<br><b>End:</b> Energy recharges, effects count down, Charge bonuses end.</p><p class="note">Rules: Player's Guide, playtest edition. Numbers: the Frames and Weapons sheet, built into this page from tabletop/data/catalogue.json. Not built here: secret orders and the Declare step (stances show at once, and you pick targets after seeing them), switching targets when one is gone, withdrawing, and task checks.</p></div>${rosterBox()}`;
     else {
       body = unitSheet(u);
       if (alive(u)) body += S.phase === 'plan' ? planBox(u) : S.phase === 'action' ? actionBox(u) : attackBox(u);
@@ -1798,7 +1926,7 @@ function gmAction(u, a) {
   else if (a === 'e+1') u.energy = Math.min(fr(u).energy, u.energy + 1);
   else if (a === 'w+1') u.will = Math.min(pl(u).stats.spirit, u.will + 1);
   else if (a === 'clearfx') u.effects = [];
-  else if (a === 'refit') { for (const w of Object.keys(u.ammo)) u.ammo[w] = { mag: W[w].mag, spares: isAir(u) ? 0 : W[w].spares }; }
+  else if (a === 'refit') { for (const w of Object.keys(u.ammo)) u.ammo[w] = { mag: W[w].mag, spares: fr(u).noSpares ? 0 : W[w].spares }; }
   else if (a === 'remove') { S.units = S.units.filter(x => x !== u); for (const o of S.units) o.engaged = o.engaged.filter(id => id !== u.id); S.sel = null; }
 }
 function onChange(e) {
