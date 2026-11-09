@@ -1014,7 +1014,7 @@ function hitTarget(a, d, wid, opts = {}) {
   // Attacks treat a bracing target's Reflex as 2 lower (its initiative is unchanged).
   const parts = [['Base', 5], [STAT_NAME[s], stat(a, s)]];
   parts.push(bracing(d) ? ['Target Reflex (braced, −2)', -(stat(d, 'reflex') - 2)] : ['Target Reflex', -stat(d, 'reflex')]);
-  const cv = cover(a, d); if (cv) parts.push(['Cover', -cv]);
+  const cv = Math.max(0, cover(a, d) - ((w.tags && w.tags.ignore_cover) || 0)); if (cv) parts.push(['Cover', -cv]);
   if (w.aim) parts.push(['Aim', w.aim]);
   const sz = SIZE_ADJ[fr(d).size]; if (sz) parts.push(['Size', sz]);
   const charged = w.melee && a.chargeTarget === d.id;
@@ -1023,10 +1023,13 @@ function hitTarget(a, d, wid, opts = {}) {
   // Planted: braced and did not move or break off this round.
   if (bracing(a) && !a.moved) parts.push(['Planted', 1]);
   if (opts.push) parts.push(['Push', 2]);
+  if (opts.modifier) parts.push(['Modifier', opts.modifier]);
   const raw = parts.reduce((x, p) => x + p[1], 0);
   return { t: clampT(raw), raw, parts };
 }
-function lockInfo(a, d) {
+function lockInfo(a, d, given = false) {
+  // A lock given without a roll (opts.locked): LOCKED, with the lock's reroll.
+  if (given) return { ok: true, given: true, why: 'lock given', t: null, tu: null };
   if (hasFlag(a, 'jam')) return { ok: false, why: 'Jammed: no lock rolls' };
   if (rangeOf(a, d) > 8) return { ok: false, why: 'Beyond lock range 8' };
   if (!losClear(a, d)) return { ok: false, why: 'No line of sight' };
@@ -1039,22 +1042,22 @@ function classify(r, t, heavy) { return r <= t ? 'hit' : heavy && r <= t + 2 ? '
 // first). If the target earned Evade's full-Move reroll (fm), the first die that is a hit after those rerolls is
 // rolled again and the new roll stands. Hits then crit on critT or less (full damage, no Armour); each hit or glance
 // that would damage a bracing target is halved with chance pBrace.
-function damageDist(t, heavy, critT, shots, rerolls, dH, dC, dG, pBrace = 0, fm = 0) {
+function damageDist(t, heavy, critT, shots, rerolls, dH, dC, dG, pBrace = 0, fm = 0, free = rerolls) {
   const ph = t / 10, pg = heavy ? Math.max(0, Math.min(2, 10 - t)) / 10 : 0, pm = 1 - ph - pg;
-  const pc = clamp(critT, 0, 10) / 10;
+  const pc = clamp(critT, 0, 9) / 10;
   const split = d => d > 0 && pBrace > 0 ? [[1 - pBrace, d], [pBrace, Math.floor(d / 2)]] : [[1, d]];
   const value = {
     hit: [...split(dH).map(([q, d]) => [q * (1 - pc), d]), ...split(dC).map(([q, d]) => [q * pc, d])].filter(x => x[0] > 0),
     glance: split(dG), miss: [[1, 0]],
   };
   const classes = [['hit', ph], ['glance', pg], ['miss', pm]].filter(c => c[1] > 1e-12);
-  let states = new Map([[rerolls + '|' + fm + '|0', 1]]);
+  let states = new Map([[rerolls + '|' + fm + '|0|0', 1]]);
   const add = (m, k, p) => m.set(k, (m.get(k) || 0) + p);
   for (let i = 0; i < shots; i++) {
     const next = new Map();
     for (const [k, p] of states) {
-      const [r, f, dm] = k.split('|').map(Number);
-      const settle = (c, r2, f2, q) => { for (const [qq, d] of value[c]) add(next, r2 + '|' + f2 + '|' + (dm + d), p * q * qq); };
+      const [r, f, dm, h] = k.split('|').map(Number);
+      const settle = (c, r2, f2, q) => { for (const [qq, d] of value[c]) add(next, r2 + '|' + f2 + '|' + (dm + d) + '|' + (h || c === 'hit' ? 1 : 0), p * q * qq); };
       const fin = (c, r2, q) => { if (c === 'hit' && f) for (const [c3, q3] of classes) settle(c3, r2, 0, q * q3); else settle(c, r2, f, q); };
       for (const [c, q] of classes) {
         if (c === 'miss' && r > 0) for (const [c2, q2] of classes) fin(c2, r - 1, q * q2);
@@ -1063,24 +1066,36 @@ function damageDist(t, heavy, critT, shots, rerolls, dH, dC, dG, pBrace = 0, fm 
     }
     states = next;
   }
-  const out = new Map();
-  for (const [k, p] of states) { const dm = Number(k.split('|')[2]); out.set(dm, (out.get(dm) || 0) + p); }
+  // The map is damage → chance; pHit is the chance any shot hit (on-hit effects), pSeeIt the chance I Can See It was spent.
+  const out = new Map(); out.pHit = 0; out.pSeeIt = 0;
+  for (const [k, p] of states) {
+    const [r, , dm, h] = k.split('|').map(Number);
+    out.set(dm, (out.get(dm) || 0) + p);
+    if (h) out.pHit += p;
+    if (rerolls - r > free) out.pSeeIt += p;
+  }
   return out;
 }
 function forecast(a, d, wid, opts = {}) {
-  const w = W[wid], ht = hitTarget(a, d, wid, opts), li = lockInfo(a, d), ea = effArmour(w, d), crit = critTarget(a);
+  const w = W[wid], ht = hitTarget(a, d, wid, opts), li = lockInfo(a, d, opts.locked), ea = effArmour(w, d), crit = critTarget(a);
   const dH = Math.max(0, w.dmg - ea), dC = w.dmg, dG = Math.max(0, Math.floor(w.dmg / 2) - ea);
   const extra = opts.seeIt ? 2 : 0;
-  const pLock = li.ok ? li.t / 10 : 0;
-  const bt = bracing(d) ? braceTarget(d) : null, pB = bt === null ? 0 : clamp(bt, 0, 10) / 10;
+  const pLock = li.ok ? (li.given ? 1 : li.t / 10) : 0;
+  const bt = bracing(d) ? braceTarget(d) : null, pB = bt === null ? 0 : clamp(bt, 0, 9) / 10;
   const fm = fullMove(d) ? 1 : 0;
   const mix = new Map();
   const merge = (dist, wgt) => { for (const [dm, p] of dist) mix.set(dm, (mix.get(dm) || 0) + p * wgt); };
-  if (pLock > 0) merge(damageDist(ht.t, w.heavy, crit, w.shots, extra + 1, dH, dC, dG, pB, fm), pLock);
-  if (pLock < 1) merge(damageDist(ht.t, w.heavy, crit, w.shots, extra, dH, dC, dG, pB, fm), 1 - pLock);
+  // Expected damage averages over the lock roll; the locked and unlocked figures are kept too.
+  const locked = damageDist(ht.t, w.heavy, crit, w.shots, extra + 1, dH, dC, dG, pB, fm, 1);
+  const unlocked = damageDist(ht.t, w.heavy, crit, w.shots, extra, dH, dC, dG, pB, fm, 0);
+  if (pLock > 0) merge(locked, pLock);
+  if (pLock < 1) merge(unlocked, 1 - pLock);
+  const expOf = dist => [...dist].reduce((x, [dm, p]) => x + dm * p, 0);
+  const pOnHit = pLock * locked.pHit + (1 - pLock) * unlocked.pHit, pSeeIt = pLock * locked.pSeeIt + (1 - pLock) * unlocked.pSeeIt;
   let exp = 0, any = 0, kill = 0;
   for (const [dm, p] of mix) { exp += dm * p; if (dm > 0) any += p; if (dm >= d.structure) kill += p; }
-  return { ht, li, ea, crit, dH, dC, dG, exp, any, kill, bt, fm, glanceTo: w.heavy ? Math.min(10, ht.t + 2) : null };
+  return { ht, li, ea, crit, dH, dC, dG, exp, any, kill, bt, fm, glanceTo: w.heavy ? Math.min(10, ht.t + 2) : null,
+    pLock, expLocked: expOf(locked), expUnlocked: expOf(unlocked), pOnHit, pSeeIt };
 }
 function rollAttack(a, d, wid, opts = {}, dice = d10) {
   const w = W[wid], err = attackError(a, d, wid);
@@ -1088,16 +1103,16 @@ function rollAttack(a, d, wid, opts = {}, dice = d10) {
   let push = !!opts.push && !opts.parting && a.will >= 1;
   let will = 0;
   if (push) { a.will--; will++; }
-  const ht = hitTarget(a, d, wid, { push, parting: opts.parting });
+  const ht = hitTarget(a, d, wid, { push, parting: opts.parting, modifier: opts.modifier });
   const t = ht.t;
-  const li = lockInfo(a, d);
-  let lockRoll = null, lockRes = li.ok ? '' : 'NO ROLL';
-  if (li.ok) { lockRoll = dice(); lockRes = lockRoll <= li.t ? 'LOCK' : lockRoll <= li.tu ? 'COUNTERED' : 'NO LOCK'; }
+  const li = lockInfo(a, d, opts.locked);
+  let lockRoll = null, lockRes = li.ok ? (li.given ? 'LOCKED' : '') : 'NO ROLL';
+  if (li.ok && !li.given) { lockRoll = dice(); lockRes = lockRoll <= li.t ? 'LOCK' : lockRoll <= li.tu ? 'COUNTERED' : 'NO LOCK'; }
   if (w.mag) a.ammo[wid].mag--;
   a.energy -= w.energy;
   const shots = [];
   for (let i = 0; i < w.shots; i++) { const r = dice(); shots.push({ r, res: classify(r, t, w.heavy) }); }
-  let rerolls = lockRes === 'LOCK' ? 1 : 0;
+  let rerolls = lockRes === 'LOCK' || lockRes === 'LOCKED' ? 1 : 0;
   const misses = shots.filter(s => s.res === 'miss').length;
   let seeIt = false;
   // I Can See It: up to 2 more rerolls for 1 Will, only if a miss is left to reroll.
@@ -1110,13 +1125,13 @@ function rollAttack(a, d, wid, opts = {}, dice = d10) {
   const fm = fullMove(d);
   if (fm) { const s = shots.find(x => x.res === 'hit'); if (s) { s.fmFirst = s.r; s.r = dice(); s.res = classify(s.r, t, w.heavy); } }
   const crit = critTarget(a), ea = effArmour(w, d);
-  if (crit >= 1) for (const s of shots) if (s.res === 'hit') { s.cr = dice(); if (s.cr <= crit) s.res = 'crit'; }
+  if (crit >= 1) for (const s of shots) if (s.res === 'hit') { s.cr = dice(); if (s.cr <= crit && s.cr !== 10) s.res = 'crit'; }
   let total = 0;
   const bt = bracing(d) ? braceTarget(d) : null;
   for (const s of shots) {
     s.dmg = s.res === 'hit' ? Math.max(0, w.dmg - ea) : s.res === 'crit' ? w.dmg : s.res === 'glance' ? Math.max(0, Math.floor(w.dmg / 2) - ea) : 0;
     // Brace: damage is worked out first, Armour and crits included, then each damaging hit or glance rolls to halve it.
-    if (bt !== null && bt >= 1 && s.dmg > 0) { s.br = dice(); if (s.br <= bt) { s.dmg = Math.floor(s.dmg / 2); s.halved = true; } }
+    if (bt !== null && bt >= 1 && s.dmg > 0) { s.br = dice(); if (s.br <= bt && s.br !== 10) { s.dmg = Math.floor(s.dmg / 2); s.halved = true; } }
     total += s.dmg;
   }
   a.attacked = true;

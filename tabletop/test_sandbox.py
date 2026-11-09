@@ -39,6 +39,17 @@ class RulesChecks(unittest.TestCase):
         self.assertIn("rules checks pass", run.stdout)
 
 
+class VectorChecks(unittest.TestCase):
+    def test_page_matches_the_test_vectors_in_node(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("node is not installed: the test vectors were not run against the sandbox")
+        run = subprocess.run([node, str(SANDBOX / "run_vectors.js"), str(PAGE)],
+                             capture_output=True, text=True, encoding="utf-8", timeout=300)
+        self.assertEqual(run.returncode, 0, f"the sandbox disagrees with the test vectors:\n{run.stdout}\n{run.stderr}")
+        self.assertIn("vector cases pass, 0 fail", run.stdout)
+
+
 class EmbeddedCatalogue(unittest.TestCase):
     def test_page_catalogue_matches_catalogue_json(self):
         embedded = build.extract(read_page())

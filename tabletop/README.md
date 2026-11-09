@@ -15,6 +15,7 @@ Python (3.12 or later, standard library only) for the Discord tabletop game. The
 | `sandbox/combat-sandbox.html` | The [combat sandbox](https://claude.ai/artifact/JgqktsdJAv71A8j6XkpviL) page, published as an artifact. Its frame, weapon and Protocol numbers come from the embedded catalogue. |
 | `sandbox/build.py` | Writes `data/catalogue.json` into the sandbox page between the `CATALOGUE:BEGIN` and `CATALOGUE:END` markers. |
 | `sandbox/run_checks.js` | Runs the sandbox's built-in rules checks in node (`test_sandbox.py` runs it). |
+| `sandbox/run_vectors.js` | Runs the test vectors in `vectors/` against the sandbox's own rules code in node and prints what was and wasn't compared per file (`test_sandbox.py` runs it). |
 | `test_*.py` | Unit tests for the above. |
 
 ```powershell

@@ -17,7 +17,13 @@ reference engine written from it.
 ```powershell
 py tabletop/build_vectors.py          # after a sheet export (sheet_export.py) or a rules change
 py -m unittest discover -s tabletop   # checks every file
+node tabletop/sandbox/run_vectors.js  # the combat sandbox against every file (unittest runs it too)
 ```
+
+`sandbox/run_vectors.js` feeds each case to the sandbox page's own functions (forecast, scripted attack roll,
+lock, Protocol, Purge and stat code) and prints, per file, the cases passed and failed and the fields the page
+cannot produce yet (task checks, fractional stat bonuses). `catalogue_attacks.json` holds figures rounded to 6
+decimals, so it is compared within 5 × 10⁻⁷.
 
 The generated files must match a fresh build, so a rules or sheet change shows up as a diff to
 review. The hand files never change unless the guide does.
