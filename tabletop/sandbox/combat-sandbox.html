@@ -142,6 +142,7 @@ td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-nume
 .list { display: flex; flex-direction: column; gap: 5px; }
 .note { color: var(--muted); font-size: 12.5px; margin: 0; }
 .warn { color: var(--warn); font-size: 12.5px; margin: 0; }
+.taskres { margin: 0; font-weight: 600; } .taskres.pass { color: var(--good); } .taskres.fail { color: var(--bad); }
 .pill { display: inline-block; font-family: var(--font-mono); font-size: 11px; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--line); }
 .pill.buff { border-color: var(--good); color: var(--good); }
 .pill.debuff { border-color: var(--bad); color: var(--bad); }
@@ -3021,9 +3022,10 @@ function taskBox() {
   if (u) {
     const { raw, t } = taskTarget(u, T.stat, T.diff, T.push, !!T.helper);
     const err = taskError(u, T.stat, T);
+    const last = T.last && T.last.unit === u.id && T.last.round === S.round ? T.last : null;
     const brk = `${STAT_NAME[T.stat]} ${stat(u, T.stat)} ${DIFF[T.diff] >= 0 ? '+' : '−'} ${Math.abs(DIFF[T.diff])} (${T.diff})${T.push ? ' + 2 Push' : ''}${T.helper ? ' + 1 help' : ''}${raw !== t ? ` = ${raw}, limited to ${t}` : ''}`;
     fc = `<div class="row"><span class="label">Target</span><b class="big" title="${tip(brk)}">${t}</b><span class="parts">Success ${pct(t / 10)}</span></div>
-      ${err ? `<p class="warn">${err}.</p>` : ''}<div class="row"><button class="primary" data-aft="task" ${err ? 'disabled' : ''}>Roll task check</button></div>`;
+      ${last ? `<p class="taskres ${last.pass ? 'pass' : 'fail'}">Rolled ${last.r} vs ${last.t}: ${last.pass ? 'success' : 'failure'}${last.fight ? ' · action used' : ''}</p>` : ''}${err && !(last && last.fight && err === 'Action already used') ? `<p class="warn">${err}.</p>` : ''}<div class="row"><button class="primary" data-aft="task" ${err ? 'disabled' : ''}>Roll task check</button></div>`;
   }
   return `<div class="box"><h3 title="d10 at or under stat + difficulty, +2 Push, +1 help from a same-side unit with 6+ in the stat; limited to 1–9">Task check</h3><div class="formgrid">
       <label for="tkunit">Unit</label><select id="tkunit"><option value="">—</option>${units.map(x => `<option value="${x.id}" ${T.unit === x.id ? 'selected' : ''}>${x.cs}</option>`).join('')}</select>
@@ -3060,7 +3062,7 @@ function aftermathClick(d, u) {
   switch (d.aft) {
     case 'withdraw': err = u ? withdraw(u) : 'No unit selected'; if (err) log(`${u ? u.cs : 'Withdraw'}: cannot withdraw: ${err}.`); break;
     case 'tasktab': if (u) { T.unit = u.id; T.helper = ''; } S.tab = 'mission'; break;
-    case 'task': { const t = U(T.unit), res = taskCheck(t, T.stat, T); if (res.err) log(`Task check: ${res.err}.`); T.push = false; break; }
+    case 'task': { const t = U(T.unit), res = taskCheck(t, T.stat, T); if (res.err) log(`Task check: ${res.err}.`); else T.last = { unit: t.id, round: S.round, r: res.r, t: res.t, pass: res.pass, fight: !!T.fight }; T.push = false; break; }
     case 'eject': if (X) { const res = rollEjection(X, d.push === '1'); if (res.err) log(`${X.cs}: ${res.err}.`); } break;
     case 'lasting': if (X) { err = applyLasting(X, d.stat); if (err) log(`${X.cs}: ${err}.`); } break;
     case 'mission': S.mission = !S.mission; if (S.mission && !S.fight) S.fight = 1; log(`Mission mode ${S.mission ? 'on' : 'off'}.`); break;
