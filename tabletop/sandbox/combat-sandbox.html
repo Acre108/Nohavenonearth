@@ -161,6 +161,15 @@ td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-nume
 .formgrid { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 10px; align-items: center; }
 .weaponpick { display: flex; flex-direction: column; gap: 3px; max-height: 200px; overflow-y: auto; border: 1px solid var(--line); border-radius: 4px; padding: 6px; background: var(--raised); }
 .weaponpick label { font-size: 12.5px; display: flex; gap: 6px; align-items: center; }
+/* GM screen: the cover panel between one side's hidden orders and the other's. */
+.screencover { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.screencover .box { max-width: 440px; width: 100%; }
+.screencover h2 { font-size: 28px; text-transform: uppercase; }
+.screenbar { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; padding: 4px 10px; border-radius: 4px; background: var(--accent-soft); }
+.cols3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.cols3 > div { background: var(--panel); border-radius: 4px; padding: 5px 6px; font-size: 12px; }
+.cols3 b.big2 { display: block; font-family: var(--font-mono); font-size: 20px; }
+.cols3 > div.likely { box-shadow: inset 0 0 0 1px var(--accent); }
 
 /* Map layers */
 .hex { stroke: var(--hex-line); stroke-width: 1; fill: var(--map); }
@@ -1561,6 +1570,7 @@ function startRound() {
   S.initRef = {};
   for (const u of living()) S.initRef[u.id] = stat(u, 'reflex');
   for (const u of living()) { const foes = engagedFoes(u); if (foes.length) u.facing = faceToward(u.hex, foes[0].hex); }
+  screenStartRound();
 }
 function endRound() {
   for (const u of living()) {
@@ -1574,12 +1584,165 @@ function endRound() {
   log(`<b>Round ${S.round}</b>. Energy recharged, effects counted down, Charge bonuses ended.`);
 }
 function advance() {
+  if (screenAdvance()) { render(); return; }
   if (S.phase === 'plan') resolveMovement();
   else if (S.phase === 'action') { S.phase = 'attack'; S.ui = {}; log('<b>Attack phase</b>.'); }
   else endRound();
   render();
 }
 function log(html) { S.log.unshift({ when: `R${S.round} ${S.phase[0].toUpperCase()}`, html }); if (S.log.length > 250) S.log.length = 250; }
+
+// ---------- GM screen: hidden orders and the Declare step ----------
+// S.screen turns the mode on. S.scr.side is the side entering orders behind the screen (null: nobody);
+// S.scr.cover, when set, is the cover panel naming what comes next: 0 or 1 (that side's turn), 'reveal'
+// (resolve movement) or 'stances' (reveal stances). S.stancesShown is false from Planning until Reveal stances.
+const SIDE_NAME = ['Blue', 'Red'];
+function scr() { return S.scr || (S.scr = { side: null, cover: null }); }
+function screenStartRound() {
+  S.stancesShown = false;
+  S.scr = { side: null, cover: S.screen ? { next: 0 } : null };
+  for (const u of S.units) u.decl = null;
+}
+// Whether a unit's stance may be shown. Aircraft always evade, so theirs is public.
+function stanceShown(u) {
+  if (!S.screen || S.stancesShown || isAir(u)) return true;
+  const sc = scr();
+  return (S.phase === 'plan' || S.phase === 'declare') && !sc.cover && sc.side === u.side;
+}
+// Movement orders show only to the side that gave them until Reveal.
+function orderShown(u) {
+  if (!S.screen || S.phase !== 'plan') return true;
+  const sc = scr();
+  return !sc.cover && sc.side === u.side;
+}
+// Behind the screen, only the side whose turn it is can give orders or declare.
+const canOrder = u => !S.screen || (!scr().cover && scr().side === u.side);
+function setScreen(on) {
+  S.screen = !!on;
+  const sc = scr();
+  if (S.screen) {
+    S.stancesShown = S.phase === 'attack';
+    sc.side = null; sc.cover = S.phase === 'plan' || S.phase === 'declare' ? { next: 0 } : null;
+    if (S.phase === 'declare') for (const u of living()) if (u.decl === undefined) u.decl = null;
+  } else {
+    sc.side = null; sc.cover = null;
+    if (S.phase === 'declare') { S.phase = 'attack'; log('GM screen off: <b>Attack phase</b>; targets are picked at attack time.'); }
+  }
+  S.ui = {};
+}
+// After the Action phase: each unit that has already used its attack (a channelled Protocol, or a parting strike)
+// declares no attack; the rest declare behind the screen.
+function startDeclare() {
+  S.phase = 'declare'; S.ui = {}; S.sel = null;
+  for (const u of S.units) u.decl = alive(u) && u.attacked ? { none: true, why: 'used' } : null;
+  const sc = scr(); sc.side = null; sc.cover = { next: 0 };
+  log('<b>Declare step</b>: each side names a target and weapon for each unit in secret.');
+}
+function declareAttack(u, wid, tid) { u.decl = { w: wid, t: tid }; }
+function declareNone(u) { u.decl = { none: true }; }
+function revealStances() {
+  S.stancesShown = true; S.phase = 'attack'; S.ui = {};
+  const sc = scr(); sc.side = null; sc.cover = null;
+  const list = living().filter(u => !isAir(u)).map(u => `${u.cs} <b>${bracing(u) ? 'Brace' : 'Evade'}</b>${fullMove(u) ? ' (full move)' : ''}`);
+  log(`<b>Stances revealed</b>: ${list.join(', ') || 'no ground units'}. <b>Attack phase</b>.`);
+}
+// "Hide and pass" during Planning and Declare; "Go to Declare" after the Action phase. Returns true if it handled
+// the step, so advance() leaves it alone.
+function screenAdvance() {
+  if (!S.screen) return false;
+  const sc = scr();
+  if (sc.cover) return true;
+  if (S.phase === 'plan' || S.phase === 'declare') {
+    const side = sc.side === null ? 0 : sc.side;
+    if (S.phase === 'declare') for (const u of living()) if (u.side === side && !u.decl) declareNone(u);
+    sc.cover = { next: side === 0 ? 1 : S.phase === 'plan' ? 'reveal' : 'stances' };
+    sc.side = null; S.ui = {}; S.sel = null;
+    return true;
+  }
+  if (S.phase === 'action') { startDeclare(); return true; }
+  return false;
+}
+// The cover panel's button: show the next side's orders, reveal movement, or reveal stances.
+function uncover() {
+  const sc = scr(), next = sc.cover && sc.cover.next;
+  sc.cover = null;
+  if (next === 0 || next === 1) { sc.side = next; S.sel = null; S.ui = {}; }
+  else if (next === 'reveal') { sc.side = null; resolveMovement(); }
+  else if (next === 'stances') { revealStances(); focusTurn(); }
+}
+// The forecast with the target's stance overridden: 'evade' (no full move), 'fullmove' (evade after a full Ground
+// Move) or 'brace'. It runs the page's own forecast(); the target is restored afterwards.
+function forecastAs(a, d, wid, opts, mode) {
+  const keep = { stance: d.stance, moveM: d.moveM, moveHexes: d.moveHexes };
+  try {
+    d.stance = mode === 'brace' ? 'brace' : 'evade';
+    if (mode === 'evade') d.moveHexes = 0;
+    if (mode === 'fullmove') { d.moveM = 'ground'; d.moveHexes = moveOf(d); }
+    return forecast(a, d, wid, opts);
+  } finally { Object.assign(d, keep); }
+}
+function hiddenForecast(a, d, wid, opts = {}) {
+  return { evade: forecastAs(a, d, wid, opts, 'evade'), fullmove: forecastAs(a, d, wid, opts, 'fullmove'), brace: forecastAs(a, d, wid, opts, 'brace') };
+}
+// What the revealed movement already tells: more than floor(Move / 2) hexes means it cannot be bracing.
+function stanceHint(d) {
+  if (isAir(d) || !d.moveHexes || d.moveHexes <= Math.floor(moveOf(d) / 2)) return null;
+  return (d.moveM === 'ground' || d.moveM === 'cruise') && d.moveHexes === moveOf(d) && !hasFlag(d, 'stagger') ? 'fullmove' : 'evade';
+}
+
+// ---------- Strict attack order ----------
+// The order is the initiative order when the Attack phase starts (units added later go last). S.atk.done records
+// why a unit's turn is over: fired, lost, skipped, none, used, gone.
+function attackState() {
+  if (!S.atk || S.atk.round !== S.round) S.atk = { round: S.round, order: initiative().map(u => u.id), done: {} };
+  for (const u of living()) if (!S.atk.order.includes(u.id)) S.atk.order.push(u.id);
+  return S.atk;
+}
+const atkDone = u => !!(S.atk && S.atk.round === S.round && S.atk.done[u.id]);
+// The unit whose turn it is to attack, or null. Passing over a unit records why, and logs it once.
+function attackTurn() {
+  if (S.phase !== 'attack') return null;
+  const A = attackState();
+  for (const id of A.order) {
+    if (A.done[id]) continue;
+    const u = U(id);
+    if (!u) { A.done[id] = 'gone'; continue; }
+    if (!alive(u)) { A.done[id] = 'gone'; log(`${u.cs} ${u.dead ? 'was destroyed' : 'withdrew'} before its turn: <b>no attack</b>.`); continue; }
+    if (u.attacked) { A.done[id] = 'used'; log(`${u.cs} used its attack earlier this round (a channelled Protocol or a parting strike): no attack.`); continue; }
+    if (S.screen && u.decl && u.decl.none) { A.done[id] = 'none'; log(`${u.cs} ${u.decl.why ? 'used a channelled Protocol' : 'declared no attack'}: no attack.`); continue; }
+    return u;
+  }
+  return null;
+}
+// An attack only on the unit's own turn.
+function fireOnTurn(a, d, wid, opts = {}, dice = d10) {
+  const cur = attackTurn();
+  if (cur !== a) return { err: cur ? `Not its turn: ${cur.cs} attacks first` : 'Every attack this round is done' };
+  const res = rollAttack(a, d, wid, opts, dice);
+  if (!res.err) S.atk.done[a.id] = 'fired';
+  return res;
+}
+function loseAttack(u) {
+  if (attackTurn() !== u) return;
+  u.attacked = true; S.atk.done[u.id] = 'lost';
+  log(`${u.cs} has no legal target for its ${u.decl && u.decl.w ? W[u.decl.w].name : 'attack'}: <b>loses the attack</b>.`);
+}
+function skipTurn(u) {
+  if (!u || attackTurn() !== u) return;
+  S.atk.done[u.id] = 'skipped';
+  log(`GM: ${u.cs}'s attack is <b>skipped</b>.`);
+}
+// The declared target is gone: the other legal targets for the same weapon.
+function retargets(u) {
+  const dc = u.decl; if (!dc || !dc.w) return [];
+  return living().filter(o => o.id !== dc.t && !attackError(u, o, dc.w));
+}
+// Select the unit whose turn it is, with its declared attack loaded.
+function focusTurn() {
+  const cur = attackTurn();
+  S.sel = cur ? cur.id : null; S.ui = {}; S.tab = 'unit'; S.placing = null;
+  if (cur && S.screen && cur.decl && cur.decl.w) S.ui = { w: cur.decl.w, target: cur.decl.t, push: false, see: false };
+}
 
 // ---------- Rules checks ----------
 function seq(arr) { let i = 0; return () => { if (i >= arr.length) throw new Error('Ran out of scripted dice'); return arr[i++]; }; }
@@ -1750,6 +1913,65 @@ function runChecks() {
     const victim = mk({ id: 'v', cs: 'V', side: 1, pilot: 'anvil', frame: 'type99_tank', weapons: [], hex: toAxial(14, 14) });
     applyDamage(victim, 99);
     ok('0 Structure destroys the unit and leaves a wreck (light cover)', victim.dead && coverVal(terrainAt(victim.hex), 0) === 1, '');
+    {
+      // GM screen: before Reveal stances the forecast shows evade, full-Move evade and brace, each equal to the
+      // page's forecast with that stance.
+      S = world0(); S.phase = 'declare'; S.screen = true; S.stancesShown = false; S.scr = { side: 0, cover: null };
+      const ha = mk({ id: 'ha', cs: 'HA', side: 0, pilot: '_mark', frame: '_plain', weapons: ['_t36'], hex: toAxial(6, 11) });
+      const hd = mk({ id: 'hd', cs: 'HD', side: 1, pilot: '_tgt', frame: '_plain', hex: east(toAxial(6, 11), 4), facing: 4 });
+      hd.stance = 'brace'; hd.moveM = 'ground'; hd.moveHexes = 1;
+      const hf = hiddenForecast(ha, hd, '_t36');
+      const restored = hd.stance === 'brace' && hd.moveM === 'ground' && hd.moveHexes === 1;
+      const fBr = forecast(ha, hd, '_t36').exp;
+      hd.stance = 'evade'; hd.moveHexes = 0; const fEv = forecast(ha, hd, '_t36').exp;
+      hd.moveHexes = moveOf(hd); const fFm = forecast(ha, hd, '_t36').exp;
+      const near = (x, y) => Math.abs(x - y) < 1e-9;
+      ok('GM screen: the hidden-stance forecast gives evade, full-Move evade and brace, each equal to the forecast with that stance',
+        restored && near(hf.evade.exp, fEv) && near(hf.fullmove.exp, fFm) && near(hf.brace.exp, fBr) && new Set([fEv, fFm, fBr].map(x => x.toFixed(6))).size === 3,
+        `evade ${hf.evade.exp.toFixed(2)}/${fEv.toFixed(2)}, full move ${hf.fullmove.exp.toFixed(2)}/${fFm.toFixed(2)}, brace ${hf.brace.exp.toFixed(2)}/${fBr.toFixed(2)}`);
+      hd.stance = 'brace';
+      ok('GM screen: the other side\'s stance is hidden until Reveal stances; the side declaring sees its own', !stanceShown(hd) && stanceShown(ha), '');
+      revealStances();
+      ok('GM screen: Reveal stances shows every stance and starts the Attack phase', stanceShown(hd) && S.phase === 'attack', S.phase);
+    }
+    {
+      // A channelled Protocol uses the attack: the unit declares no attack and gets no attack turn.
+      S = world0(); S.phase = 'action'; S.screen = true;
+      const cu = mk({ id: 'cu', cs: 'CU', side: 0, pilot: '_mark', frame: '_plain', weapons: ['_t36'], hex: toAxial(6, 11), protos: ['overload_spike'] });
+      const ce = mk({ id: 'ce', cs: 'CE', side: 1, pilot: '_tgt', frame: '_plain', weapons: ['_t36'], hex: east(toAxial(6, 11), 4), facing: 4 });
+      cu.energy = 5;
+      const pr2 = useProtocol(cu, 'overload_spike', ce, false, 0, seq([10]));
+      startDeclare();
+      ok('Channelled Protocol: the unit declares no attack automatically; the other side still declares', pr2.ok && cu.decl && cu.decl.none && ce.decl === null, JSON.stringify(cu.decl));
+      declareAttack(ce, '_t36', 'cu');
+      revealStances();
+      ok('Channelled Protocol: it gets no attack turn', attackTurn() === ce && fireOnTurn(cu, ce, '_t36', {}, seq([1, 1, 1, 1])).err, attackTurn() ? attackTurn().cs : 'none');
+    }
+    {
+      // Strict attack order: initiative order; a unit destroyed before its turn loses its attack; skip; retarget.
+      S = world0();
+      const o1 = mk({ id: 'o1', cs: 'O1', side: 0, pilot: '_mark', frame: '_plain', weapons: ['_t36'], hex: toAxial(6, 11) });
+      const o2 = mk({ id: 'o2', cs: 'O2', side: 1, pilot: '_tgt', frame: '_plain', weapons: ['_t36'], hex: east(toAxial(6, 11), 4), facing: 4 });
+      const o3 = mk({ id: 'o3', cs: 'O3', side: 1, pilot: '_low', frame: '_plain', weapons: ['_t36'], hex: east(toAxial(6, 11), 3), facing: 4 });
+      const o4 = mk({ id: 'o4', cs: 'O4', side: 0, pilot: '_low', frame: '_plain', weapons: ['_t36'], hex: toAxial(6, 12) });
+      S.initRef = { o1: 6, o2: 8, o3: 4, o4: 3 };
+      const first = attackTurn();
+      const early = fireOnTurn(o3, o1, '_t36', {}, seq([10, 10, 10, 10]));
+      const r1 = fireOnTurn(o2, o1, '_t36', {}, seq([10, 10, 10, 10]));
+      ok('Attack order follows initiative: only the unit whose turn it is can attack', first === o2 && /Not its turn/.test(early.err || '') && !r1.err && attackTurn() === o1 && !o3.attacked,
+        `first ${first && first.cs}, early: ${early.err || 'fired'}, then ${attackTurn() && attackTurn().cs}`);
+      applyDamage(o1, 999);
+      const next = attackTurn();
+      ok('A unit destroyed before its turn makes no attack, and the log says so', next === o3 && S.log.some(e => /O1 was destroyed before its turn/.test(e.html)) && /Not its turn|done/.test(fireOnTurn(o1, o2, '_t36', {}, seq([1, 1, 1, 1])).err || ''),
+        `next ${next && next.cs}`);
+      skipTurn(o3);
+      ok('Skip turn (GM) passes the turn on', attackTurn() === o4 && !o3.attacked, attackTurn() ? attackTurn().cs : 'none');
+      S.screen = true; o4.decl = { w: '_t36', t: 'o1' };
+      const alts = retargets(o4);
+      ok('Declared target gone: the other legal targets for the same weapon are offered', attackError(o4, o1, '_t36') !== '' && alts.length === 2 && alts.every(x => x.side === 1 && alive(x)), alts.map(x => x.cs).join(', '));
+      loseAttack(o4);
+      ok('Lose the attack ends the round\'s attacks', o4.attacked && attackTurn() === null, '');
+    }
   } catch (e) {
     ok('Checks ran to the end', false, e.message);
   } finally {
@@ -1768,7 +1990,7 @@ const $ = id => document.getElementById(id);
 
 function selected() { const u = S.sel && U(S.sel); return u && (alive(u) || S.gm) ? u : null; }
 function currentEnds() {
-  const u = selected(); if (!u || !alive(u) || S.phase !== 'plan' || isEngaged(u)) return null;
+  const u = selected(); if (!u || !alive(u) || S.phase !== 'plan' || isEngaged(u) || !canOrder(u)) return null;
   if (!S.ui.m) return autoEnds(u);
   if (S.ui.m === 'charge' || manoError(u, S.ui.m)) return null;
   return endpoints(u, S.ui.m, S.ui.band ?? u.band);
@@ -1783,7 +2005,7 @@ function autoEnds(u) {
 }
 // The selected weapon's reach for a target on the GROUND: in range and arc, split by line of sight.
 function weaponReach() {
-  const u = selected(); if (!u || !alive(u) || S.phase !== 'attack' || !S.ui.w || u.attacked) return null;
+  const u = selected(); if (!u || !alive(u) || (S.phase !== 'attack' && S.phase !== 'declare') || !S.ui.w || u.attacked) return null;
   const w = W[S.ui.w], out = new Map();
   for (const h of ALL_HEXES) {
     if (same(h, u.hex) || blocks(terrainAt(h), 0)) continue;
@@ -1797,6 +2019,7 @@ function weaponReach() {
 function targetsForUI() {
   const u = selected(); if (!u || !alive(u)) return [];
   if (S.phase === 'plan' && S.ui.m === 'charge') return chargeTargets(u).map(t => ({ u: t, label: '' }));
+  if (S.phase === 'declare' && S.ui.w) return living().filter(t => !attackError(u, t, S.ui.w)).map(t => ({ u: t, label: stanceShown(t) ? hitTarget(u, t, S.ui.w).t : '?' }));
   if (S.phase === 'attack' && S.ui.w) return living().filter(t => !attackError(u, t, S.ui.w)).map(t => ({ u: t, label: hitTarget(u, t, S.ui.w, { push: S.ui.push }).t }));
   if (S.phase === 'action' && S.ui.p) return protoTargets(u, S.ui.p).map(t => ({ u: t, label: PROTOS[S.ui.p].kind === 'dispel' ? '' : protoRoll(u, S.ui.p, t, S.ui.ppush).t }));
   return [];
@@ -1826,7 +2049,7 @@ function counter(u, x, y, scale, tgLabel) {
   g += `<rect class="hpbg" x="${(-hw).toFixed(1)}" y="${(r * 0.5 - 3.5).toFixed(1)}" width="${(2 * hw).toFixed(1)}" height="3.5"/><rect class="hp" x="${(-hw).toFixed(1)}" y="${(r * 0.5 - 3.5).toFixed(1)}" width="${(2 * hw * hp).toFixed(1)}" height="3.5"/>`;
   g += `<polygon class="cedge" points="${hexPoints(0, 0, r)}"/>`;
   if (u.band) g += `<circle class="air" cx="${(r * 0.6).toFixed(1)}" cy="${(-r * 0.5).toFixed(1)}" r="6.5"/><text class="airtxt" x="${(r * 0.6).toFixed(1)}" y="${(-r * 0.5).toFixed(1)}">${u.band === 1 ? 'L' : 'H'}</text>`;
-  if (bracing(u)) g += `<rect class="bracebadge" x="${(r * 0.6 - 7).toFixed(1)}" y="-6.5" width="14" height="12" rx="2"/><text class="airtxt" x="${(r * 0.6).toFixed(1)}" y="-0.5">B</text>`;
+  if (bracing(u) && stanceShown(u)) g += `<rect class="bracebadge" x="${(r * 0.6 - 7).toFixed(1)}" y="-6.5" width="14" height="12" rx="2"/><text class="airtxt" x="${(r * 0.6).toFixed(1)}" y="-0.5">B</text>`;
   if (tgLabel !== undefined && tgLabel !== '') g += `<circle class="tgtbadge" cx="${(-r * 0.6).toFixed(1)}" cy="${(-r * 0.5).toFixed(1)}" r="8.5"/><text class="tgttxt" x="${(-r * 0.6).toFixed(1)}" y="${(-r * 0.5).toFixed(1)}">${tgLabel}</text>`;
   return g + '</g>';
 }
@@ -1846,14 +2069,14 @@ function renderMap() {
   for (const u of living()) if (u.field) for (const h of ALL_HEXES) if (hdist(h, u.hex) === u.field) { const [x, y] = pxOf(h); parts.push(`<polygon class="hex field ${sideCls(u)}" points="${hexPoints(x, y, HR - 3)}"/>`); }
   for (const h of ALL_HEXES) { const [x, y] = pxOf(h); parts.push(`<polygon class="hexhit" data-k="${key(h)}" points="${hexPoints(x, y)}"/>`); }
   // Orders
-  for (const u of living()) if (u.order && u.order.path) {
+  for (const u of living()) if (u.order && u.order.path && orderShown(u)) {
     const pts = u.order.path.map(h => pxOf(h).map(v => v.toFixed(1)).join(',')).join(' ');
     parts.push(`<polyline class="path ${sideCls(u)}" points="${pts}"/>`);
     const end = u.order.path[u.order.path.length - 1], [ex, ey] = pxOf(end);
     parts.push(`<circle class="ghost ${sideCls(u)}" cx="${ex}" cy="${ey}" r="${PX * 0.34}"/>`);
     const a = (facingAngle(u.order.facing) - 90) * Math.PI / 180;
     parts.push(`<line class="ghost ${sideCls(u)}" x1="${ex}" y1="${ey}" x2="${ex + Math.cos(a) * PX * 0.5}" y2="${ey + Math.sin(a) * PX * 0.5}"/>`);
-  } else if (u.order && u.order.m === 'charge') {
+  } else if (u.order && u.order.m === 'charge' && orderShown(u)) {
     const t = U(u.order.target);
     if (t) { const [x1, y1] = pxOf(u.hex), [x2, y2] = pxOf(t.hex); parts.push(`<line class="path ${sideCls(u)}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`); }
   }
@@ -1885,20 +2108,22 @@ function renderMap() {
 }
 
 function renderHeader() {
-  const ph = [['plan', 'Plan & move'], ['action', 'Action'], ['attack', 'Attack']];
+  const ph = [['plan', 'Plan & move'], ['action', 'Action'], ...(S.screen ? [['declare', 'Declare']] : []), ['attack', 'Attack']];
   $('phases').innerHTML = `<div class="round">Round ${S.round}</div>` + ph.map(([k, n]) => `<div class="${S.phase === k ? 'cur' : ''}">${n}</div>`).join('');
-  const next = { plan: 'Resolve movement', action: 'Go to attacks', attack: 'End round' }[S.phase];
+  const next = S.screen ? { plan: 'Hide and pass', action: 'Go to Declare', declare: 'Hide and pass', attack: 'End round' }[S.phase] : { plan: 'Resolve movement', action: 'Go to attacks', attack: 'End round' }[S.phase];
   $('tools').innerHTML = `
     <button class="primary" data-act="advance">${next}</button>
     <select id="preset" aria-label="Scenario">${Object.entries(PRESETS).map(([k, p]) => `<option value="${k}" ${S.preset === k ? 'selected' : ''}>${p.name}</option>`).join('')}</select>
     <button data-act="reset">Reset</button>
     <button data-act="allprotos" class="${S.allProtos ? 'on' : ''}" title="Give every mech all 11 starter Protocols">Every Protocol</button>
-    <button data-act="gm" class="${S.gm ? 'on' : ''}" title="Move, turn and edit units freely">GM tools</button>`;
+    <button data-act="gm" class="${S.gm ? 'on' : ''}" title="Move, turn and edit units freely">GM tools</button>
+    <button data-scr="toggle" class="${S.screen ? 'on' : ''}" title="Hidden orders: each side enters its orders and declares its attacks behind a cover panel">GM screen</button>${screenBar()}`;
 }
 function renderInit() {
   const order = initiative();
-  const done = u => (S.phase === 'plan' && (u.order || isEngaged(u))) || (S.phase === 'action' && u.acted) || (S.phase === 'attack' && u.attacked);
-  $('init').innerHTML = `<span class="label">Initiative</span>` + order.map(u => `<button class="chip ${S.sel === u.id ? 'sel' : ''} ${done(u) ? 'done' : ''}" data-sel="${u.id}" title="${pl(u).role}: ${pl(u).plays}"><span class="dot ${sideCls(u)}"></span>${u.cs} <span class="note">${pl(u).role}</span> <span class="mono">${initRef(u)}</span></button>`).join('')
+  const done = u => (S.phase === 'plan' && (u.order || isEngaged(u))) || (S.phase === 'action' && u.acted) || (S.phase === 'declare' && u.decl) || (S.phase === 'attack' && (u.attacked || atkDone(u)));
+  const turn = attackTurn();
+  $('init').innerHTML = `<span class="label">Initiative</span>` + order.map(u => `<button class="chip ${S.sel === u.id ? 'sel' : ''} ${done(u) ? 'done' : ''}" data-sel="${u.id}" title="${pl(u).role}: ${pl(u).plays}"><span class="dot ${sideCls(u)}"></span>${turn === u ? '▶ ' : ''}${u.cs} <span class="note">${pl(u).role}</span> <span class="mono">${initRef(u)}</span></button>`).join('')
     + S.units.filter(u => !alive(u)).map(u => `<span class="chip gone"><span class="dot ${sideCls(u)}"></span>${u.cs} ${u.withdrawn ? '(withdrew)' : '(destroyed)'}</span>`).join('');
 }
 function renderLog() {
@@ -1932,7 +2157,7 @@ function unitSheet(u) {
     <div class="meter"><span class="label">Energy</span><b>${u.energy}/${f.energy}</b><span class="note">+${f.recharge} a round</span></div>
     <div class="meter"><span class="label">Will</span><b>${u.will}/${p.stats.spirit}</b><span class="note">${p.abilities.map(a => ABILITY[a]).join(', ')}</span></div>
   </div>
-  <div class="facts"><span>Stance <b>${bracing(u) ? `Brace (${braceTarget(u) >= 1 ? `halves on ${braceTarget(u)}` : 'never halves'}, moves ≤ ${moveCap(u)})` : 'Evade'}</b>${fullMove(u) ? ' · <b>full-Move reroll</b>' : ''}</span><span>Band <b>${BANDS[u.band]}</b></span><span>Facing <b>${ARROWS[u.facing]}</b></span><span>Move <b>${moveOf(u)}</b></span><span>Armour <b>${armourNow(u)}</b>${u.shred ? ` (Shred −${u.shred})` : ''}${f.armourType !== 'none' ? ` (${f.armourType})` : ''}</span><span>Size <b>${f.size}</b></span>${u.field ? `<span>CM field <b>${u.field}</b></span>` : ''}${fs ? `<span>Covered by <b>${fs.cs}</b>'s field (CM ${stat(fs, 'countermeasures')})</span>` : ''}${foes ? `<span>Engaged with <b>${foes}</b></span>` : ''}</div>
+  <div class="facts"><span>Stance <b>${!stanceShown(u) ? 'hidden until Reveal stances' : bracing(u) ? `Brace (${braceTarget(u) >= 1 ? `halves on ${braceTarget(u)}` : 'never halves'}, moves ≤ ${moveCap(u)})` : 'Evade'}</b>${fullMove(u) && stanceShown(u) ? ' · <b>full-Move reroll</b>' : ''}</span><span>Band <b>${BANDS[u.band]}</b></span><span>Facing <b>${ARROWS[u.facing]}</b></span><span>Move <b>${moveOf(u)}</b></span><span>Armour <b>${armourNow(u)}</b>${u.shred ? ` (Shred −${u.shred})` : ''}${f.armourType !== 'none' ? ` (${f.armourType})` : ''}</span><span>Size <b>${f.size}</b></span>${u.field ? `<span>CM field <b>${u.field}</b></span>` : ''}${fs ? `<span>Covered by <b>${fs.cs}</b>'s field (CM ${stat(fs, 'countermeasures')})</span>` : ''}${foes ? `<span>Engaged with <b>${foes}</b></span>` : ''}</div>
   <div class="tablewrap"><table><thead><tr><th>Stat</th><th class="n">Pilot</th><th class="n">Hardware</th><th class="n">Effects</th><th class="n">Total</th><th class="n">Threshold</th></tr></thead><tbody>${rows}</tbody></table></div>
   <p class="note">Total = pilot + hardware + effects, limited to 1 up to the frame's threshold. Max Will = Spirit.</p>
   <div class="tablewrap"><table><thead><tr><th>Weapon</th><th class="n">Shots</th><th class="n">Range</th><th>Arc</th><th class="n">Ammo</th></tr></thead><tbody>${weapons}</tbody></table></div>
@@ -1947,7 +2172,7 @@ function stanceBox(u) {
     <button data-stance="evade" class="${bracing(u) ? '' : 'on'}">Evade</button>
     <button data-stance="brace" class="${bracing(u) ? 'on' : ''}">Brace</button></div>
     <p class="note">${bracing(u) ? `Bracing: attacks treat Reflex ${rf} as ${rf - 2}. Moves at most ${cap} hex${cap === 1 ? '' : 'es'} and cannot Charge. Each hit or glance that would damage it is halved on ${halve}. If it does not move, it is planted: +1 on its own attacks.`
-      : `Evading: Reflex ${rf} counts fully. A move of the full ${moveOf(u)} hexes by Ground Move${fr(u).manos.includes('cruise') ? ' or Cruise' : ''} makes each attacker reroll its first hit. Bracing (Brace ${stat(u, 'brace')}) would halve damaging hits on ${halve}.`} Chosen in secret with the movement order and shown at the Declare step; this sandbox shows it at once.</p></div>`;
+      : `Evading: Reflex ${rf} counts fully. A move of the full ${moveOf(u)} hexes by Ground Move${fr(u).manos.includes('cruise') ? ' or Cruise' : ''} makes each attacker reroll its first hit. Bracing (Brace ${stat(u, 'brace')}) would halve damaging hits on ${halve}.`} Chosen in secret with the movement order and shown at the Declare step; ${S.screen ? 'the GM screen hides it from the other side until Reveal stances' : 'turn on GM screen to keep it hidden'}.</p></div>`;
 }
 function planBox(u) {
   if (isEngaged(u)) return stanceBox(u) + `<div class="box"><h3>Movement</h3><p class="warn">Engaged with ${engagedFoes(u).map(o => o.cs).join(', ')}. Engaged units cannot move; break off in the Action phase.</p></div>`;
@@ -2013,6 +2238,7 @@ function actionBox(u) {
 
 function attackBox(u) {
   if (u.attacked) return `<div class="box"><h3>Attack · used</h3><p class="note">${u.cs} has made its attack this round.</p></div>`;
+  const gate = attackGate(u); if (gate) return gate;
   const list = u.weapons.map(wid => {
     const w = W[wid];
     const tg = living().filter(t => !attackError(u, t, wid));
@@ -2041,9 +2267,9 @@ function attackBox(u) {
       ${hasAbility(u, 'see_it') ? `<label><input type="checkbox" id="see" ${S.ui.see ? 'checked' : ''} ${u.will < 1 ? 'disabled' : ''}> I Can See It (1 Will, +2 rerolls)</label>` : ''}
       <button class="primary" data-act="fire">Roll attack</button></div>`;
   } else if (S.ui.w) fc = `<p class="note">Click a highlighted enemy. The badge shows the hit target. Green hexes are in range and arc for a target on the ground; dashed red ones are in range and arc but out of sight.</p>`;
-  const order = initiative(), ahead = order.slice(0, order.indexOf(u)).filter(o => !o.attacked);
+  const order = initiative(), ahead = order.slice(0, order.indexOf(u)).filter(o => !o.attacked && !atkDone(o));
   const warn = ahead.length ? `<p class="warn">Attacks go in initiative order: ${ahead.map(o => o.cs).join(', ')} ${ahead.length > 1 ? 'come' : 'comes'} first. A unit destroyed before its turn loses its attack.</p>` : '';
-  return `<div class="box"><h3>Attack</h3>${warn}<div class="list">${list}</div>${fc}</div>`;
+  return `<div class="box"><h3>Attack</h3>${warn}<div class="list">${list}</div>${fc}${skipRow(u)}</div>`;
 }
 
 function gmBox(u) {
@@ -2085,6 +2311,142 @@ function rosterBox() {
   }).join('');
   return `<div class="box"><h3>Pilot roster</h3><p class="note">Pilot stats run 1–14 (the old ratings + 5). Every pilot has a different build, and each pilot's highest stats are highlighted. A unit's total adds the frame's hardware, up to the frame's threshold. Pilots cannot add Structure or Armour, so a "Tank" pilot brings Brace, and the frame brings the armour.</p>
     <div class="tablewrap"><table><thead><tr><th>Pilot</th>${head.map(h => `<th class="n">${h}</th>`).join('')}<th>Plays as</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+// ---------- GM screen and attack order: rendering ----------
+function screenBar() {
+  if (!S.screen) return '';
+  const sc = scr();
+  const txt = sc.cover ? 'Screen up' : sc.side !== null ? `${SIDE_NAME[sc.side]} ${S.phase === 'plan' ? 'enters orders' : 'declares'}` : S.stancesShown ? 'Stances shown' : 'Stances hidden';
+  return `<span class="screenbar">${txt}</span>`;
+}
+// The cover panel: a full-page panel between one side's turn behind the screen and the next.
+function renderCover() {
+  let el = document.getElementById('screencover');
+  const sc = S.screen ? scr() : null;
+  if (!sc || !sc.cover) { if (el) el.remove(); return; }
+  if (!el) { el = document.createElement('div'); el.id = 'screencover'; el.className = 'screencover'; document.body.appendChild(el); }
+  const n = sc.cover.next, decl = S.phase === 'declare';
+  let head, body, btn;
+  if (n === 0 || n === 1) {
+    const me = SIDE_NAME[n], other = SIDE_NAME[1 - n];
+    head = `${me} ${decl ? 'declares' : 'plans'}`;
+    body = `Pass the screen to ${me}. ${other}: look away. ${me} ${decl ? 'picks a target and weapon for each unit, or no attack' : 'gives each unit a manoeuvre and a stance'}, then presses <b>Hide and pass</b>.`;
+    btn = `Show ${me}'s ${decl ? 'declarations' : 'orders'}`;
+  } else if (n === 'reveal') {
+    head = 'Orders are in';
+    body = 'Both sides have entered their orders. <b>Reveal movement</b> shows the movement and resolves it in initiative order. Stances stay hidden through Movement and Action.';
+    btn = 'Reveal movement';
+  } else {
+    head = 'Declarations are in';
+    body = 'Both sides have declared. <b>Reveal stances</b> shows every stance; then attacks go in initiative order.';
+    btn = 'Reveal stances';
+  }
+  el.innerHTML = `<div class="box" role="dialog" aria-modal="true" aria-label="${head}"><span class="label">GM screen · Round ${S.round}</span><h2>${head}</h2><p class="note">${body}</p>
+    <div class="row"><button class="primary" data-scr="uncover">${btn}</button><button data-scr="toggle">Turn off GM screen</button></div></div>`;
+}
+// The phase box while the GM screen is on: '' leaves the normal box in place.
+function screenBox(u) {
+  if (!S.screen) return '';
+  if (S.phase === 'plan' && !canOrder(u)) return `<div class="box"><h3>Orders</h3><p class="note">${SIDE_NAME[u.side]} enters its orders and stances behind the screen on its own turn.</p></div>`;
+  if (S.phase === 'declare') return declareBox(u);
+  return '';
+}
+// Before Reveal stances: the forecast against evade, full-Move evade and brace. After: the real one.
+function forecastCols(a, d, wid) {
+  if (stanceShown(d)) {
+    const f = forecast(a, d, wid);
+    return `<div class="cols3"><div><span class="label">Hit on</span><b class="big2">${f.ht.t}</b></div><div><span class="label">Expected</span><b class="big2">${f.exp.toFixed(1)}</b></div><div><span class="label">Destroy</span><b class="big2">${pct(f.kill)}</b><span class="note">any damage ${pct(f.any)}</span></div></div>`;
+  }
+  const hf = hiddenForecast(a, d, wid), hint = stanceHint(d), li = hf.evade.li;
+  const col = (k, name, f) => `<div class="${hint === k ? 'likely' : ''}"><span class="label">${name}</span><b class="big2">${f.ht.t}</b><span class="note">hit on</span><br>Expected <b>${f.exp.toFixed(1)}</b><br>Destroy <b>${pct(f.kill)}</b><br><span class="note">any damage ${pct(f.any)}</span></div>`;
+  return `<p class="note">${d.cs}'s stance is hidden until <b>Reveal stances</b>. Range ${rangeOf(a, d)} · cover ${cover(a, d)} · lock ${li.ok ? li.t : '— (' + li.why + ')'}.</p>
+    <div class="cols3">${col('evade', 'Evade', hf.evade)}${col('fullmove', 'Full-Move evade', hf.fullmove)}${col('brace', 'Brace', hf.brace)}</div>
+    ${hint ? `<p class="note">${d.cs} moved ${d.moveHexes} of ${moveOf(d)} hexes, more than a bracing unit may: the ${hint === 'fullmove' ? 'full-Move evade' : 'evade'} column applies.</p>` : ''}`;
+}
+function declareBox(u) {
+  if (!canOrder(u)) return `<div class="box"><h3>Declare</h3><p class="note">${SIDE_NAME[u.side]} declares behind the screen on its own turn.</p></div>`;
+  const left = living().filter(o => o.side === u.side && !o.decl).length;
+  const leftTxt = `<p class="note">${left ? `${left} ${SIDE_NAME[u.side]} unit${left > 1 ? 's' : ''} still to declare. Any left at <b>Hide and pass</b> declares no attack.` : `Every ${SIDE_NAME[u.side]} unit has declared: press <b>Hide and pass</b>.`}</p>`;
+  if (u.decl && u.decl.why) return `<div class="box"><h3>Declare</h3><p class="note">${u.cs} has used its attack this round (a channelled Protocol or a parting strike), so it declares no attack.</p>${leftTxt}</div>`;
+  const dt = u.decl && u.decl.t && U(u.decl.t);
+  const cur = u.decl ? `<p class="note">Declared: <b>${u.decl.none ? 'no attack' : `${W[u.decl.w].name} at ${dt ? dt.cs : '?'}`}</b>. <button data-scr="redeclare">Change</button></p>` : '';
+  const list = u.weapons.map(wid => {
+    const w = W[wid], tg = living().filter(t => !attackError(u, t, wid));
+    const why = tg.length ? `${tg.length} target${tg.length > 1 ? 's' : ''}` : (living().filter(t => t.side !== u.side).map(t => attackError(u, t, wid)).find(e => /Energy|empty|Dry|Engaged|kneel|move|Jammed|Transformed/.test(e)) || 'No legal target');
+    return `<button class="opt ${S.ui.w === wid ? 'on' : ''}" data-weapon="${wid}" ${tg.length ? '' : 'disabled'}><span>${w.name} <small>${w.shots}×${w.dmg}${w.ap ? ` AP${w.ap}` : ''} · ${rangeTxt(w)} · ${ARC_NAME[ARC_HEX[w.arc]]}</small><br><small>${tg.length ? why : `<span class="why">${why}</span>`}</small></span></button>`;
+  }).join('');
+  let fc = '';
+  const t = S.ui.target && U(S.ui.target);
+  if (S.ui.w && t && !attackError(u, t, S.ui.w)) fc = forecastCols(u, t, S.ui.w) + `<div class="row"><button class="primary" data-scr="declare">Declare ${W[S.ui.w].name} at ${t.cs}</button></div>`;
+  else if (S.ui.w) fc = `<p class="note">Click a highlighted enemy. A ? badge means the hit target depends on its hidden stance.</p>`;
+  return `<div class="box"><h3>Declare${u.decl ? ' · done' : ''}</h3>${cur}<div class="list">${list}</div>${fc}<div class="row"><button data-scr="noattack">No attack</button></div>${leftTxt}</div>`;
+}
+function skipRow(u) {
+  return attackTurn() === u ? `<div class="row"><button data-scr="skip" title="GM override: end this unit's turn without an attack">Skip turn (GM)</button></div>` : '';
+}
+// Strict attack order: only the unit whose turn it is gets an attack box. With the GM screen on, it fires its
+// declared attack. Returns '' to leave the normal attack box in place.
+function attackGate(u) {
+  const cur = attackTurn();
+  if (cur !== u) {
+    const why = atkDone(u) ? { skipped: 'Its turn was skipped.', lost: 'It lost its attack.', none: 'It declared no attack.', used: 'It used its attack earlier this round.', fired: 'It has attacked.' }[S.atk.done[u.id]] || '' : '';
+    const turn = cur ? `Attacks go in initiative order: it is <b>${cur.cs}</b>'s turn.` : 'Every attack this round is done.';
+    return `<div class="box"><h3>Attack</h3>${why ? `<p class="note">${why}</p>` : ''}<p class="warn">${turn}</p>${cur ? `<div class="row"><button data-sel="${cur.id}">Go to ${cur.cs}</button></div>` : ''}</div>`;
+  }
+  if (!S.screen || !u.decl || !u.decl.w) return '';
+  return declaredAttackBox(u);
+}
+function declaredAttackBox(u) {
+  const dc = u.decl, w = W[dc.w], t = U(dc.t);
+  if (S.ui.w !== dc.w || S.ui.target !== dc.t) Object.assign(S.ui, { w: dc.w, target: dc.t });
+  const err = t ? attackError(u, t, dc.w) : 'Unit gone';
+  if (err) {
+    const gone = !t ? 'is gone' : t.dead ? 'was destroyed' : t.withdrawn ? 'withdrew' : `is no longer a legal target (${err})`;
+    const alts = retargets(u);
+    return `<div class="box"><h3>Attack · ${u.cs}'s turn</h3><p class="warn">Declared: ${w.name} at ${t ? t.cs : 'a unit'}, which ${gone}.</p>
+      ${alts.length ? `<span class="label">Other legal targets for the ${w.name}</span><div class="row">${alts.map(o => `<button data-scr="retarget" data-t="${o.id}">${o.cs} · hit on ${hitTarget(u, o, dc.w).t}</button>`).join('')}</div>` : '<p class="note">No other legal target for this weapon.</p>'}
+      <div class="row"><button data-scr="lose">Lose the attack</button></div>${skipRow(u)}</div>`;
+  }
+  const f = forecast(u, t, dc.w, { push: S.ui.push, seeIt: S.ui.see });
+  return `<div class="box"><h3>Attack · ${u.cs}'s turn</h3><p class="note">Declared: <b>${w.name}</b> at <b>${t.cs}</b>. Push and I Can See It are chosen now.</p>
+    <div class="forecast"><div><span class="label">Hit on</span><div class="big">${f.ht.t}</div></div>
+    <div class="parts">${f.ht.parts.map(([n, v], i) => `${i ? (v < 0 ? '− ' : '+ ') : ''}${Math.abs(v)} ${n}`).join(' ')}${f.ht.raw !== f.ht.t ? ` = ${f.ht.raw}, limited to ${f.ht.t}` : ''}<br>
+    Range ${rangeOf(u, t)} · cover ${cover(u, t)} · Armour ${f.ea}${w.ap ? ` (AP ${w.ap})` : ''}
+    ${f.bt !== null ? `<br><b>${t.cs} is bracing:</b> each damaging hit or glance is halved on ${f.bt >= 1 ? `${f.bt} or less` : 'a target of 0, so never'}.` : ''}${f.fm ? `<br><b>${t.cs} made a full move:</b> your first hit is rerolled.` : ''}${w.special ? `<br>Special: ${w.special}` : ''}</div></div>
+    <div class="stats3">
+      <div><span class="label">Lock</span><b>${f.li.ok ? f.li.t : '—'}</b><span class="note">${f.li.ok ? `against CM ${f.li.cm}` : f.li.why}</span></div>
+      <div><span class="label">Crit on</span><b>${f.crit >= 1 ? (f.crit === 1 ? '1' : '1–' + Math.min(f.crit, 10)) : 'never'}</b><span class="note">${f.dC} damage</span></div>
+      <div><span class="label">Per hit</span><b>${f.dH}</b></div>
+      <div><span class="label">Expected</span><b>${f.exp.toFixed(1)}</b></div>
+      <div><span class="label">Destroy</span><b>${pct(f.kill)}</b><span class="note">any damage ${pct(f.any)}</span></div>
+    </div>
+    <div class="row"><label><input type="checkbox" id="push" ${S.ui.push ? 'checked' : ''} ${u.will < 1 ? 'disabled' : ''}> Push (1 Will, +2)</label>
+    ${hasAbility(u, 'see_it') ? `<label><input type="checkbox" id="see" ${S.ui.see ? 'checked' : ''} ${u.will < 1 ? 'disabled' : ''}> I Can See It (1 Will, +2 rerolls)</label>` : ''}
+    <button class="primary" data-scr="firedecl">Roll attack</button></div>${skipRow(u)}</div>`;
+}
+// Clicks on data-scr buttons: the screen toggle, the cover panel, declarations and the attack turn.
+function screenClick(d, u) {
+  switch (d.scr) {
+    case 'toggle': setScreen(!S.screen); log(`GM screen <b>${S.screen ? 'on' : 'off'}</b>.`); break;
+    case 'uncover': uncover(); break;
+    case 'declare': { const t = S.ui.target && U(S.ui.target); if (u && t && S.ui.w && canOrder(u) && !attackError(u, t, S.ui.w)) { declareAttack(u, S.ui.w, t.id); S.ui = {}; } break; }
+    case 'noattack': if (u && canOrder(u)) { declareNone(u); S.ui = {}; } break;
+    case 'redeclare': if (u && canOrder(u)) { u.decl = null; S.ui = {}; } break;
+    case 'firedecl': {
+      const dc = u && u.decl, t = dc && U(dc.t); if (!t) break;
+      const res = fireOnTurn(u, t, dc.w, { push: S.ui.push, seeIt: S.ui.see });
+      if (res.err) log(`${u.cs} cannot attack: ${res.err}.`); else { attackLog(u, t, res); focusTurn(); }
+      break;
+    }
+    case 'retarget': {
+      const t = U(d.t);
+      if (u && t && retargets(u).includes(t)) { log(`${u.cs}'s declared target is gone: it switches to <b>${t.cs}</b>.`); u.decl = Object.assign({}, u.decl, { t: t.id }); S.ui = { w: u.decl.w, target: t.id }; }
+      break;
+    }
+    case 'lose': loseAttack(u); focusTurn(); break;
+    case 'skip': skipTurn(attackTurn()); focusTurn(); break;
+  }
 }
 
 function checksBox() {
@@ -2203,10 +2565,10 @@ function renderSide() {
   if (S.tab === 'unit') {
     const u = selected();
     if (!u) body = `<p class="note">Select a unit on the map or in the initiative bar.</p>
-      <div class="box"><h3>How a round runs</h3><p class="note"><b>Plan &amp; move:</b> pick each unit's stance (Evade or Brace) and give it a manoeuvre, then resolve. Units move in initiative order (highest Reflex total, fixed at the start of the round) and collisions stop them short.<br><b>Action:</b> one Protocol, reload or break-off each.<br><b>Attack:</b> in initiative order, pick a weapon, click a target, check the forecast, roll.<br><b>End:</b> Energy recharges, effects count down, Charge bonuses end.</p><p class="note">Rules: Player's Guide, playtest edition. Numbers: the Frames and Weapons sheet, built into this page from tabletop/data/catalogue.json. Not built here: secret orders and the Declare step (stances show at once, and you pick targets after seeing them), switching targets when one is gone.<br><b>Aftermath</b> tab: withdrawn units, ejection and injury rolls, task checks, the lethal-fight switch, and mission mode with Downtime.</p></div>${rosterBox()}`;
+      <div class="box"><h3>How a round runs</h3><p class="note"><b>Plan &amp; move:</b> pick each unit's stance (Evade or Brace) and give it a manoeuvre, then resolve. Units move in initiative order (highest Reflex total, fixed at the start of the round) and collisions stop them short.<br><b>Action:</b> one Protocol, reload or break-off each.<br><b>Attack:</b> in initiative order, pick a weapon, click a target, check the forecast, roll.<br><b>End:</b> Energy recharges, effects count down, Charge bonuses end.</p><p class="note">Rules: Player's Guide, playtest edition. Numbers: the Frames and Weapons sheet, built into this page from tabletop/data/catalogue.json. Turn on <b>GM screen</b> for hidden orders: each side enters its orders and stances, then declares its attacks, behind a cover panel; stances show at <b>Reveal stances</b>. Attacks always go strictly in initiative order.<br><b>Aftermath</b> tab: withdrawn units, ejection and injury rolls, task checks, the lethal-fight switch, and mission mode with Downtime.</p></div>${rosterBox()}`;
     else {
       body = unitSheet(u);
-      if (alive(u)) body += S.phase === 'plan' ? planBox(u) : S.phase === 'action' ? actionBox(u) : attackBox(u);
+      if (alive(u)) body += screenBox(u) || (S.phase === 'plan' ? planBox(u) : S.phase === 'action' ? actionBox(u) : attackBox(u));
       if (S.gm) body += gmBox(u);
     }
   } else if (S.tab === 'add') body = addBox();
@@ -2214,7 +2576,7 @@ function renderSide() {
   else body = checksBox();
   $('side').innerHTML = `<div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button role="tab" class="${S.tab === k ? 'on' : ''}" data-tab="${k}">${n}</button>`).join('')}</div><div class="pane">${body}</div>`;
 }
-function render() { renderHeader(); renderInit(); renderMap(); renderSide(); renderLog(); }
+function render() { renderHeader(); renderInit(); renderMap(); renderSide(); renderLog(); renderCover(); }
 
 // ---------- Interaction ----------
 function selectUnit(id) { S.sel = id; S.ui = {}; S.placing = null; S.tab = 'unit'; }
@@ -2260,11 +2622,12 @@ function onClick(e) {
   const b = e.target.closest('button'); if (!b || b.disabled) return;
   const u = selected(), d = b.dataset;
   if (d.aft) { aftermathClick(d, u); render(); return; }
+  if (d.scr) { screenClick(d, u); render(); return; }
   if (d.tab) { S.tab = d.tab; S.placing = null; }
   else if (d.sel) selectUnit(d.sel);
   else if (d.stance) {
     u.stance = d.stance;
-    if (bracing(u) && u.order && (u.order.m === 'charge' || (u.order.path && u.order.path.length - 1 > moveCap(u)) || manoError(u, u.order.m))) { log(`${u.cs} braces: its ${MANO[u.order.m].name} order is over the Brace limit and is cleared.`); u.order = null; }
+    if (bracing(u) && u.order && (u.order.m === 'charge' || (u.order.path && u.order.path.length - 1 > moveCap(u)) || manoError(u, u.order.m))) { if (!S.screen) log(`${u.cs} braces: its ${MANO[u.order.m].name} order is over the Brace limit and is cleared.`); u.order = null; }
     S.ui = {};
   }
   else if (d.mano) { if (S.ui.m === d.mano) S.ui = {}; else { S.ui = { m: d.mano, band: u.band }; if (u.order && u.order.m !== d.mano) u.order = null; } }
@@ -2285,7 +2648,7 @@ function onClick(e) {
       case 'gm': S.gm = !S.gm; S.placing = null; break;
       case 'clearorder': u.order = null; break;
       case 'fire': {
-        const t = U(S.ui.target), res = rollAttack(u, t, S.ui.w, { push: S.ui.push, seeIt: S.ui.see });
+        const t = U(S.ui.target), res = fireOnTurn(u, t, S.ui.w, { push: S.ui.push, seeIt: S.ui.see });
         if (res.err) log(`${u.cs} cannot attack: ${res.err}.`); else attackLog(u, t, res);
         S.ui = {}; break;
       }
