@@ -150,7 +150,7 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
   - **Bands by theatre:** Africa & the Middle East, Eurasian frontier, Atlantic & the Americas, Pacific, Luna & the inner planets, Mars, the Belt, Beyond the Belt. The old Orbit band was split among the last four; NPPL's Earth entries went to their theatres (the Greater Solar Crisis sits under Luna & the inner planets).
   - **Turning points:** the two sets joined (12), relabelled Gen 6–8. The "NPPL Gen" labels in Persons of Interest and Mysteries were relabelled too.
   - **Code:** the Map tab still switches between the world map (Gen 0–5) and the inner-system map (Gen 6–9), now both from the one tree (`SYS0 = 6` in the page). Conflict sheets after the war show Roots in the atlas and the inner-system map button. `#nppl` links and remembered tabs open Conflicts. check.js asks for LOC or ORBIT before the war and SOLAR.at after it.
-  - **Possible follow-up:** NPPL entries can now have real parent lines to the Haven entries they grew out of (until now they could only link through `ln`).
+  - **Lines across the war (version 116):** 13 post-war conflicts now have parent lines to the earlier conflicts they grew out of, e.g. the Founding of Colony One and the Panel Looks Up → the Line of Control, the Patron's Lease → the Syndicate's Belt, the Far Lift → Settling the Dark, the Loyal Minority and the River Judges → New Philadelphia.
 - **Map views (in progress, 2026-11-10):** a subagent is building Moon and Mars maps and an Earth · Moon · Mars · Inner system switch for every generation.
 
 **Order of work**
