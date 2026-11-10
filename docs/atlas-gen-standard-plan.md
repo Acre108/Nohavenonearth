@@ -2,7 +2,7 @@
 
 Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (atlas versions 99–104). Tidied on 2026-11-10: the resolved decisions are folded into the status, the order of work is a single list, and a Restructure section is added.
 
-## Status (2026-11-10, after atlas version 120)
+## Status (2026-11-10, after atlas version 121)
 
 **Decisions**
 - **A:** "Projected" is removed from the war; only Gen 9 (2327) keeps it.
@@ -171,11 +171,16 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
   - Ascendancy: the Mercury dock (small; Europa is its main anchorage).
   - African Commonwealth: the Eros dock (small; Europa is its main anchorage).
   - Lines added to the Sealed Plant, the Hampton Roads Plant, the Great Exchange, the Eros Silence and the Mercury Clean-up, and to the faction panel rows.
+  - Names approved by the user (2026-11-10): the Far Roads, the Juno berth, the Mercury dock, the Eros dock.
+- **Step 8, Persons of Interest (version 121, 2026-11-10):**
+  - 25 new people in Gen 8–9 (123 in all), about two per faction. They are descendants, successors and protégés of the 2312 cast; no player character is killed or changed.
+  - Five new allegiance bands: the Eurasian Ascendancy, the African Commonwealth, Umoja, the Ashva Compact and the Communion. Their faction views now have bands. Their people start in Gen 8, tied to their aces of Gen 5–7 (Belov, Diallo, Osei, Rao, Vey) by link rather than by family line.
+  - New names awaiting your review: Callum MacDouglas, Taqqiq Silla, Paloma Garza, Jonah Vane, Lise Hart, Yarik Lubov, Nkem Olgabenro, Ingrid Viborg, Lin Yue, Sun Wukong 237/I, Makoa Stevens, Xiao An, Iona Morgan, Jan Furyk, Vera Belova, Mikhail Belov, Anand Kulkarni, Fatou Diallo, Halima Osman, Zawadi Osei, Baraka Osei, Meera Rao, Haruka Sakamoto, Tomas Vey, Marisol Quispe.
+  - The turning points relabelled ("Haven Gen 3" → Gen 3–4, "The war" → Gen 5), and a Gen 9 turning point added.
 
 **Order of work**
-1. Persons of Interest.
-2. The final sweep. It includes the remaining "Haven Gen" / "The war" labels in Persons of Interest's turning points.
-3. **Supers** (once decision D is made).
+1. The final sweep.
+2. **Supers** (once decision D is made).
 
 One tab per publish, with check.js and a browser test each time.
 
@@ -335,7 +340,7 @@ Add only these:
 
 Place each entry on the map that matches its column.
 
-### Step 8. Persons of Interest
+### Step 8. Persons of Interest (done, version 121)
 
 - Extend to Gen 8–9: descendants, successors and the people who'll matter in 2327, about two per faction. Gen 7 already holds 38 of the 98 people, so the new ones should go in Gen 8–9.
 - Give Umoja, the Ashva Compact and the Communion people of their own, linked to their new frames, makers and doctrine.
