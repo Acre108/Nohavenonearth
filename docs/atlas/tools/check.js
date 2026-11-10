@@ -12,13 +12,15 @@ for(const [k,t] of Object.entries(DATA)){const cells={};const ncol=(t.cols||COLS
   if(!fams.has(n.f))errs.push("fam "+n.id);if(n.c>=ncol)errs.push("col "+n.id);
   for(const [p,t2] of n.p||[]){if(IDX[p]!==k)errs.push(`parent ${n.id}->${p}`);if(!DATA[k].rel[t2])errs.push(`relation ${n.id}->${p} ${t2}`)}
   for(const f of ["fr","mx","pw","wp","dc","ln"])for(const id of n[f]||[])if(!IDX[id]&&!(f==="ln"&&(k==="people"||k==="mysteries")&&ACES.some(a=>a.id===id)))errs.push(`ref ${n.id}.${f} ${id}`);}}
-for(const n of DATA.conflicts.nodes)if(!LOC[n.id]&&!ORBIT[n.id])errs.push("no LOC or ORBIT "+n.id);
+// Conflicts up to the war (Gen 0–5) sit on the world map; those after it (Gen 6–9) on the inner-system map
+const SYS0=6;
+for(const n of DATA.conflicts.nodes)if(n.c<SYS0&&!LOC[n.id]&&!ORBIT[n.id])errs.push("no LOC or ORBIT "+n.id);
 for(const n of MINOR)for(const f of ["mx","pw","wp","dc"])for(const id of n[f]||[])if(!IDX[id])errs.push(`minor ref ${n.id} ${id}`);
-if(DATA.nppl){const B=(SOLAR&&SOLAR.bodies)||{},AT=(SOLAR&&SOLAR.at)||{};
- if(!SOLAR||(SOLAR.eras||[]).length!==DATA.nppl.cols.length)errs.push("SOLAR.eras needs one entry per nppl column");
+{const B=(SOLAR&&SOLAR.bodies)||{},AT=(SOLAR&&SOLAR.at)||{},late=DATA.conflicts.nodes.filter(n=>n.c>=SYS0);
+ if(!SOLAR||(SOLAR.eras||[]).length!==DATA.conflicts.cols.length-SYS0)errs.push("SOLAR.eras needs one entry per generation from Gen 6");
  for(const [k,b] of Object.entries(B))if(b.of&&!B[b.of])errs.push(`body ${k} orbits unknown ${b.of}`);
- for(const n of DATA.nppl.nodes)if(!AT[n.id])errs.push("no SOLAR.at "+n.id);else if(!B[AT[n.id][0]])errs.push(`SOLAR.at ${n.id} unknown body ${AT[n.id][0]}`);
- for(const id of Object.keys(AT))if(IDX[id]!=="nppl")errs.push("SOLAR.at for unknown nppl entry "+id);}
+ for(const n of late)if(!AT[n.id])errs.push("no SOLAR.at "+n.id);else if(!B[AT[n.id][0]])errs.push(`SOLAR.at ${n.id} unknown body ${AT[n.id][0]}`);
+ for(const id of Object.keys(AT))if(!late.some(n=>n.id===id))errs.push("SOLAR.at for an entry that is not a conflict after the war "+id);}
 {const FV=JSON.parse(fs.readFileSync(path.join(path.dirname(process.argv[2]),"atlas-data.json"),"utf8")).FACTION_VIEWS;
  if(FV){const keys=new Set(FV.factions.map(f=>f.k)),lanes=new Set(TIMELINE.map(l=>l.g)),afs=new Set(ACE_FACTIONS.map(a=>a[0]));
   for(const f of FV.factions){const c=f.card==="UNEL"?UNEL:f.kind==="power"?POWERS.find(p=>p.b===f.card):SPACE.find(p=>p.n===f.card);if(!c)errs.push("view card "+f.k);
@@ -27,7 +29,7 @@ if(DATA.nppl){const B=(SOLAR&&SOLAR.bodies)||{},AT=(SOLAR&&SOLAR.at)||{};
   for(const [code,ks] of Object.entries(FV.makers)){if(!GROUPS[code])errs.push("view maker "+code);for(const k of ks)if(!keys.has(k))errs.push(`view maker ${code} ${k}`)}
   for(const n of [...Object.values(DATA).flatMap(t=>t.nodes),...MINOR])for(const k of n.fx||[])if(!keys.has(k))errs.push(`fx ${n.id} ${k}`);}}
 for(const [k,t] of Object.entries(DATA))for(const r of t.profile||[])for(const id of r.ids)if(IDX[id]!==k)errs.push(`profile ${k} ${r.k} ${id}`);
-const NCH=DATA.conflicts.cols.length+(DATA.nppl?DATA.nppl.cols.length:1);
+const NCH=DATA.conflicts.cols.length;
 for(const b of CHRONO){if(b.e>=NCH)errs.push(`chrono era ${b.t} ${b.e}`);if(b.id&&!IDX[b.id]&&!ACES.some(a=>a.id===b.id))errs.push(`chrono ref ${b.t} ${b.id}`)}
 for(const p of [...SPACE,UNEL,...POWERS])for(const id of p.from||[])if(!IDX[id]&&!ACES.some(a=>a.id===id))errs.push(`seed ref ${p.n} ${id}`);
 for(const p of POWERS)if(!BLOC[p.b])errs.push(`power bloc ${p.n} ${p.b}`);
@@ -35,7 +37,7 @@ for(const l of TIMELINE)for(const e of l.ev)if(e[3]&&!IDX[e[3]])errs.push(`timel
 const FAC=new Set(ACE_FACTIONS.map(f=>f[0])),ERAS=new Set(ACE_ERAS.map(e=>e[0])),AIDS=new Set();
 for(const a of ACES){if(AIDS.has(a.id))errs.push("dup ace "+a.id);AIDS.add(a.id);if(!FAC.has(a.g))errs.push(`ace faction ${a.id} ${a.g}`);if(!ERAS.has(a.c))errs.push(`ace era ${a.id} ${a.c}`);
  for(const [id,b,vn,note] of a.fr){if(b!=="S"&&!(vn&&note&&note.length>60))errs.push(`ace variant needs a name and differences ${a.id} ${id}`);if(IDX[id]!=="frames")errs.push(`ace frame ${a.id} ${id}`);if(!"SVC".includes(b)||b.length!==1)errs.push(`ace build ${a.id} ${b}`)}
- for(const id of a.cf)if(IDX[id]!=="conflicts"&&IDX[id]!=="nppl")errs.push(`ace conflict ${a.id} ${id}`);for(const id of a.ln||[])if(!IDX[id]&&!ACES.some(b=>b.id===id))errs.push(`ace ref ${a.id} ${id}`);}
+ for(const id of a.cf)if(IDX[id]!=="conflicts")errs.push(`ace conflict ${a.id} ${id}`);for(const id of a.ln||[])if(!IDX[id]&&!ACES.some(b=>b.id===id))errs.push(`ace ref ${a.id} ${id}`);}
 const VNS=new Set();for(const a of ACES)for(const f of a.fr)if(f[2])VNS.add(f[2]);
 for(const vn of Object.keys(VART||{}))if(!VNS.has(vn))errs.push("variant art for unknown version "+vn);
 for(const [k,p] of Object.entries(PLATES||{})){if(!DATA[k])errs.push("plate tree "+k);if(!p.f||!p.h||!p.c)errs.push("plate fields "+k);for(const id of p.go||[])if(!IDX[id])errs.push(`plate ref ${k} ${id}`);}

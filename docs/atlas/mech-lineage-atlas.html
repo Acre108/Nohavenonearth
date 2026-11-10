@@ -465,7 +465,7 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   <section class="view" id="mapView" hidden aria-label="Map">
     <div class="seg map-set" id="map-set" role="group" aria-label="Setting"><button type="button" data-set="haven">No Haven on Earth<small>World · to 2186</small></button><button type="button" data-set="nppl">No Peace Past Luna<small>Inner system · 2190–2327</small></button></div>
     <p class="intro" id="map-intro-haven">Where the power blocs stand and where they have fought, era by era. Pick an era to redraw the map with that era's conflicts, numbered in the order they happened. Events in orbit and on Mars sit in the band above the map. Select a pin or a list entry for the full account, then follow it into the Conflicts tree. The last era is the war itself: where its fronts ran, and the powers that came out of it. The Successors tab describes those powers in full.</p>
-    <p class="intro" id="map-intro-nppl" hidden>No Peace Past Luna on the inner system, generation by generation, from the long rebuild after the war to the Greater Solar Crisis of 2327. Pick a generation to redraw the map with its conflicts, numbered in the order they happened. Events on Earth sit in the band above the map. The planets are in their order from the sun but not to scale. Select a pin or a list entry for the full account, then follow it into the NPPL Conflicts tree. The last generation is projected.</p>
+    <p class="intro" id="map-intro-nppl" hidden>No Peace Past Luna on the inner system, generation by generation, from the long rebuild after the war to the Greater Solar Crisis of 2327. Pick a generation to redraw the map with its conflicts, numbered in the order they happened. Events on Earth sit in the band above the map. The planets are in their order from the sun but not to scale. Select a pin or a list entry for the full account, then follow it into the Conflicts tree. The last generation is projected.</p>
     <div class="eras" id="eras" role="group" aria-label="Era"></div>
     <div class="era-head">
       <div><span class="era" id="era-k"></span><h2 id="era-h"></h2><p id="era-p"></p></div>
@@ -487,7 +487,7 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   </section>
 
   <section class="view" id="sucView" hidden aria-label="Successors">
-    <p class="intro">What the atlas's blocs and programs have become by 2327, in No Peace Past Luna's fourth generation: the Earth powers that come out of the war, and the space factions whose arguments start in this era. The NPPL Conflicts tab tells how they got there.</p>
+    <p class="intro">What the atlas's blocs and programs have become by 2327, in No Peace Past Luna's fourth generation: the Earth powers that come out of the war, and the space factions whose arguments start in this era. The Conflicts tab tells how they got there.</p>
     <section class="heirs" aria-labelledby="heirs-h">
       <h2 id="heirs-h">Where the blocs are heading</h2>
       <p>None of the atlas's blocs comes through the war intact. These are the five Earth powers of No Peace Past Luna (2327) and the blocs each one grows from, followed by the institution that ends the war between them. Each scale runs from the first pole on the left to the second on the right. Values still undecided are marked TBD. Select a seed to open it in its tree, or a pilot to open their ace card.</p>
@@ -573,12 +573,12 @@ const label=n=>n.d&&!/^(Now|War|\d{4})$/.test(n.d)?`${n.d} ${n.n}`:n.n;
 const short=n=>ds.desig&&n.d&&!/^(Now|War|\d{4})$/.test(n.d)?n.d:n.n;
 
 // cross-tree index
-const ORDER=["frames","supers","conflicts","nppl","people","mysteries","weapons","power","doctrine","vehicles","fleets","orgs"].filter(k=>DATA[k]);
-const SRC={frames:"Frames using it",supers:"Super programs using it",conflicts:"Seen in conflicts",nppl:"Seen in No Peace Past Luna",people:"Persons of interest",mysteries:"Mysteries",vehicles:"Vehicle lines linked",fleets:"Fleets and carriers linked",orgs:"Organisations linked"};
+const ORDER=["frames","supers","conflicts","people","mysteries","weapons","power","doctrine","vehicles","fleets","orgs"].filter(k=>DATA[k]);
+const SRC={frames:"Frames using it",supers:"Super programs using it",conflicts:"Seen in conflicts",people:"Persons of interest",mysteries:"Mysteries",vehicles:"Vehicle lines linked",fleets:"Fleets and carriers linked",orgs:"Organisations linked"};
 const IDX={},KEYOF={},USED={};
 const ACEX=Object.fromEntries(ACES.map(a=>[a.id,a])),ACEC=Object.fromEntries(ACE_FACTIONS.map(([k,,c])=>[k,c]));
 ORDER.forEach(k=>DATA[k].nodes.forEach(n=>{IDX[n.id]=n;KEYOF[n.id]=k}));
-["frames","supers","conflicts","nppl","people","mysteries","vehicles","fleets","orgs"].filter(k=>DATA[k]).forEach(k=>DATA[k].nodes.forEach(f=>[...(f.ln||[]),...(f.fr||[]),...(f.mx||[]),...(f.pw||[]),...(f.wp||[]),...(f.dc||[])].forEach(id=>{const u=USED[id]=USED[id]||{};(u[k]=u[k]||[]).push(f.id)})));
+["frames","supers","conflicts","people","mysteries","vehicles","fleets","orgs"].filter(k=>DATA[k]).forEach(k=>DATA[k].nodes.forEach(f=>[...(f.ln||[]),...(f.fr||[]),...(f.mx||[]),...(f.pw||[]),...(f.wp||[]),...(f.dc||[])].forEach(id=>{const u=USED[id]=USED[id]||{};(u[k]=u[k]||[]).push(f.id)})));
 const ref=id=>{const n=IDX[id];return n.d||n.n};
 
 // ---- Faction views: a hidden filter that shows one of the thirteen factions of 2327 and its roots ----
@@ -595,7 +595,7 @@ Object.entries(DATA).forEach(([tk,t])=>{
   const fam={};
   t.nodes.forEach(n=>{const g=own(n);if(g.length){const f=fam[n.f]=fam[n.f]||{},key=g.join(",");f[key]=(f[key]||0)+1}});
   t.nodes.forEach(n=>{let g=own(n);
-    if(!g.length&&tk!=="conflicts"&&tk!=="nppl"&&tk!=="mysteries"&&fam[n.f]){const best=Object.entries(fam[n.f]).sort((a,b)=>b[1]-a[1])[0];g=best[0].split(",")}
+    if(!g.length&&tk!=="conflicts"&&tk!=="mysteries"&&fam[n.f]){const best=Object.entries(fam[n.f]).sort((a,b)=>b[1]-a[1])[0];g=best[0].split(",")}
     TAGS[n.id]=g});
 });
 MINOR.forEach(n=>TAGS[n.id]=n.fx||[]);
@@ -633,7 +633,7 @@ ORDER.forEach(k=>{
     a.addEventListener("click",()=>{build("aces");remember("aces")});
     tabs.append(a);
   }
-  if(k===(DATA.nppl?"nppl":"conflicts")){
+  if(k==="conflicts"){
     const m=document.createElement("button");m.type="button";m.className="tab";m.role="tab";m.id="tab-map";m.dataset.k="map";
     m.textContent="Map";
     m.addEventListener("click",()=>{build("map");remember("map")});
@@ -898,13 +898,12 @@ function renderSheet(){
   if(!n){sheet.hidden=true;document.body.classList.remove("has-sheet");return}
   const [mn,sub]=GROUPS[n.m];
   let links="";
-  if(current==="conflicts")links=`<h4>Machines involved</h4>${goList(n.mx)}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`;
+  if(current==="conflicts")links=`${n.ln?`<h4>Roots in the atlas</h4>${goList(n.ln)}`:""}${n.mx||n.c<SYS0?`<h4>Machines involved</h4>${goList(n.mx)}`:""}${SOLAR.at[n.id]?`<button type="button" class="go" data-map="${n.id}">Show on the inner-system map →</button>`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`;
   else if(current==="frames"||(current==="supers"&&(n.fr||n.pw||n.wp)))links=`${n.fr?`<h4>Built on</h4>${goList(n.fr)}`:""}<h4>Power plant</h4>${goList(n.pw)}<h4>Armament</h4>${goList(n.wp)}<h4>Doctrine</h4>${goList(n.dc)}`;
   else if(current==="vehicles"||current==="fleets")links=`${n.ln?`<h4>In the atlas</h4>${goList(n.ln)}`:""}${n.mx?`<h4>Mechs involved</h4>${goList(n.mx)}`:""}${n.pw?`<h4>Power plant</h4>${goList(n.pw)}`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine</h4>${goList(n.dc)}`:""}`;
   else if(current==="orgs")links=n.ln?`<h4>In the atlas</h4>${goList(n.ln)}`:"";
   else if(current==="people")links=n.ln?`<h4>In their story</h4>${goList(n.ln)}`:"";
   else if(current==="mysteries")links=n.ln?`<h4>Where it touches the atlas</h4>${goList(n.ln)}`:"";
-  else if(current==="nppl")links=`${n.ln?`<h4>Roots in the atlas</h4>${goList(n.ln)}`:""}${n.mx?`<h4>Machines involved</h4>${goList(n.mx)}`:""}${SOLAR.at[n.id]?`<button type="button" class="go" data-map="${n.id}">Show on the inner-system map →</button>`:""}`;
   else links=`${n.pw?`<h4>Power plant</h4>${goList(n.pw)}`:""}${n.dc?`<h4>Doctrine</h4>${goList(n.dc)}`:""}`;
   if(USED[n.id])links+=Object.entries(USED[n.id]).map(([k,ids])=>`<h4>${SRC[k]}</h4>${goList(ids)}`).join("");
   if(current==="frames"&&(VERS[n.id]||ACED[n.id]))links=`${VERS[n.id]?`<h4>Other versions</h4><ul class="vers">${VERS[n.id].map(v=>`<li><span class="vn"><span class="bd ${v.b}">${BUILD[v.b].toUpperCase()}</span>${v.vn}</span>${VART[v.vn]?artPair(VART[v.vn],v.vn):""}<span class="fn">${v.note}</span><span class="who">Flown by ${pilots(v.who)}</span></li>`).join("")}</ul>`:""}${ACED[n.id]?`<h4>Aces who flew it as built</h4><p class="who">${pilots(ACED[n.id])}</p>`:""}`+links;
@@ -995,9 +994,11 @@ function renderHeirs(){
   bindArt(space);
 }
 renderHeirs();
+// The world map shows Gen 0–5 (No Haven on Earth); the inner-system map shows Gen 6–9 (No Peace Past Luna)
+const SYS0=6;
 const M={orgs:true,era:4,past:true,sel:null,world:null,failed:false,num:{},zt:null,zoom:null,zsel:null,set:"haven",nera:1,eraSet:null};
 // The map shows one setting at a time: No Haven on Earth on the world map, or No Peace Past Luna on the inner system
-try{if(localStorage.getItem("atlas-map-set")==="nppl"&&DATA.nppl)M.set="nppl"}catch(e){}
+try{if(localStorage.getItem("atlas-map-set")==="nppl")M.set="nppl"}catch(e){}
 const yearOf=n=>n.d==="Now"?2186:(parseInt(n.d,10)||9999);
 const fillFor=s=>{if(!s||!s.b)return "var(--land)";const pct=s.l==="m"?60:s.l==="n"?30:s.l==="c"?20:26;return `color-mix(in srgb,var(${BLOC[s.b][1]}) ${pct}%,var(--card))`};
 const stateOf=st=>{if(!st)return "";if(!st.b)return st.l==="c"?" · Contested frontline":"";const [nm,,ar]=BLOC[st.b];
@@ -1009,7 +1010,7 @@ const erasEl=document.getElementById("eras");
 // Era buttons follow the setting: the conflicts tree's columns, or the NPPL generations
 function buildEras(){
   if(M.eraSet===M.set)return;M.eraSet=M.set;
-  const nppl=M.set==="nppl",cols=nppl?DATA.nppl.cols:DATA.conflicts.cols;
+  const nppl=M.set==="nppl",cols=nppl?DATA.conflicts.cols.slice(SYS0):DATA.conflicts.cols.slice(0,SYS0);
   erasEl.innerHTML="";erasEl.style.gridTemplateColumns=`repeat(${cols.length},minmax(0,1fr))`;
   cols.forEach(([k,y],i)=>{
     const b=document.createElement("button");b.type="button";b.className="era-b";b.dataset.e=i;
@@ -1023,16 +1024,15 @@ function buildEras(){
   mapView.setAttribute("aria-label",nppl?"Inner-system map":"World map");
 }
 function setMap(s){
-  if(s===M.set||(s==="nppl"&&!DATA.nppl))return;
+  if(s===M.set)return;
   M.set=s;M.zt=null;M.sel=null;mapSelect(null);
   try{localStorage.setItem("atlas-map-set",s)}catch(e){}
   showMap();
 }
 mapView.querySelectorAll("#map-set [data-set]").forEach(b=>b.addEventListener("click",()=>setMap(b.dataset.set)));
-if(!DATA.nppl)document.getElementById("map-set").hidden=true;
-// From an NPPL sheet: open the inner-system map at the entry's generation with the entry selected
+// From a sheet for an entry after the war: open the inner-system map at the entry's generation with the entry selected
 function showOnSystem(id){
-  M.nera=IDX[id].c;if(M.set!=="nppl"){M.set="nppl";M.zt=null;try{localStorage.setItem("atlas-map-set","nppl")}catch(e){}}
+  M.nera=IDX[id].c-SYS0;if(M.set!=="nppl"){M.set="nppl";M.zt=null;try{localStorage.setItem("atlas-map-set","nppl")}catch(e){}}
   if(current==="map")showMap();else{build("map");remember("map")}
   mapSelect(id);
 }
@@ -1149,11 +1149,11 @@ ${shape}<text style="font-size:${(dia?(M.num[n.id]>9?8:10):11)*k}px">${M.num[n.i
 // ---- Inner-system map (No Peace Past Luna) ----
 // Same pins, lists and sheet as the world map; Earth's events sit in the band above, as orbit events do on the world map
 const sysYear=n=>parseInt(String(n.d).replace(/^c\.\s*/,""),10)||9999;
-const sysNodes=e=>DATA.nppl.nodes.filter(n=>n.c===e&&vis(n.id)).sort((a,b)=>sysYear(a)-sysYear(b));
-// Organisations with a sys place, alive in this NPPL generation (nppl column 0 is Gen 6 on the orgs tree)
-const sysOrgs=e=>{const g=e+DATA.conflicts.cols.length;return DATA.orgs.nodes.filter(n=>vis(n.id)&&ORGMAP[n.id]&&ORGMAP[n.id].sys&&n.c<=g&&(ORGMAP[n.id].to==null||g<=ORGMAP[n.id].to))};
+const sysNodes=e=>DATA.conflicts.nodes.filter(n=>n.c===e+SYS0&&vis(n.id)).sort((a,b)=>sysYear(a)-sysYear(b));
+// Organisations with a sys place, alive in this generation of the inner-system map (its era 0 is Gen 6)
+const sysOrgs=e=>{const g=e+SYS0;return DATA.orgs.nodes.filter(n=>vis(n.id)&&ORGMAP[n.id]&&ORGMAP[n.id].sys&&n.c<=g&&(ORGMAP[n.id].to==null||g<=ORGMAP[n.id].to))};
 function renderSystem(){
-  const e=M.nera,[k,y]=DATA.nppl.cols[e];
+  const e=M.nera,[k,y]=DATA.conflicts.cols[e+SYS0];
   erasEl.querySelectorAll(".era-b").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.e===e)));
   document.getElementById("era-k").textContent=`${k} · ${y}`;
   document.getElementById("era-h").textContent=(SOLAR.eras[e]||[""])[0];
@@ -1167,7 +1167,7 @@ function renderSystem(){
   document.getElementById("olist-h").textContent=`Organisations this generation · ${orgs.length}`;
   document.getElementById("olist").innerHTML=orgs.map(n=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}"><span class="num org" style="--mc:${col(n.m)}"></span><span><span class="cn">${n.n}</span><span class="cp">${orgPlace(n.id)} · ${GROUPS[n.m][1]}</span></span><span class="cy">Since ${DATA.orgs.cols[n.c][0]}</span></button></li>`).join("");
   mapView.querySelectorAll("#olist [data-cid]").forEach(b=>b.addEventListener("click",()=>mapSelect(M.sel===b.dataset.cid?null:b.dataset.cid)));
-  const types=[...new Set(DATA.nppl.nodes.map(n=>n.m))];
+  const types=[...new Set(DATA.conflicts.nodes.filter(n=>n.c>=SYS0).map(n=>n.m))];
   document.getElementById("map-legend").innerHTML=`<span class="lg"><span class="num" style="--mc:var(--ink-2);width:14px;height:14px"></span>Conflict, numbered in order</span><span class="lg" style="color:var(--ink-2)">Events on Earth sit in the band above the map. Distances are not to scale.</span>`+
     `<span class="lg" style="color:var(--ink-2)">Pins by type:</span>`+types.map(c=>`<span class="lg"><span class="num" style="--mc:${col(c)};width:12px;height:12px"></span>${GROUPS[c][0]}</span>`).join("");
   drawSystem();
@@ -1181,7 +1181,7 @@ function drawSystem(){
     if(b.of){if(P[b.of])P[key]=[P[b.of][0]+b.dx,P[b.of][1]+b.dy]}
     else if(b.x!=null)P[key]=[b.x,b.y];
     else{const a=b.a*Math.PI/180;P[key]=[sx+b.r*Math.cos(a),sy+b.r*Math.sin(a)]}});
-  const [ek]=DATA.nppl.cols[M.nera];
+  const [ek]=DATA.conflicts.cols[M.nera+SYS0];
   let s=`<svg viewBox="0 0 ${W} ${H+B}" role="img" aria-label="Inner-system map, ${ek}: the planets and the Belt with conflict locations, and Earth's events above">
 <defs><clipPath id="sclip"><rect width="${W}" height="${H}"/></clipPath></defs><g class="zm" transform="translate(0 ${B})"><rect width="${W}" height="${H}" fill="transparent"/><g clip-path="url(#sclip)"><g class="zl">
 <circle class="sys-sun" cx="${sx}" cy="${sy}" r="70" opacity=".16"/><circle class="sys-sun" cx="${sx}" cy="${sy}" r="42"/>
@@ -1288,7 +1288,7 @@ function renderChrono(){
   document.getElementById("chr-arc").textContent=lane?`${lane.n}: ${lane.arc}`:"";
   const shown=CHRONO.filter(b=>inView(b)&&(CH.fac==null||b.f.includes(CH.fac)));
   // Eras 0–5 are No Haven on Earth's; 6 onward are the NPPL generations, ending in 2327
-  const cols=[...DATA.conflicts.cols,...(DATA.nppl?DATA.nppl.cols:[["2327","No Peace Past Luna"]])];
+  const cols=DATA.conflicts.cols;
   const dots=b=>`<span class="bdots" aria-hidden="true">${b.f.length===TIMELINE.length?"":b.f.map(i=>`<i style="--dc:var(--m-${GROUPS[TIMELINE[i].g][2]})" title="${TIMELINE[i].n}"></i>`).join("")}</span>`;
   const beat=b=>{const lead=CH.fac!=null?CH.fac:b.f[0],bc=b.f.length===TIMELINE.length?"var(--ink)":`var(--m-${GROUPS[TIMELINE[lead].g][2]})`;
     const inner=`<span class="by">${b.y}</span><span><span class="bt">${b.t}</span><span class="bx">${b.x}</span>${dots(b)}</span><span class="bk ${b.k}">${KIND[b.k]}</span>`;
@@ -1407,8 +1407,8 @@ function openLanding(){
 }
 // The link's tab and view win; otherwise the last tab, this session's view, and the landing screen on a new visit
 const [hTab,...hRest]=(location.hash||"").slice(1).split("&"),hView=new URLSearchParams(hRest.join("&")).get("view");
-// Carriers was folded into Fleets & Carriers (2026-11-10); old links and remembered tabs land there
-const MOVED={carriers:"fleets"};
+// Carriers was folded into Fleets & Carriers and NPPL Conflicts into Conflicts (2026-11-10); old links and remembered tabs land there
+const MOVED={carriers:"fleets",nppl:"conflicts"};
 let start=MOVED[hTab]||hTab;
 const known=k=>!!DATA[k]||!!VIEWS[k];
 if(!known(start)){try{start=localStorage.getItem("atlas-tab")||""}catch(e){start=""}start=MOVED[start]||start}

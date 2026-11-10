@@ -2,7 +2,7 @@
 
 Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (atlas versions 99–104). Tidied on 2026-11-10: the resolved decisions are folded into the status, the order of work is a single list, and a Restructure section is added.
 
-## Status (2026-11-10, after atlas version 114)
+## Status (2026-11-10, after atlas version 115)
 
 **Decisions**
 - **A:** "Projected" is removed from the war; only Gen 9 (2327) keeps it.
@@ -146,11 +146,19 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
     - Earth makers have no post-war cards of their own; their post-war frames show up through the panel.
     - Boreal West and Boreal East was already in.
 
+- **R1, one Conflicts tab (version 115):** NPPL Conflicts is merged into Conflicts, which now runs Gen 0–9 with 130 entries (ids unchanged; the NPPL entries moved up six columns).
+  - **Bands by theatre:** Africa & the Middle East, Eurasian frontier, Atlantic & the Americas, Pacific, Luna & the inner planets, Mars, the Belt, Beyond the Belt. The old Orbit band was split among the last four; NPPL's Earth entries went to their theatres (the Greater Solar Crisis sits under Luna & the inner planets).
+  - **Turning points:** the two sets joined (12), relabelled Gen 6–8. The "NPPL Gen" labels in Persons of Interest and Mysteries were relabelled too.
+  - **Code:** the Map tab still switches between the world map (Gen 0–5) and the inner-system map (Gen 6–9), now both from the one tree (`SYS0 = 6` in the page). Conflict sheets after the war show Roots in the atlas and the inner-system map button. `#nppl` links and remembered tabs open Conflicts. check.js asks for LOC or ORBIT before the war and SOLAR.at after it.
+  - **Possible follow-up:** NPPL entries can now have real parent lines to the Haven entries they grew out of (until now they could only link through `ln`).
+- **Map views (in progress, 2026-11-10):** a subagent is building Moon and Mars maps and an Earth · Moon · Mars · Inner system switch for every generation.
+
 **Order of work**
-1. **R1: merge Conflicts and NPPL Conflicts**, then Conflicts after the war (Step 7) in the merged tab.
-2. Persons of Interest.
-3. The final sweep. It includes the leftover "NPPL Gen 1–4" labels in the turning points of the NPPL Conflicts, Persons of Interest and Mysteries tabs.
-4. **Supers** (once decision D is made).
+1. **Map views** (in progress).
+2. Conflicts after the war (Step 7), in the merged tab.
+3. Persons of Interest.
+4. The final sweep. It includes the remaining "Haven Gen" / "The war" labels in Persons of Interest's turning points.
+5. **Supers** (once decision D is made).
 
 One tab per publish, with check.js and a browser test each time.
 
@@ -191,7 +199,7 @@ One tab per publish, with check.js and a browser test each time.
 
 Some tabs are getting crowded. These changes move material around rather than adding to it.
 
-### R1. One Conflicts tab, Gen 0–9
+### R1. One Conflicts tab, Gen 0–9 (done, version 115)
 
 Conflicts covers Gen 0–5 and NPPL Conflicts covers Gen 6–9, and Step 7 would have added post-war entries to Conflicts as well. The merge makes them one tab.
 
