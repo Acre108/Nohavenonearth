@@ -2,7 +2,7 @@
 
 Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (atlas versions 99–104). Tidied on 2026-11-10: the resolved decisions are folded into the status, the order of work is a single list, and a Restructure section is added.
 
-## Status (2026-11-10, after atlas version 107)
+## Status (2026-11-10, after atlas version 114)
 
 **Decisions**
 - **A:** "Projected" is removed from the war; only Gen 9 (2327) keeps it.
@@ -117,14 +117,40 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
   - **Orbital lift:** the UNEL's licensed lift shuttles, and China's Darkhan accelerator sleds.
   - **Tags:** the seeding ships were already tagged (the Hospital Safina for Umoja, the Hearth for the Communion, the Hakobune for Ashva), and so were the old orbital carriers. Earth-bound carriers stay untagged.
   - **Panel:** renamed "Who flies and carries what". The Earth powers' and the UNEL's rows now cover their carriers on Earth.
+- **Offensive off-world carriers (version 113, commit 181b1b9):** nine assault carriers and landers for Mars and the Jovian moons in the orbital and space band, Gen 8–9:
+  - the MRD's Gradient entry tender and Colony One's Ghostlight raid landers;
+  - China's Pojun and the US Inchon;
+  - the Ascendancy's Sadko and Ashva's Antardhara under-ice carrier;
+  - Umoja's Mbegu seeding carrier, the TAU's Ostia assault anchorage and the Syndicate's Strongbox.
+- **R2, collapsible panels (version 114):** on every tree tab, the turning points and the faction panel are closed sections with a count in the summary ("Turning points · 8", "Who runs what · 13 factions"). The intro and plate stay open.
+  - Each viewer's choice is kept per tree in localStorage (`atlas-open-<tree>-turns` / `-profile`).
+  - In a faction view the panel opens unless the viewer has closed it.
+  - The turning-point count follows the generation picker.
+- **Step 6, Organisations (version 114):**
+  - **Columns:** Gen 0–9 on the shared scale.
+  - **Bands:** two new bands, "Mars" and "The Belt and beyond", and a new "Earth's ministries" band for the post-war offices.
+  - **23 new entries:**
+    - **Earth's ministries:** the US Department of War (with the Office of Strategic Influence), the TAU's Strategic Security Institute (with the External Commerce Commission), China's Ministry of External Harmony (with the Bureau of Strategic Development), and the Hegemony (tagged for the Ascendancy and Ashva). The pairs come from the NPPL faction briefs.
+    - **Africa:** Qadira's export office.
+    - **The UNEL:** the Office of Global Stewardship, the Directorate of Unified Security, the Solar Court (Gen 7) and the Lunar Vacuum Research Spire.
+    - **Mars:** Colony One's Expeditionary Directorate and Intelligence and Analysis Directorate, Dustline Works, the MRD's Innovation Bureau, Vesta Works, and the Constitutionalists' Corporate Liaison Office and New Philadelphia Arsenal (Gen 8).
+    - **The Belt and beyond:** Voidborne Security, Albedo Industries (Gen 7), Skycut Foundry, Umoja's life-systems councils, Ganymede Vatworks, Garuda Works and the Hearthwrights.
+  - **Panel:** "Organisations after the war", one row per faction.
+  - **Turning points:** three new ones for Gen 6, 7 and 8.
+  - **Inner-system map:**
+    - Makers and labs off Earth are pinned as hollow squares above their body: the lunar yards, Shackleton Works, the Malapert docks, the Spire, Dustline, Vesta Works, New Philadelphia Arsenal, Skycut, Albedo, the Vatworks, Garuda and the Hearthwrights. They use a new `ORGMAP` field, `sys`.
+    - The Organisations list and toggle now show on that map too.
+    - Governments and offices stay off the map, as on the world map.
+  - **Not done:**
+    - No new Gen 9 organisations.
+    - Earth makers have no post-war cards of their own; their post-war frames show up through the panel.
+    - Boreal West and Boreal East was already in.
 
 **Order of work**
-1. Organisations.
-2. **R1: merge Conflicts and NPPL Conflicts**, then Conflicts after the war (Step 7) in the merged tab.
-3. Persons of Interest.
-4. **R2: collapsible panels.** This can go in at any point. Earlier is better, because each tab converted before it adds another open panel.
-5. The final sweep. It includes the leftover "NPPL Gen 1–4" labels in the turning points of the NPPL Conflicts, Persons of Interest and Mysteries tabs.
-6. **Supers** (once decision D is made).
+1. **R1: merge Conflicts and NPPL Conflicts**, then Conflicts after the war (Step 7) in the merged tab.
+2. Persons of Interest.
+3. The final sweep. It includes the leftover "NPPL Gen 1–4" labels in the turning points of the NPPL Conflicts, Persons of Interest and Mysteries tabs.
+4. **Supers** (once decision D is made).
 
 One tab per publish, with check.js and a browser test each time.
 
@@ -197,7 +223,7 @@ Conflicts covers Gen 0–5 and NPPL Conflicts covers Gen 6–9, and Step 7 would
   - **Links:** old `#nppl` links go to `#conflicts`, the same way `#carriers` now goes to `#fleets`.
 - **Step 7 shrinks.** The tab already has the Andean Collapse, the Line of Control, the Partisan Years, the Bastion, the Hidden Docks and the Greater Solar Crisis. Step 7 now adds only what's missing (see below).
 
-### R2. Collapsible panels above each tree
+### R2. Collapsible panels above each tree (done, version 114)
 
 Before the tree starts, Frames shows the intro, the plate, 8 turning points and a 13-row "Who runs what" panel, about 4,600 characters in all. Every tab that reaches the standard gains a panel like that.
 
@@ -247,7 +273,7 @@ Needs decision D first.
   - an MRD or Umoja giant of a new kind.
 - Add a "Who keeps giants after the war" panel.
 
-### Step 6. Organisations
+### Step 6. Organisations (done, version 114; see Status)
 
 - Extend to Gen 9 with organisations from your game and from the new tabs:
   - the Solar Court;

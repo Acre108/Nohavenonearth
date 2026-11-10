@@ -188,6 +188,18 @@ header p{margin:0;color:var(--ink-2)}
 .pf-r p{margin:0;font-size:13px;color:var(--ink-2)}
 .pf-l{display:flex;flex-wrap:wrap;gap:2px 12px}
 .pf-l .lk{font-size:12.5px}
+/* Collapsible panels above a tree (turning points, the faction panel): closed by default, count in the summary */
+.folds{display:flex;flex-direction:column;border-bottom:1px solid var(--rule)}
+.fold{border-top:1px solid var(--rule);min-width:0}
+.fold>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:11px 4px;cursor:pointer;list-style:none;color:var(--ink)}
+.fold>summary::-webkit-details-marker{display:none}
+.fold>summary::before{content:"";flex:none;align-self:center;width:7px;height:7px;margin:0 3px 0 1px;border-right:1.6px solid var(--ink-2);border-bottom:1.6px solid var(--ink-2);transform:rotate(-45deg);transition:transform .15s}
+.fold[open]>summary::before{transform:rotate(45deg)}
+.fold>summary h2{font-size:20px;font-weight:600;min-width:0}
+.fold>summary:hover h2{text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:4px}
+.fold>summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.fold-n{font:500 12px var(--mono);letter-spacing:.06em;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.fold[open]>summary+*{margin-bottom:18px}
 /* Landing screen: the whole atlas or one of the thirteen faction views, then a bar under the title showing the choice */
 body.landing-open{overflow:hidden}
 .landing{position:fixed;inset:0;z-index:30;overflow:auto;background:var(--paper);padding:32px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
@@ -491,8 +503,10 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
   <div class="view" id="treeView">
   <div class="lede"><p class="intro" id="intro"></p><figure class="plate" id="plate" hidden></figure></div>
-  <section class="turns" aria-label="Turning points" id="turns"></section>
-  <section class="profile" id="profile" hidden></section>
+  <div class="folds" id="folds" hidden>
+    <details class="fold" id="turns-d" data-sec="turns" hidden><summary><h2>Turning points</h2><span class="fold-n" id="turns-n"></span></summary><section class="turns" aria-label="Turning points" id="turns"></section></details>
+    <details class="fold" id="profile-d" data-sec="profile" hidden><summary><h2 id="profile-h">Who runs what</h2><span class="fold-n" id="profile-n"></span></summary><section class="profile" id="profile"></section></details>
+  </div>
 
   <section class="legend" aria-label="Legend">
     <div class="legend-row" id="lines"></div>
@@ -652,6 +666,7 @@ function build(key){
   document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.k===key)));
   document.getElementById("intro").textContent=ds.intro;
   renderPlate(PLATES[key]);
+  foldOpen(document.getElementById("turns-d"),false);
   loadGens(key);loadFams(key);
   const R=ds.rel;
   document.getElementById("lines").innerHTML=`<span class="legend-label">Lines</span>
@@ -713,11 +728,28 @@ function build(key){
 }
 // A tree's faction profile: one row per faction summarising what it runs, linked to the entries (filtered in a faction view)
 function renderProfile(){
-  const pf=document.getElementById("profile"),rows=(ds.profile||[]).filter(r=>FACX[r.k]&&(!VW.f||r.k===VW.f));
-  pf.hidden=!rows.length;if(!rows.length){pf.innerHTML="";return}
-  pf.innerHTML=`<h2>${ds.profileH||"Who runs what"}</h2><div class="pf">${rows.map(r=>{const f=FACX[r.k];return `<div class="pf-r" style="--fc:var(${facColour(f)})"><b>${facName(f)}</b><p>${r.t}</p><span class="pf-l">${r.ids.filter(id=>byId[id]&&vis(id)).map(id=>`<button type="button" class="lk" data-sel="${id}"><span class="chip" style="--mc:${col(byId[id].m)}">${chipText(byId[id].m)}</span><span class="nm">${label(byId[id])}</span></button>`).join("")}</span></div>`}).join("")}</div>`;
+  const pd=document.getElementById("profile-d"),pf=document.getElementById("profile"),rows=(ds.profile||[]).filter(r=>FACX[r.k]&&(!VW.f||r.k===VW.f));
+  pd.hidden=!rows.length;syncFolds();if(!rows.length){pf.innerHTML="";return}
+  // In a faction view the panel is one row, so it opens unless the viewer has closed it on this tree
+  document.getElementById("profile-h").innerHTML=ds.profileH||"Who runs what";
+  document.getElementById("profile-n").textContent=`· ${rows.length} ${rows.length===1?"faction":"factions"}`;
+  foldOpen(pd,!!VW.f);
+  pf.innerHTML=`<div class="pf">${rows.map(r=>{const f=FACX[r.k];return `<div class="pf-r" style="--fc:var(${facColour(f)})"><b>${facName(f)}</b><p>${r.t}</p><span class="pf-l">${r.ids.filter(id=>byId[id]&&vis(id)).map(id=>`<button type="button" class="lk" data-sel="${id}"><span class="chip" style="--mc:${col(byId[id].m)}">${chipText(byId[id].m)}</span><span class="nm">${label(byId[id])}</span></button>`).join("")}</span></div>`}).join("")}</div>`;
   pf.querySelectorAll("[data-sel]").forEach(b=>b.addEventListener("click",()=>{select(b.dataset.sel);cards[b.dataset.sel].scrollIntoView({block:"center",inline:"center",behavior:reduced?"auto":"smooth"})}));
 }
+// Collapsible panels above a tree: each viewer's open or closed choice is remembered per tree and per panel ("1" open, "0" closed)
+const foldKey=d=>`atlas-open-${current}-${d.dataset.sec}`;
+function foldOpen(d,dflt){
+  let v=null;try{v=localStorage.getItem(foldKey(d))}catch(e){}
+  const o=v==="1"?true:v==="0"?false:dflt;d._set=o;d.open=o;
+}
+// Only the viewer's own toggles are stored; opening or closing a panel from code sets _set first, so its toggle event is skipped
+document.querySelectorAll(".fold").forEach(d=>d.addEventListener("toggle",()=>{
+  if(d.open===d._set)return;d._set=d.open;
+  try{localStorage.setItem(foldKey(d),d.open?"1":"0")}catch(e){}
+}));
+// The panel group's rule lines go when neither panel has anything to show
+function syncFolds(){document.getElementById("folds").hidden=document.getElementById("turns-d").hidden&&document.getElementById("profile-d").hidden}
 
 function draw(){
   if(!svg)return;
@@ -799,7 +831,10 @@ function layoutCols(){
   document.getElementById("colhead").innerHTML=vc.map(i=>`<div><b>${cl[i][0]}</b><span>${cl[i][1]}</span></div>`).join("");
   ds.nodes.forEach(n=>cards[n.id].style.gridColumn=Math.max(vc.indexOf(n.c),0)+1);
   const labels=cl.map(c=>c[0]),shownL=new Set(vc.map(i=>labels[i]));
-  document.getElementById("turns").innerHTML=ds.turns.filter(([e])=>!labels.includes(e)||shownL.has(e)).map(([e,h,p])=>`<div class="turn"><span class="era">${e}</span><h3>${h}</h3><p>${p}</p></div>`).join("");
+  const turns=(ds.turns||[]).filter(([e])=>!labels.includes(e)||shownL.has(e));
+  document.getElementById("turns").innerHTML=turns.map(([e,h,p])=>`<div class="turn"><span class="era">${e}</span><h3>${h}</h3><p>${p}</p></div>`).join("");
+  document.getElementById("turns-n").textContent=`· ${turns.length}`;
+  document.getElementById("turns-d").hidden=!turns.length;syncFolds();
   renderGens();
 }
 
@@ -935,7 +970,7 @@ const MINORX=Object.fromEntries(MINOR.map(n=>[n.id,n]));
 const FIGHT=new Set(["WAR","CLH","PRX","IRR"]);
 // Non-government organisations alive in an era: from their own column to the war, or to the column in "to"
 const orgNodes=e=>DATA.orgs.nodes.filter(n=>vis(n.id)&&ORGMAP[n.id]&&n.c<=e&&(ORGMAP[n.id].to==null||e<=ORGMAP[n.id].to));
-const orgPlace=id=>{const o=ORGMAP[id];return o.sky||o.at.map(a=>a[2]).join("; ")};
+const orgPlace=id=>{const o=ORGMAP[id];return M.set==="nppl"&&o.sys?o.sys[1]:o.sky||(o.at?o.at.map(a=>a[2]).join("; "):o.sys[1])};
 const placeOf=id=>SOLAR.at[id]?SOLAR.at[id][1]:ORGMAP[id]?orgPlace(id):LOC[id]?LOC[id][2]:ORBIT[id]||MINORX[id].at[2];
 const pos=(v,[,l,r])=>v===0?"Neutral":`${Math.abs(v)===2?"Strongly":"Weakly"} ${v<0?l:r}`;
 const pcard=(p,colour,extra="")=>`<article class="pcard" style="--pc:var(${colour})"><h3>${p.n}</h3><span class="meta">${p.home} · Faith: ${p.faith}</span><p>${p.id}</p>
@@ -984,7 +1019,7 @@ function buildEras(){
   });
   mapView.querySelectorAll("#map-set [data-set]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.set===M.set)));
   document.getElementById("map-intro-haven").hidden=nppl;document.getElementById("map-intro-nppl").hidden=!nppl;
-  document.getElementById("mlist-box").hidden=nppl;document.getElementById("olist-box").hidden=nppl;document.getElementById("org-lbl").hidden=nppl;
+  document.getElementById("mlist-box").hidden=nppl;document.getElementById("olist-box").hidden=false;document.getElementById("org-lbl").hidden=false;
   mapView.setAttribute("aria-label",nppl?"Inner-system map":"World map");
 }
 function setMap(s){
@@ -1115,6 +1150,8 @@ ${shape}<text style="font-size:${(dia?(M.num[n.id]>9?8:10):11)*k}px">${M.num[n.i
 // Same pins, lists and sheet as the world map; Earth's events sit in the band above, as orbit events do on the world map
 const sysYear=n=>parseInt(String(n.d).replace(/^c\.\s*/,""),10)||9999;
 const sysNodes=e=>DATA.nppl.nodes.filter(n=>n.c===e&&vis(n.id)).sort((a,b)=>sysYear(a)-sysYear(b));
+// Organisations with a sys place, alive in this NPPL generation (nppl column 0 is Gen 6 on the orgs tree)
+const sysOrgs=e=>{const g=e+DATA.conflicts.cols.length;return DATA.orgs.nodes.filter(n=>vis(n.id)&&ORGMAP[n.id]&&ORGMAP[n.id].sys&&n.c<=g&&(ORGMAP[n.id].to==null||g<=ORGMAP[n.id].to))};
 function renderSystem(){
   const e=M.nera,[k,y]=DATA.nppl.cols[e];
   erasEl.querySelectorAll(".era-b").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.e===e)));
@@ -1126,6 +1163,10 @@ function renderSystem(){
   document.getElementById("list-h").textContent=`Conflicts this generation · ${nodes.length}`;
   document.getElementById("clist").innerHTML=nodes.map(n=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}"><span class="num" style="--mc:${col(n.m)}">${M.num[n.id]}</span><span><span class="cn">${n.n}</span><span class="cp">${placeOf(n.id)} · ${GROUPS[n.m][0]}</span></span><span class="cy">${n.d}</span></button></li>`).join("");
   mapView.querySelectorAll("#clist [data-cid]").forEach(b=>b.addEventListener("click",()=>mapSelect(M.sel===b.dataset.cid?null:b.dataset.cid)));
+  const orgs=sysOrgs(e);
+  document.getElementById("olist-h").textContent=`Organisations this generation · ${orgs.length}`;
+  document.getElementById("olist").innerHTML=orgs.map(n=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}"><span class="num org" style="--mc:${col(n.m)}"></span><span><span class="cn">${n.n}</span><span class="cp">${orgPlace(n.id)} · ${GROUPS[n.m][1]}</span></span><span class="cy">Since ${DATA.orgs.cols[n.c][0]}</span></button></li>`).join("");
+  mapView.querySelectorAll("#olist [data-cid]").forEach(b=>b.addEventListener("click",()=>mapSelect(M.sel===b.dataset.cid?null:b.dataset.cid)));
   const types=[...new Set(DATA.nppl.nodes.map(n=>n.m))];
   document.getElementById("map-legend").innerHTML=`<span class="lg"><span class="num" style="--mc:var(--ink-2);width:14px;height:14px"></span>Conflict, numbered in order</span><span class="lg" style="color:var(--ink-2)">Events on Earth sit in the band above the map. Distances are not to scale.</span>`+
     `<span class="lg" style="color:var(--ink-2)">Pins by type:</span>`+types.map(c=>`<span class="lg"><span class="num" style="--mc:${col(c)};width:12px;height:12px"></span>${GROUPS[c][0]}</span>`).join("");
@@ -1161,6 +1202,11 @@ function drawSystem(){
     return `<g class="pin${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${n.d}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><circle class="pm" r="${r}" fill="${col(n.m)}" style="stroke-width:${(sel?3:1.5)*k}"/><text style="font-size:${11*k}px">${M.num[n.id]}</text>${lbl?(()=>{const ls=wrap(n.n,lbl),lx=r+7*k;return `<text class="olbl" x="${lx}" style="font-size:${13*k}px">${ls.map((l,i)=>`<tspan x="${lx}" dy="${i?1.15:-0.575*(ls.length-1)}em">${l}</tspan>`).join("")}</text>`})():""}<title>${n.n} · ${n.d}</title></g>`};
   Object.entries(by).forEach(([key,list])=>{const [bx,by0]=P[key],cnt=list.length,rr=ring[key];
     list.forEach((n,i)=>{const a=(cnt===1?-50:-90+i*360/cnt)*Math.PI/180;s+=pin(n,bx+rr*Math.cos(a),by0+rr*Math.sin(a))})});
+  // Organisation pins: the world map's hollow squares, on an arc above their body (its name sits below), outside any ring of conflicts
+  if(M.orgs){const ob={};sysOrgs(M.nera).forEach(n=>{const b=ORGMAP[n.id].sys[0];if(P[b])(ob[b]=ob[b]||[]).push(n)});
+    Object.entries(ob).forEach(([key,list])=>{const [bx,by0]=P[key],rr=(ring[key]||(SOLAR.bodies[key].s+8)*k)+14*k;
+      const da=Math.max(26*Math.PI/180,16*k/rr);list.forEach((n,i)=>{const a=-150*Math.PI/180+i*da,x=bx+rr*Math.cos(a),y=by0+rr*Math.sin(a),r=6*k,sel=M.sel===n.id,where=ORGMAP[n.id].sys[1];
+        s+=`<g class="pin opin${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${where}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><rect class="om" x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" rx="${1.5*k}" style="stroke-width:${(sel?2.6:1.6)*k}"/><rect class="oi" x="${-r*.5}" y="${-r*.5}" width="${r}" height="${r}" fill="${col(n.m)}"/><title>${n.n} · ${where}</title></g>`})})}
   s+=`</g></g>`;
   s+=`<rect width="${W}" height="${B}" fill="var(--band)"/><line x1="0" x2="${W}" y1="${B}" y2="${B}" stroke="var(--rule)" stroke-dasharray="4 4"/>
 <text class="oband" x="14" y="${16*Math.min(k,1.6)}" style="font-size:${10*Math.min(k,1.6)}px">EARTH</text>`;
