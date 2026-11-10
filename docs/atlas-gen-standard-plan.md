@@ -2,7 +2,7 @@
 
 Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (atlas versions 99–104). Tidied on 2026-11-10: the resolved decisions are folded into the status, the order of work is a single list, and a Restructure section is added.
 
-## Status (2026-11-10, after atlas version 121)
+## Status (2026-11-10, after atlas version 122)
 
 **Decisions**
 - **A:** "Projected" is removed from the war; only Gen 9 (2327) keeps it.
@@ -21,7 +21,7 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
   - The Timeline tab's war banner is removed.
   - The map's era note is rewritten.
   - The data notes for Aces and the Timeline now say their era fields are Gen numbers (2026-11-10).
-  - Still missing: the check.js rule that every tree uses the shared labels and has a post-war entry for each faction it profiles. It's in the final sweep.
+  - The check.js rule is in (version 122): column labels come from GENS, turning points use their tree's own column labels, and every profiled faction has an entry after the war.
 - **Step 9, Aces:** 29 new pilots across Gen 5–9, faction filters for all 13 factions, and links to Persons of Interest (Han Zhuo, Rahim Qureshi and Sable Calder) and to Haven ancestors.
 - **Step 10's Factions part:** every lane runs Gen 0–9. There are new lanes for Colony One, the MRD, the CPS, the Constitutionalists, Umoja, the Ashva Compact and the Communion, and the "Orbit & Mars" and "Outside the blocs" lanes hand over to them. Faction views treat the new lanes as their own.
 - **Step 2, Space Fleets (version 106, 2026-11-10):**
@@ -178,8 +178,16 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
   - New names awaiting your review: Callum MacDouglas, Taqqiq Silla, Paloma Garza, Jonah Vane, Lise Hart, Yarik Lubov, Nkem Olgabenro, Ingrid Viborg, Lin Yue, Sun Wukong 237/I, Makoa Stevens, Xiao An, Iona Morgan, Jan Furyk, Vera Belova, Mikhail Belov, Anand Kulkarni, Fatou Diallo, Halima Osman, Zawadi Osei, Baraka Osei, Meera Rao, Haruka Sakamoto, Tomas Vey, Marisol Quispe.
   - The turning points relabelled ("Haven Gen 3" → Gen 3–4, "The war" → Gen 5), and a Gen 9 turning point added.
 
+- **Step 10, final sweep (version 122, 2026-11-10):**
+  - The header eyebrow and second paragraph, the Timeline intro and the Successors intro no longer stop at 2186 or count No Peace Past Luna's "four generations".
+  - The last off-scale turning-point labels are fixed: Supers and Mysteries "The war" → Gen 5, Fleets "Gen 6" → Gen 6 · early. Fleets' turning points are sorted into column order. Off-scale labels had made those turning points show whatever generations were filtered.
+  - The new check.js rule (see Step 1).
+  - docs/atlas-faction-tags-review.md rebuilt from the data: one Conflicts list by generation, with a count per faction. Every conflict has at least one faction.
+  - Browser pass: all 16 tabs in the whole atlas and all 13 faction views. There are no errors or stray text, and no tab is empty.
+  - Thin spots for review (cards shown in that faction's view): the Constitutionalists have 1 weapon, 1 power source, 1 mystery and 4 conflicts. Umoja, the Ashva Compact and the Communion have 1 doctrine each; Umoja and the Ashva Compact have 1 mystery each.
+
 **Order of work**
-1. The final sweep.
+1. Your review of the names and placements from versions 117–122.
 2. **Supers** (once decision D is made).
 
 One tab per publish, with check.js and a browser test each time.
@@ -345,7 +353,7 @@ Place each entry on the map that matches its column.
 - Extend to Gen 8–9: descendants, successors and the people who'll matter in 2327, about two per faction. Gen 7 already holds 38 of the 98 people, so the new ones should go in Gen 8–9.
 - Give Umoja, the Ashva Compact and the Communion people of their own, linked to their new frames, makers and doctrine.
 
-### Step 10. Final sweep
+### Step 10. Final sweep (done, version 122)
 
 - Header, intros and turning points that still say "to 2186" or "Gen 4 prototypes".
 - The leftover "NPPL Gen 1–4" labels.

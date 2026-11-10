@@ -46,6 +46,15 @@ for(const [k,t] of Object.entries(DATA)){const cells={};const ncol=(t.cols||COLS
   for(const [code,ks] of Object.entries(FV.makers)){if(!GROUPS[code])errs.push("view maker "+code);for(const k of ks)if(!keys.has(k))errs.push(`view maker ${code} ${k}`)}
   for(const n of [...Object.values(DATA).flatMap(t=>t.nodes),...MINOR])for(const k of n.fx||[])if(!keys.has(k))errs.push(`fx ${n.id} ${k}`);}}
 for(const [k,t] of Object.entries(DATA))for(const r of t.profile||[])for(const id of r.ids)if(IDX[id]!==k)errs.push(`profile ${k} ${r.k} ${id}`);
+// The shared scale: every tree labels its columns from GENS (a Gen may be split early/late, or two Gens joined), its turning points use its own column labels,
+// and every faction a tree profiles has at least one listed entry after the war (Gen 6 or later)
+{const GN=new Set(GENS.map(g=>g[0])),genOf=l=>{const m=/^Gen (\d)/.exec(l);return m?+m[1]:-1};
+ const okLabel=l=>GN.has(l)||(/^Gen \d · (early|late)$/.test(l)&&GN.has(l.split(" · ")[0]))||(/^Gen \d–\d$/.test(l)&&l.match(/\d/g).every(d=>GN.has("Gen "+d)));
+ for(const [k,t] of Object.entries(DATA)){const labels=(t.cols||[]).map(c=>c[0]);
+  for(const l of labels)if(!okLabel(l))errs.push(`column label ${k} "${l}"`);
+  for(const [e] of t.turns||[])if(!labels.includes(e))errs.push(`turning point label ${k} "${e}" is not a column`);
+  const col=id=>{const n=t.nodes.find(x=>x.id===id);return n?genOf(labels[n.c]||""):-1};
+  for(const r of t.profile||[])if(!r.ids.some(id=>col(id)>=6))errs.push(`profile ${k} ${r.k} has no entry after the war`)}}
 const NCH=DATA.conflicts.cols.length;
 for(const b of CHRONO){if(b.e>=NCH)errs.push(`chrono era ${b.t} ${b.e}`);if(b.id&&!IDX[b.id]&&!ACES.some(a=>a.id===b.id))errs.push(`chrono ref ${b.t} ${b.id}`)}
 for(const p of [...SPACE,UNEL,...POWERS])for(const id of p.from||[])if(!IDX[id]&&!ACES.some(a=>a.id===id))errs.push(`seed ref ${p.n} ${id}`);
