@@ -2,7 +2,7 @@
 
 Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (atlas versions 99–104). Tidied on 2026-11-10: the resolved decisions are folded into the status, the order of work is a single list, and a Restructure section is added.
 
-## Status (2026-11-10, after atlas version 122)
+## Status (2026-11-10, after atlas version 123)
 
 **Decisions**
 - **A:** "Projected" is removed from the war; only Gen 9 (2327) keeps it.
@@ -13,6 +13,13 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
 - **Still open: D, giants after the war.** What do the Mandate and the Weapons Resolution say about super robots? It includes Takemikazuchi's fate, which you've left open. Supers waits for it.
 
 **Done**
+- **Umoja and the enhancement thread (version 123, 2026-11-10, user's direction):**
+  - Umoja is the people Earth wouldn't license. Its tribes split between strength through cultivation (the councils, the keepers' heirs) and strength through strength (the Hafun Lodges), and the Lodges have led since the Ganymede Split in the 2220s. The councils remain as a thin thread running through every tribe.
+  - The leader: Amos Kiprotich, station-born and given therapies as a child, led the Geneva Walk in 2183 for one licence everyone would honour, went into exile with the grafted, and let his son win on Ganymede. His daughter Neema's line runs to the Oseis (care side); his son Jabari's runs to Lodge-Captain Sagal Osman Kiprotich (strength side, 2327).
+  - New entries: the Geneva Walk, the Ganymede Split, the Bone Market (Ashva parts for Umoja muscle, traded between hunts), the Grown Command doctrine, the Hafun Lodges, and three early biocults (the Horn's free-port clinics, the Tabernacle of the Unfallen, the Sulu Gardens).
+  - "Strays" is Ganymede's word for the unaffiliated enhanced; Earth's press calls them all Umoja.
+  - The Grafted Battalions mention the war's unrecorded mutagens. Colony One's card now says its quarrel was liberty, not bodies. The Ashva card notes old-style keepers who back them.
+  - A new Enhancement lane on the Timeline runs Gen 1–8, and is shown in the Umoja, Ashva, MRD, Ascendancy and Commonwealth views.
 - **Step 1, largely:**
   - The shared `GENS` scale is in the data.
   - Conflicts, Supers and Organisations are relabelled to the scale.
