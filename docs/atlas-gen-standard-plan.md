@@ -2,7 +2,7 @@
 
 Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (atlas versions 99–104). Tidied on 2026-11-10: the resolved decisions are folded into the status, the order of work is a single list, and a Restructure section is added.
 
-## Status (2026-11-10, after atlas version 123)
+## Status (2026-11-10, after atlas version 124)
 
 **Decisions**
 - **A:** "Projected" is removed from the war; only Gen 9 (2327) keeps it.
@@ -13,6 +13,13 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
 - **Still open: D, giants after the war.** What do the Mandate and the Weapons Resolution say about super robots? It includes Takemikazuchi's fate, which you've left open. Supers waits for it.
 
 **Done**
+- **The Ashva Compact (version 124, 2026-11-10, user's direction):**
+  - The Nashik Oath's root is "the strong defend the weak". Equipment owed to the unit and the duty to the unenhanced are readings of it. The Ascendancy's Oath Doctrine is the state's reading, with "the weak" meaning its own people first.
+  - There are two heritages. The sworn pairs are Indian. The Slavic strand is liberal, mistrusts the state and still works for a brighter future; its founder is Lev Arsenyev, whose Primorye yard crews walked to Geneva and hid the Nashik pilots at Vladivostok.
+  - The Compact has no courts, only the veche (an assembly that argues and never rules) and the akharas (warrior orders; some swear pairs). Honour is the only check, and that's their folly.
+  - Europa and Io hold both Compact and shielded Ascendancy settlements. The open government wants the strength back (the Reclamation Bills, c. 2315–2320), while the Earth-based Hegemony, which holds off-world people in contempt, wants a permanent answer. The Ascendancy is isolationist and the Compact interventionist.
+  - New entries: Two Flags on Europa (the first ride the Ascendancy disowned), the Himalia Strike (the Ascendancy shells an Ashva base rather than fight China over a Jianwei), Riding Out, the Unclaimed Ride (a mystery; its local answer is a Hegemony provocation), and Arsenyev, Darya Arsenyeva and Kiran Arsenyev.
+  - Fixes: the Ascendancy's Garuda-class frigate is now the Sokol-class, and the Rath-E's Europa/Io slip is corrected.
 - **Umoja and the enhancement thread (version 123, 2026-11-10, user's direction):**
   - Umoja is the people Earth wouldn't license. Its tribes split between strength through cultivation (the councils, the keepers' heirs) and strength through strength (the Hafun Lodges), and the Lodges have led since the Ganymede Split in the 2220s. The councils remain as a thin thread running through every tribe.
   - The leader: Amos Kiprotich, station-born and given therapies as a child, led the Geneva Walk in 2183 for one licence everyone would honour, went into exile with the grafted, and let his son win on Ganymede. His daughter Neema's line runs to the Oseis (care side); his son Jabari's runs to Lodge-Captain Sagal Osman Kiprotich (strength side, 2327).
