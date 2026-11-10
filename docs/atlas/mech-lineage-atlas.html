@@ -69,6 +69,13 @@ header p{margin:0;color:var(--ink-2)}
 .mk[aria-pressed="true"]{border-color:var(--ink);background:var(--card)}
 .mk small{color:var(--ink-2);font-size:12px}
 .hint{font-size:13px;color:var(--ink-2);margin:0}
+/* Generation picker: on wide trees, choose which columns to show */
+.gn{background:none;border:1px solid var(--rule);border-radius:3px;padding:4px 8px;font:500 12px var(--mono);color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.gn:hover{border-color:var(--ink-2);color:var(--ink)}
+.gn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.gn.pre{border-style:dashed;color:var(--ink)}
+.gn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.gn-sep{width:1px;align-self:stretch;background:var(--rule);margin:0 2px}
 
 .scroller{overflow-x:auto;border-top:2px solid var(--ink);-webkit-overflow-scrolling:touch}
 .scroll-note{display:none;font:12px var(--mono);color:var(--ink-2);margin:0 0 6px}
@@ -488,6 +495,8 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
   <section class="legend" aria-label="Legend">
     <div class="legend-row" id="lines"></div>
+    <div class="legend-row" id="gens" role="group" aria-label="Generations shown" hidden></div>
+    <div class="legend-row" id="famsel" role="group" aria-label="Types shown" hidden></div>
     <div class="legend-row" id="makers"></div>
     <p class="hint" id="hint"></p>
   </section>
@@ -642,7 +651,7 @@ function build(key){
   document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.k===key)));
   document.getElementById("intro").textContent=ds.intro;
   renderPlate(PLATES[key]);
-  document.getElementById("turns").innerHTML=ds.turns.map(([e,h,p])=>`<div class="turn"><span class="era">${e}</span><h3>${h}</h3><p>${p}</p></div>`).join("");
+  loadGens(key);loadFams(key);
   const R=ds.rel;
   document.getElementById("lines").innerHTML=`<span class="legend-label">Lines</span>
     <span class="lt"><svg width="38" height="10"><path d="M2 5H36" stroke="var(--line)" stroke-width="1.6"/></svg>${R.D}</span>
@@ -671,12 +680,6 @@ function build(key){
   });
 
   chart.innerHTML="";
-  const NC=(ds.cols||COLS).length;
-  chart.style.setProperty("--ncol",NC);
-  // Six columns still fit the page width with a tighter gap; seven need sideways scrolling
-  chart.style.setProperty("--gap",NC>5?"28px":"44px");
-  chart.style.setProperty("--minw",NC>5?`${NC*165+(NC-1)*28}px`:"1080px");
-  document.querySelector(".scroll-note").classList.toggle("wide",NC>6);
   svg=document.createElementNS(SVGNS,"svg");
   svg.innerHTML=`<defs>
 <marker id="ad" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L8 4L0 8z"/></marker>
@@ -684,8 +687,7 @@ function build(key){
   const g=document.createElementNS(SVGNS,"g");svg.append(g);chart.append(svg);
   EDGES.forEach(e=>{const p=document.createElementNS(SVGNS,"path");p.setAttribute("class",`edge ${e.t}${e.cross?" cross":""}`);p.setAttribute("marker-end",e.t==="X"?"url(#ax)":"url(#ad)");g.append(p);e.path=p});
 
-  const cols=document.createElement("div");cols.className="cols";
-  cols.innerHTML=(ds.cols||COLS).map(([k,y])=>`<div><b>${k}</b><span>${y}</span></div>`).join("");
+  const cols=document.createElement("div");cols.className="cols";cols.id="colhead";
   chart.append(cols);
 
   ds.fams.forEach(([fid,name,blurb])=>{
@@ -731,11 +733,85 @@ function draw(){
 function walk(id,key,set){byId[id][key].forEach(([o])=>{if(!set.has(o)){set.add(o);walk(o,key,set)}})}
 function lineage(id){const s=new Set([id]);walk(id,"p",s);walk(id,"k",s);return s}
 
+// ---- Generation picker: wide trees let the reader choose which columns to show, remembered per tree ----
+const GSEL={};
+const gensOf=()=>(ds.cols||COLS);
+const genNum=lbl=>{const m=/^Gen (\d+)/.exec(lbl);return m?+m[1]:null};
+function loadGens(key){
+  if(key in GSEL)return;GSEL[key]=null;
+  try{const v=JSON.parse(localStorage.getItem("atlas-gens-"+key)||"null");if(Array.isArray(v)&&v.length&&v.every(c=>c>=0&&c<(DATA[key].cols||COLS).length))GSEL[key]=new Set(v)}catch(e){}
+}
+function setGens(cs){
+  const all=gensOf().length;GSEL[current]=cs&&cs.size&&cs.size<all?cs:null;
+  try{localStorage.setItem("atlas-gens-"+current,JSON.stringify(GSEL[current]?[...GSEL[current]]:null))}catch(e){}
+  if(state.sel&&!colShown(byId[state.sel].c))state.sel=null;
+  apply();
+}
+const colShown=c=>!GSEL[current]||GSEL[current].has(c);
+function renderGens(){
+  const el=document.getElementById("gens"),cl=gensOf();
+  el.hidden=cl.length<=6;if(el.hidden){el.innerHTML="";return}
+  const sel=GSEL[current],idx=cl.map((_,i)=>i);
+  const pick=f=>new Set(idx.filter(i=>{const g=genNum(cl[i][0]);return g!=null&&f(g)}));
+  const same=(a,b)=>!!a&&a.size===b.size&&[...b].every(i=>a.has(i));
+  const before=pick(g=>g<=5),after=pick(g=>g>=6);
+  const presets=[["All",null,!sel]];
+  if(before.size&&after.size)presets.push(["Before the war",before,same(sel,before)],["After the war",after,same(sel,after)]);
+  el.innerHTML=`<span class="legend-label">Generations</span>`+presets.map(([l,,on],i)=>`<button type="button" class="gn pre" data-p="${i}" aria-pressed="${on}">${l}</button>`).join("")+
+    `<span class="gn-sep" aria-hidden="true"></span>`+cl.map(([k,y],i)=>`<button type="button" class="gn" data-c="${i}" aria-pressed="${!!sel&&sel.has(i)}" title="${k} · ${y}">${k}</button>`).join("");
+  el.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>{const p=presets[+b.dataset.p][1];setGens(p&&new Set(p))}));
+  // With every generation shown, a chip shows that one alone; otherwise it adds or removes that generation
+  el.querySelectorAll("[data-c]").forEach(b=>b.addEventListener("click",()=>{const c=+b.dataset.c,cur=GSEL[current];
+    if(!cur)return setGens(new Set([c]));const s=new Set(cur);s.has(c)?s.delete(c):s.add(c);setGens(s.size?s:null)}));
+}
+// ---- Type picker: on trees whose bands are types rather than makers, choose which bands to show, remembered per tree ----
+const FAMROW={fleets:"Ship types",vehicles:"Types"},FSEL={};
+function loadFams(key){
+  if(key in FSEL)return;FSEL[key]=null;
+  try{const ids=new Set(DATA[key].fams.map(f=>f[0])),v=JSON.parse(localStorage.getItem("atlas-fams-"+key)||"null");if(Array.isArray(v)&&v.length&&v.every(f=>ids.has(f)))FSEL[key]=new Set(v)}catch(e){}
+}
+const famShown=f=>!FSEL[current]||FSEL[current].has(f);
+function saveFams(){try{localStorage.setItem("atlas-fams-"+current,JSON.stringify(FSEL[current]?[...FSEL[current]]:null))}catch(e){}}
+function setFams(fs){
+  FSEL[current]=fs&&fs.size&&fs.size<ds.fams.length?fs:null;saveFams();
+  if(state.sel&&!famShown(byId[state.sel].f))state.sel=null;
+  apply();
+}
+function renderFams(){
+  const el=document.getElementById("famsel"),lbl=FAMROW[current];
+  el.hidden=!lbl;if(!lbl){el.innerHTML="";return}
+  const sel=FSEL[current];
+  el.innerHTML=`<span class="legend-label">${lbl}</span><button type="button" class="gn pre" data-fa="" aria-pressed="${!sel}">All</button><span class="gn-sep" aria-hidden="true"></span>`+
+    ds.fams.map(([f,name])=>`<button type="button" class="gn" data-fa="${f}" aria-pressed="${!!sel&&sel.has(f)}">${name}</button>`).join("");
+  // As with generations: from All, a chip shows that type alone; after that it adds or removes it
+  el.querySelectorAll("[data-fa]").forEach(b=>b.addEventListener("click",()=>{const f=b.dataset.fa,cur=FSEL[current];
+    if(!f)return setFams(null);if(!cur)return setFams(new Set([f]));const s=new Set(cur);s.has(f)?s.delete(f):s.add(f);setFams(s.size?s:null)}));
+}
+// Lay the chart out over the shown columns only, and show only the turning points for those generations
+function layoutCols(){
+  const cl=gensOf(),vc=cl.map((_,i)=>i).filter(colShown),NC=vc.length;
+  chart.style.setProperty("--ncol",NC);
+  // Six columns still fit the page width with a tighter gap; seven need sideways scrolling
+  chart.style.setProperty("--gap",NC>5?"28px":"44px");
+  chart.style.setProperty("--minw",NC>5?`${NC*165+(NC-1)*28}px`:NC>2?"1080px":"0px");
+  document.querySelector(".scroll-note").classList.toggle("wide",NC>6);
+  document.getElementById("colhead").innerHTML=vc.map(i=>`<div><b>${cl[i][0]}</b><span>${cl[i][1]}</span></div>`).join("");
+  ds.nodes.forEach(n=>cards[n.id].style.gridColumn=Math.max(vc.indexOf(n.c),0)+1);
+  const labels=cl.map(c=>c[0]),shownL=new Set(vc.map(i=>labels[i]));
+  document.getElementById("turns").innerHTML=ds.turns.filter(([e])=>!labels.includes(e)||shownL.has(e)).map(([e,h,p])=>`<div class="turn"><span class="era">${e}</span><h3>${h}</h3><p>${p}</p></div>`).join("");
+  renderGens();
+}
+
 function apply(){
   // A selected maker filters the tree down to its own entries; a selected entry dims everything outside its lineage
   // A faction view hides everything outside it, and a maker filter narrows what is left
   let only=VW.set?new Set(ds.nodes.filter(n=>VW.set.has(n.id)).map(n=>n.id)):null;
   if(state.maker){const m=ds.nodes.filter(n=>n.m===state.maker&&(!only||only.has(n.id))).map(n=>n.id);only=new Set(m)}
+  // The generation picker narrows it to the chosen columns
+  if(GSEL[current])only=new Set(ds.nodes.filter(n=>colShown(n.c)&&(!only||only.has(n.id))).map(n=>n.id));
+  // and the type picker to the chosen bands
+  if(FSEL[current])only=new Set(ds.nodes.filter(n=>famShown(n.f)&&(!only||only.has(n.id))).map(n=>n.id));
+  layoutCols();renderFams();
   const lit=state.sel?lineage(state.sel):null;
   ds.nodes.forEach(n=>{const c=cards[n.id];c.hidden=!!only&&!only.has(n.id);c.classList.toggle("dim",!!lit&&!lit.has(n.id));c.classList.toggle("sel",state.sel===n.id);c.setAttribute("aria-pressed",String(state.sel===n.id))});
   // Hide empty families and close up the rows left by hidden entries
@@ -817,7 +893,11 @@ function renderSheet(){
   sheet.querySelectorAll(".lk[data-id]").forEach(b=>b.addEventListener("click",()=>{select(b.dataset.id);cards[b.dataset.id].scrollIntoView({block:"center",inline:"center",behavior:reduced?"auto":"smooth"})}));
 }
 // Selecting keeps a maker filter unless the entry lies outside it
-function select(id){state.sel=id;if(id&&state.maker&&byId[id].m!==state.maker)state.maker=null;apply()}
+function select(id){state.sel=id;if(id&&state.maker&&byId[id].m!==state.maker)state.maker=null;
+  // An entry opened from elsewhere in a hidden generation brings that generation back into view
+  if(id&&!colShown(byId[id].c)){GSEL[current].add(byId[id].c);try{localStorage.setItem("atlas-gens-"+current,JSON.stringify([...GSEL[current]]))}catch(e){}}
+  if(id&&!famShown(byId[id].f)){FSEL[current].add(byId[id].f);saveFams()}
+  apply()}
 const lb=document.getElementById("lb");
 function openArt(src,cap){document.getElementById("lb-img").src=src;document.getElementById("lb-img").alt=cap;document.getElementById("lb-cap").textContent=cap;
   if(lb.showModal)lb.showModal();else window.open(src,"_blank")}
