@@ -98,14 +98,33 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
   - **Tags:** the Earth vehicles that space factions started from also carry those factions' tags (the Drover II, Kurier, Muskeg-W, Sarab and Ranger).
   - **Bug fix:** a pressed preset chip was unreadable in dark mode.
 
+- **Step 4, carriers after the war (version 112, 2026-11-10):**
+  - **16 new cards in the sea, land, air and orbital bands, Gen 6–9.** No reactor lifts anything in Earth's sky after the Mandate.
+  - **Sea:**
+    - the Lexington, a US supercarrier on fuel, and the Monterrey amphibious ship;
+    - the Kizuna Tender II under Beijing's flag, and China's Ciji hospital ships;
+    - the Union's Mare Nostrum, and the Narwhal icebreaker carrier (Gen 8), which revives the Polar Carrier line;
+    - the Ascendancy's Samudra on the monsoon coast;
+    - the Commonwealth's Bahari relief ferries.
+  - **Land:**
+    - Krepost crawlers stripped into travelling towns (the Gorod);
+    - Shifa crawler hospitals descended from the Hospital Safina;
+    - China's railway to the Darkhan accelerator.
+  - **Air:**
+    - the Rookery-F, the last helicarrier, a dead end on fuel;
+    - the UNEL's Long Lifter airships;
+    - diesel Kaspiy-D ground-effect carriers.
+  - **Orbital lift:** the UNEL's licensed lift shuttles, and China's Darkhan accelerator sleds.
+  - **Tags:** the seeding ships were already tagged (the Hospital Safina for Umoja, the Hearth for the Communion, the Hakobune for Ashva), and so were the old orbital carriers. Earth-bound carriers stay untagged.
+  - **Panel:** renamed "Who flies and carries what". The Earth powers' and the UNEL's rows now cover their carriers on Earth.
+
 **Order of work**
-1. Carriers after the war, inside Fleets & Carriers (Step 4).
-2. Organisations.
-3. **R1: merge Conflicts and NPPL Conflicts**, then Conflicts after the war (Step 7) in the merged tab.
-4. Persons of Interest.
-5. **R2: collapsible panels.** This can go in at any point. Earlier is better, because each tab converted before it adds another open panel.
-6. The final sweep. It includes the leftover "NPPL Gen 1–4" labels in the turning points of the NPPL Conflicts, Persons of Interest and Mysteries tabs.
-7. **Supers** (once decision D is made).
+1. Organisations.
+2. **R1: merge Conflicts and NPPL Conflicts**, then Conflicts after the war (Step 7) in the merged tab.
+3. Persons of Interest.
+4. **R2: collapsible panels.** This can go in at any point. Earlier is better, because each tab converted before it adds another open panel.
+5. The final sweep. It includes the leftover "NPPL Gen 1–4" labels in the turning points of the NPPL Conflicts, Persons of Interest and Mysteries tabs.
+6. **Supers** (once decision D is made).
 
 One tab per publish, with check.js and a browser test each time.
 
