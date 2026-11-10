@@ -69,15 +69,43 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
   - **Kept as they were:** the Marlinspike plate, the intro and turning points (rewritten as one set of 9), and the "Who flies what in space" panel.
   - **Two Hakobune cards** (yh51 the Japanese ark, yh64 its flight to Vladivostok) now share the Gen 5 column. That's intended, since they're two stages of one ship.
 
+- **Generation and type filters (versions 109–110, committed 5c4940a):**
+  - Trees with more than six columns get a Generations row: All, Before the war, After the war, and a chip per column.
+  - Fleets & Carriers and Vehicles also get a Types row.
+  - Choices are remembered per tree in the reader's browser.
+- **Step 3, Vehicles (version 111, 2026-11-10):**
+  - **Columns:** the shared Gen 0–9 scale. Only Gen 9 is projected.
+  - **57 new cards.** Earth lines carry on with gaps and offshoots:
+    - **War (Gen 5):** the Regulator II on the Liberty Core, the crewless Tiejia-Zhan, the League's Sarab ambulance columns, the Union's relay-killing Herse and Milan-R, the fission Taran-F, Muskeg-W haulers for both sides of the Winter War, and the UN's White Column into the Open Cities.
+    - **Peace (Gen 6), on cheap Belt fuel with reactors off Earth's battlefields:**
+      - the Provost (US) and the Gardien (TAU);
+      - the Tiejia-VI, which goes back to diesel and is still crewless;
+      - the Vityaz-D (Ascendancy) and the Kafila-M (Commonwealth);
+      - the UNEL's Relay Truck (it can be switched off), the Kansai Rescue Carrier and the Andean warlords' rebuilds;
+      - civil airlifters and rescue tiltrotors.
+    - **Later:** the Hound-A and Kite VII for Bolivia, China's Lianxin aid convoys, the Commonwealth's Rahma, the Hobby fighter, and the Keystone Hauler in 2327.
+  - **New band, "Off-world vehicles":**
+    - Colony One: Sealed Drovers, the Burrower and partisan tunnel carts.
+    - MRD: Kurier survey cars, the Surveyor, the Hammer Tractor and a fusion-cell field lab.
+    - Syndicate: the Belt Tug and the Cargo Walker.
+    - Umoja: the Kin Carrier, ammonia-fed and grown.
+    - Ashva: the Rath-E and the Hunt Crawler.
+    - Communion: the Ice Crawler, descended from the Winter War Muskegs, and the Mirror Sledge.
+    - Ascendancy: cloud skiffs at Venus.
+    - US: the Dust Ranger and the Bastion Patrol.
+    - Constitutionalists: the Charter Carrier.
+  - **Panel:** "Who drives what after the war", one row per faction.
+  - **Tags:** the Earth vehicles that space factions started from also carry those factions' tags (the Drover II, Kurier, Muskeg-W, Sarab and Ranger).
+  - **Bug fix:** a pressed preset chip was unreadable in dark mode.
+
 **Order of work**
-1. Vehicles.
-2. Carriers after the war, inside Fleets & Carriers (Step 4).
-3. Organisations.
-4. **R1: merge Conflicts and NPPL Conflicts**, then Conflicts after the war (Step 7) in the merged tab.
-5. Persons of Interest.
-6. **R2: collapsible panels.** This can go in at any point. Earlier is better, because each tab converted before it adds another open panel.
-7. The final sweep. It includes the leftover "NPPL Gen 1–4" labels in the turning points of the NPPL Conflicts, Persons of Interest and Mysteries tabs.
-8. **Supers** (once decision D is made).
+1. Carriers after the war, inside Fleets & Carriers (Step 4).
+2. Organisations.
+3. **R1: merge Conflicts and NPPL Conflicts**, then Conflicts after the war (Step 7) in the merged tab.
+4. Persons of Interest.
+5. **R2: collapsible panels.** This can go in at any point. Earlier is better, because each tab converted before it adds another open panel.
+6. The final sweep. It includes the leftover "NPPL Gen 1–4" labels in the turning points of the NPPL Conflicts, Persons of Interest and Mysteries tabs.
+7. **Supers** (once decision D is made).
 
 One tab per publish, with check.js and a browser test each time.
 
