@@ -2,7 +2,7 @@
 
 Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (atlas versions 99–104). Tidied on 2026-11-10: the resolved decisions are folded into the status, the order of work is a single list, and a Restructure section is added.
 
-## Status (2026-11-10, after atlas version 117)
+## Status (2026-11-10, after atlas version 118)
 
 **Decisions**
 - **A:** "Projected" is removed from the war; only Gen 9 (2327) keeps it.
@@ -157,11 +157,17 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
   - **Data tidied:** ORBIT and ERA_NOTE are gone (their places moved to SOLAR.at, their notes into `MAPNOTE`, one per generation); the world map's Orbit & Mars band and the inner-system map's Earth band are gone.
   - **Placements awaiting the user's approval:** the Spire in Daedalus crater; the far-side ice camps in Schrödinger; the First City, Colony One and the Bastion in Acidalia; Freehold Basin and New Philadelphia in Chryse; Astraeus Prime in Solis Planum; Minangkabau in Aeolis; the Grudgestation, Kasimov, the Hammer of Mars, the Helion grid, and the routes of the Line of Control and the Red Wall. wO25 (the Union's Mars station) is deliberately not on the Mars map.
 
+- **Step 7, conflicts after the war (version 118):** 8 new entries, all names awaiting the user's approval.
+  - **Gen 6:** the First Enforcement (nL7, a Tsitadel brought down over the Caspian steppe), the Eleven Switch-offs (nE10, the relay kill-switch), Broken Seals (nL8), the Venus Refusal (nL9), the Closed Door (nO5, Saturn; it doesn't answer the Saturn mysteries) and the Pirate Wars (nB9, now the first phase of the Pirate Purge).
+  - **Gen 8:** the Signing (nE11, the Weapons Resolution opens for signature; it points at the Uninvited Signatory mystery without answering it) and Under the Ice (nO6, Europa's ocean: the Ashva first, the Ascendancy copying them, Umoja growing fortresses), which mecha-1b suggested to tie in the off-world assault carriers.
+  - **Links:** the Gen 8–9 assault carriers are linked from the conflicts they serve (the Gradient from the Partisan Years, the Ghostlight from the Hidden Docks, the Pojun, Inchon, Ostia and Strongbox from the Greater Solar Crisis).
+  - **Timeline:** five new beats (three in Gen 6, two in Gen 8).
+  - **Not added:** Gen 9 opening positions; the Greater Solar Crisis card carries them.
+
 **Order of work**
-1. Conflicts after the war (Step 7), in the merged tab.
-2. Persons of Interest.
-3. The final sweep. It includes the remaining "Haven Gen" / "The war" labels in Persons of Interest's turning points.
-4. **Supers** (once decision D is made).
+1. Persons of Interest.
+2. The final sweep. It includes the remaining "Haven Gen" / "The war" labels in Persons of Interest's turning points.
+3. **Supers** (once decision D is made).
 
 One tab per publish, with check.js and a browser test each time.
 
@@ -301,7 +307,7 @@ Needs decision D first.
 - Put space organisations on the inner-system map as pins, the way Earth organisations sit on the world map.
 - Add an "Organisations after the war" panel.
 
-### Step 7. Conflicts after the war (after R1)
+### Step 7. Conflicts after the war (done, version 118)
 
 These entries already exist, and stay:
 - Gen 6: the Andean Collapse, the Spire's Vaults, the Hegemony, the Line of Control, the Syndicate's Belt, Settling the Dark, the Jupiter Settlements.
