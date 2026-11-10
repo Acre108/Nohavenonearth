@@ -2,7 +2,7 @@
 
 Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (atlas versions 99–104). Tidied on 2026-11-10: the resolved decisions are folded into the status, the order of work is a single list, and a Restructure section is added.
 
-## Status (2026-11-10, after atlas version 118)
+## Status (2026-11-10, after atlas version 120)
 
 **Decisions**
 - **A:** "Projected" is removed from the war; only Gen 9 (2327) keeps it.
@@ -163,6 +163,14 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
   - **Links:** the Gen 8–9 assault carriers are linked from the conflicts they serve (the Gradient from the Partisan Years, the Ghostlight from the Hidden Docks, the Pojun, Inchon, Ostia and Strongbox from the Greater Solar Crisis).
   - **Timeline:** five new beats (three in Gen 6, two in Gen 8).
   - **Not added:** Gen 9 opening positions; the Greater Solar Crisis card carries them.
+- **UNEL jurisdiction (version 119, user ruling):** the UNEL's seals, inspections and licences apply only inside lunar orbit; beyond the Moon everything is fair game, with at most weak attempts (the Venus request, the Mars no-fly zone nobody respects, Assessors refused).
+- **Anchorages beyond the Moon (version 120, user ruling):** each Earth power refits unsealed reactors at an anchorage outside lunar orbit. Six new organisations, pinned on the inner-system map (a new Sun–Earth L2 body):
+  - United States: the Far Roads at the Sun–Earth L2 point (primary, US-led, open to Colony One before 2312 and the Constitutionalists after) and the Phobos Forgeworks (secondary; Colony One runs it until the RDF takes it in 2312).
+  - Transatlantic Union: berths on the Directorate's Deimos, then the Trojan anchorages from 2312.
+  - China: its Juno and Pallas posts, then the Juno berth it keeps after the 2312 handover.
+  - Ascendancy: the Mercury dock (small; Europa is its main anchorage).
+  - African Commonwealth: the Eros dock (small; Europa is its main anchorage).
+  - Lines added to the Sealed Plant, the Hampton Roads Plant, the Great Exchange, the Eros Silence and the Mercury Clean-up, and to the faction panel rows.
 
 **Order of work**
 1. Persons of Interest.
