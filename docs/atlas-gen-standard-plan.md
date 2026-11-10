@@ -2,7 +2,7 @@
 
 Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (atlas versions 99–104). Tidied on 2026-11-10: the resolved decisions are folded into the status, the order of work is a single list, and a Restructure section is added.
 
-## Status (2026-11-10, after atlas version 115)
+## Status (2026-11-10, after atlas version 117)
 
 **Decisions**
 - **A:** "Projected" is removed from the war; only Gen 9 (2327) keeps it.
@@ -151,14 +151,17 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
   - **Turning points:** the two sets joined (12), relabelled Gen 6–8. The "NPPL Gen" labels in Persons of Interest and Mysteries were relabelled too.
   - **Code:** the Map tab still switches between the world map (Gen 0–5) and the inner-system map (Gen 6–9), now both from the one tree (`SYS0 = 6` in the page). Conflict sheets after the war show Roots in the atlas and the inner-system map button. `#nppl` links and remembered tabs open Conflicts. check.js asks for LOC or ORBIT before the war and SOLAR.at after it.
   - **Lines across the war (version 116):** 13 post-war conflicts now have parent lines to the earlier conflicts they grew out of, e.g. the Founding of Colony One and the Panel Looks Up → the Line of Control, the Patron's Lease → the Syndicate's Belt, the Far Lift → Settling the Dark, the Loyal Minority and the River Judges → New Philadelphia.
-- **Map views (in progress, 2026-11-10):** a subagent is building Moon and Mars maps and an Earth · Moon · Mars · Inner system switch for every generation.
+- **Map views (version 117):** the Map tab has one Gen 0–9 row and an Earth · Moon · Mars · Inner system switch in every generation, each button with a count; the reader's view is remembered (`atlas-map-view`).
+  - **New maps:** the Moon (near side, far side and an enlarged south pole) and Mars (with the Line of Control in Gen 6–7, the Red Wall from Gen 7, and Phobos and Deimos in a band above), drawn from new `MOON` and `MARS` data. Entries sit on them through `SITES.moon` / `SITES.mars`, organisations through new ORGMAP `moon` / `mars` fields.
+  - **Earth after the war:** the successor powers without the war fronts, with `FUTURE_OVR` changes per generation (Bolivia is American from Gen 7). Pins that would overlap fan out on a ring.
+  - **Data tidied:** ORBIT and ERA_NOTE are gone (their places moved to SOLAR.at, their notes into `MAPNOTE`, one per generation); the world map's Orbit & Mars band and the inner-system map's Earth band are gone.
+  - **Placements awaiting the user's approval:** the Spire in Daedalus crater; the far-side ice camps in Schrödinger; the First City, Colony One and the Bastion in Acidalia; Freehold Basin and New Philadelphia in Chryse; Astraeus Prime in Solis Planum; Minangkabau in Aeolis; the Grudgestation, Kasimov, the Hammer of Mars, the Helion grid, and the routes of the Line of Control and the Red Wall. wO25 (the Union's Mars station) is deliberately not on the Mars map.
 
 **Order of work**
-1. **Map views** (in progress).
-2. Conflicts after the war (Step 7), in the merged tab.
-3. Persons of Interest.
-4. The final sweep. It includes the remaining "Haven Gen" / "The war" labels in Persons of Interest's turning points.
-5. **Supers** (once decision D is made).
+1. Conflicts after the war (Step 7), in the merged tab.
+2. Persons of Interest.
+3. The final sweep. It includes the remaining "Haven Gen" / "The war" labels in Persons of Interest's turning points.
+4. **Supers** (once decision D is made).
 
 One tab per publish, with check.js and a browser test each time.
 

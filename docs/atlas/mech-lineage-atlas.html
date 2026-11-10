@@ -10,7 +10,7 @@
 :root{
   --paper:#ECEFEA; --card:#FAFBF8; --ink:#1B211F; --ink-2:#56605B; --rule:#C6CCC6;
   --line:#8A938E; --xfer:#B5471B; --focus:#2E5DA6; --chip-fg:#FFFFFF; --band:#E3E7E1;
-  --sea:#D9E1DF; --land:#F4F5F1;
+  --sea:#D9E1DF; --land:#F4F5F1; --ice:#FFFFFF;
   --m-PRE:#6F7773; --m-HAL:#2E5DA6; --m-BHH:#6A6E22; --m-VEK:#2A7D7A; --m-CAS:#B3263A;
   --m-TSM:#A3561C; --m-OKB:#694B92; --m-MHI:#AE3A7D; --m-QAC:#86663A; --m-ASC:#9C7A00;
   --m-BOR:#3C7F4C; --m-NSK:#1B7AA6; --m-UNO:#4B5FC4; --m-LUN:#5E7387; --m-FNK:#C2185B; --m-KHM:#689F38; --m-EUX:#865057;
@@ -21,7 +21,7 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --paper:#131715; --card:#1B201E; --ink:#E2E7E3; --ink-2:#9BA49F; --rule:#323A36;
   --line:#5F6964; --xfer:#F0834E; --focus:#7FA8EE; --chip-fg:#111412; --band:#181D1B;
-  --sea:#0D1110; --land:#262C2A;
+  --sea:#0D1110; --land:#262C2A; --ice:#3B4441;
   --m-PRE:#9BA49F; --m-HAL:#76A0EA; --m-BHH:#AEB25A; --m-VEK:#5FC0BA; --m-CAS:#EF6879;
   --m-TSM:#E38E4E; --m-OKB:#AA8CD8; --m-MHI:#E67DB9; --m-QAC:#CBA571; --m-ASC:#E3BD30;
   --m-BOR:#7CC48C; --m-NSK:#5CB6E0; --m-UNO:#9AA6F2; --m-LUN:#A9BCCF; --m-FNK:#F27BAA; --m-KHM:#AED581; --m-EUX:#C68D93;
@@ -29,7 +29,7 @@
 :root[data-theme="dark"]{
   --paper:#131715; --card:#1B201E; --ink:#E2E7E3; --ink-2:#9BA49F; --rule:#323A36;
   --line:#5F6964; --xfer:#F0834E; --focus:#7FA8EE; --chip-fg:#111412; --band:#181D1B;
-  --sea:#0D1110; --land:#262C2A;
+  --sea:#0D1110; --land:#262C2A; --ice:#3B4441;
   --m-PRE:#9BA49F; --m-HAL:#76A0EA; --m-BHH:#AEB25A; --m-VEK:#5FC0BA; --m-CAS:#EF6879;
   --m-TSM:#E38E4E; --m-OKB:#AA8CD8; --m-MHI:#E67DB9; --m-QAC:#CBA571; --m-ASC:#E3BD30;
   --m-BOR:#7CC48C; --m-NSK:#5CB6E0; --m-UNO:#9AA6F2; --m-LUN:#A9BCCF; --m-FNK:#F27BAA; --m-KHM:#AED581; --m-EUX:#C68D93;
@@ -234,9 +234,44 @@ body.landing-open{overflow:hidden}
 .vb-b h4{margin:2px 0 0;font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
 .vb-b ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:2px 16px}
 .vb-x{margin-left:auto;background:none;border:1px solid var(--ink);border-radius:3px;color:var(--ink);font:500 12px var(--mono);padding:4px 10px;cursor:pointer}
-.map-set{width:max-content;max-width:100%;margin:0 0 4px}
-.map-set button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 14px;font:600 14px/1.15 var(--display);text-align:left}
-.map-set button small{font:400 11px var(--mono);opacity:.8}
+#eras{grid-template-columns:repeat(10,minmax(0,1fr))}
+@media (max-width:620px){#eras{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.map-views{width:max-content;max-width:100%}
+.map-views button{padding:8px 14px;font-size:13px}
+.map-views button.none{color:var(--ink-2)}
+.map-views button.none[aria-pressed="true"]{color:var(--paper)}
+@media (max-width:620px){.map-views{display:grid;grid-template-columns:1fr 1fr;width:100%}.map-views button+button{border-left:0}.map-views button:nth-child(odd){border-right:1px solid var(--ink)}.map-views button:nth-child(-n+2){border-bottom:1px solid var(--ink)}}
+.map-none{margin:0}
+.pin .ldr{stroke:var(--ink-2)}
+.pin .sdot{fill:var(--ink)}
+.bd-disc{fill:var(--land);stroke:var(--rule);stroke-width:1.2;vector-effect:non-scaling-stroke}
+.bd-mare,.bd-low{fill:color-mix(in srgb,var(--sea) 62%,var(--land));stroke:none}
+.bd-up{fill:var(--land)}
+.bd-ring{fill:none;stroke:color-mix(in srgb,var(--ink-2) 45%,var(--land));stroke-width:.9;vector-effect:non-scaling-stroke}
+.bd-ring.dash{stroke-dasharray:4 4}
+.bd-grat{fill:none;stroke:var(--rule);stroke-width:.6;vector-effect:non-scaling-stroke}
+.bd-cut{fill:none;stroke:var(--ink-2);stroke-width:1;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}
+.bd-cap{fill:var(--ice);stroke:var(--rule);stroke-width:.8;vector-effect:non-scaling-stroke}
+.bd-rise{fill:none;stroke:var(--ink-2);stroke-width:1;stroke-dasharray:2 5;opacity:.7;vector-effect:non-scaling-stroke}
+.bd-canyon{fill:none;stroke:color-mix(in srgb,var(--ink-2) 70%,var(--land));stroke-linecap:round;stroke-linejoin:round}
+.bd-volc{fill:none;stroke:color-mix(in srgb,var(--ink-2) 60%,var(--land));stroke-width:1;vector-effect:non-scaling-stroke}
+.bd-loc{fill:none;stroke:var(--xfer);stroke-width:1.6;stroke-dasharray:7 5;vector-effect:non-scaling-stroke}
+.bd-wall{fill:none;stroke:var(--xfer);stroke-width:2.6;vector-effect:non-scaling-stroke}
+.bd-moon{fill:var(--ink-2);stroke:var(--sea);stroke-width:1}
+.bl{pointer-events:none;fill:var(--ink-2)}
+.bl.sea,.bl.area{font-family:var(--body);font-style:italic}
+.bl.crater,.bl.feat{font-family:var(--body)}
+.bl.region{font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;opacity:.85}
+.bl.ptitle{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em}
+.bl.lname{font-family:var(--mono);fill:var(--xfer);letter-spacing:.06em}
+.lp2,svg:not(.wide):not(.zin) .town.tl text,svg:not(.wide):not(.zin) .lab:not(.lt){display:none}
+svg.wide .lp2,svg.zin .lp2{display:inline}
+.town{pointer-events:none}
+.town circle{fill:var(--card);stroke:var(--ink)}
+.town text{font-family:var(--display);font-weight:600;fill:var(--ink);paint-order:stroke;stroke:var(--land);stroke-linejoin:round}
+.sw-line{width:24px;height:0;border-top:2px dashed var(--xfer)}
+.sw-wall{width:24px;height:0;border-top:3px solid var(--xfer)}
+.sw-town{width:9px;height:9px;border-radius:50%;background:var(--card);border:1.5px solid var(--ink)}
 .sys-orbit{fill:none;stroke:var(--rule);stroke-width:1;vector-effect:non-scaling-stroke}
 .sys-belt{fill:none;stroke:var(--land);opacity:.75}
 .sys-body{fill:var(--ink-2);stroke:var(--sea);stroke-width:1;vector-effect:non-scaling-stroke}
@@ -463,10 +498,10 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   </section>
 
   <section class="view" id="mapView" hidden aria-label="Map">
-    <div class="seg map-set" id="map-set" role="group" aria-label="Setting"><button type="button" data-set="haven">No Haven on Earth<small>World · to 2186</small></button><button type="button" data-set="nppl">No Peace Past Luna<small>Inner system · 2190–2327</small></button></div>
-    <p class="intro" id="map-intro-haven">Where the power blocs stand and where they have fought, era by era. Pick an era to redraw the map with that era's conflicts, numbered in the order they happened. Events in orbit and on Mars sit in the band above the map. Select a pin or a list entry for the full account, then follow it into the Conflicts tree. The last era is the war itself: where its fronts ran, and the powers that came out of it. The Successors tab describes those powers in full.</p>
-    <p class="intro" id="map-intro-nppl" hidden>No Peace Past Luna on the inner system, generation by generation, from the long rebuild after the war to the Greater Solar Crisis of 2327. Pick a generation to redraw the map with its conflicts, numbered in the order they happened. Events on Earth sit in the band above the map. The planets are in their order from the sun but not to scale. Select a pin or a list entry for the full account, then follow it into the Conflicts tree. The last generation is projected.</p>
-    <div class="eras" id="eras" role="group" aria-label="Era"></div>
+    <p class="intro">Where the powers stand and where they have fought, generation by generation, from before the first mechs to the Greater Solar Crisis of 2327. Pick a generation, then a view: Earth, the Moon, Mars or the inner system. Each button counts that view's conflicts in the generation, numbered in the order they happened. Select a pin or a list entry for the full account, then follow it into the Conflicts tree. Gen 5 is the war itself: where its fronts ran, and the powers that came out of it. The planets on the inner-system view are in their order from the sun but not to scale, and the last generation is projected.</p>
+    <div class="eras" id="eras" role="group" aria-label="Generation"></div>
+    <div class="seg map-views" id="map-views" role="group" aria-label="Map view"></div>
+    <p class="hint map-none" id="map-none" hidden></p>
     <div class="era-head">
       <div><span class="era" id="era-k"></span><h2 id="era-h"></h2><p id="era-p"></p></div>
       <div class="map-tools">
@@ -480,9 +515,9 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
       <figcaption class="map-legend" id="map-legend"></figcaption>
     </figure>
     <div class="map-lists">
-      <div><h3 id="list-h">Conflicts this era</h3><ol class="clist" id="clist"></ol></div>
+      <div><h3 id="list-h">Conflicts</h3><ol class="clist" id="clist"></ol></div>
       <div id="mlist-box"><h3 id="mlist-h">Smaller incidents</h3><ol class="clist" id="mlist"></ol></div>
-      <div id="olist-box"><h3 id="olist-h">Organisations this era</h3><p class="hint" style="margin:0 0 8px">Companies, laboratories, cooperatives and private forces, but not governments. Where the atlas names no city, the pin sits in the home country.</p><ol class="clist" id="olist"></ol></div>
+      <div id="olist-box"><h3 id="olist-h">Organisations</h3><p class="hint" style="margin:0 0 8px">Companies, laboratories, cooperatives and private forces, but not governments. Where the atlas names no city, the pin sits in the home country.</p><ol class="clist" id="olist"></ol></div>
     </div>
   </section>
 
@@ -558,7 +593,7 @@ new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===
 fetch("atlas-data.json").then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(init,()=>{
   document.getElementById("intro").textContent="The atlas data couldn't load. Reload the page to try again."});
 // Everything below runs once atlas-data.json has loaded
-function init({GROUPS,COLS,ART,VART,PLATES,SCENES,DATA,BLOC,MEMB,US_ALLIES,LEAGUE,ASSOC,OVR,FUTURE,FUTURE_SPHERE,FUTURE_FRONT,FUTURE_FIGHTING,CANADA_SPLIT,LOC,MINOR,ORBIT,ERA_NOTE,AXES,POWERS,HEIRS,UNEL,SPACE,TIMELINE,ACE_FACTIONS,ACE_ERAS,ACES,ORGMAP={},CHRONO=[],SOLAR={eras:[],bodies:{},at:{}},FACTION_VIEWS={factions:[],makers:{},own:[]},GENS=[]}){
+function init({GROUPS,COLS,ART,VART,PLATES,SCENES,DATA,BLOC,MEMB,US_ALLIES,LEAGUE,ASSOC,OVR,FUTURE,FUTURE_SPHERE,FUTURE_FRONT,FUTURE_FIGHTING,CANADA_SPLIT,LOC,MINOR,MAPNOTE=[],SITES={moon:{},mars:{}},MOON=null,MARS=null,FUTURE_OVR=[],AXES,POWERS,HEIRS,UNEL,SPACE,TIMELINE,ACE_FACTIONS,ACE_ERAS,ACES,ORGMAP={},CHRONO=[],SOLAR={bodies:{},at:{}},FACTION_VIEWS={factions:[],makers:{},own:[]},GENS=[]}){
 const FUT=new Set(Object.keys(FUTURE));
 // The Pact's halves after the Sealed Session, shown on the 2186 map in its place
 const SPLIT=new Set(["PB","PM","EUX"]);
@@ -898,7 +933,7 @@ function renderSheet(){
   if(!n){sheet.hidden=true;document.body.classList.remove("has-sheet");return}
   const [mn,sub]=GROUPS[n.m];
   let links="";
-  if(current==="conflicts")links=`${n.ln?`<h4>Roots in the atlas</h4>${goList(n.ln)}`:""}${n.mx||n.c<SYS0?`<h4>Machines involved</h4>${goList(n.mx)}`:""}${SOLAR.at[n.id]?`<button type="button" class="go" data-map="${n.id}">Show on the inner-system map →</button>`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`;
+  if(current==="conflicts")links=`${n.ln?`<h4>Roots in the atlas</h4>${goList(n.ln)}`:""}${n.mx||n.c<SYS0?`<h4>Machines involved</h4>${goList(n.mx)}`:""}${MAPV.some(([k])=>sitesOf(k,n.id))?`<button type="button" class="go" data-map="${n.id}">Show on the map →</button>`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`;
   else if(current==="frames"||(current==="supers"&&(n.fr||n.pw||n.wp)))links=`${n.fr?`<h4>Built on</h4>${goList(n.fr)}`:""}<h4>Power plant</h4>${goList(n.pw)}<h4>Armament</h4>${goList(n.wp)}<h4>Doctrine</h4>${goList(n.dc)}`;
   else if(current==="vehicles"||current==="fleets")links=`${n.ln?`<h4>In the atlas</h4>${goList(n.ln)}`:""}${n.mx?`<h4>Mechs involved</h4>${goList(n.mx)}`:""}${n.pw?`<h4>Power plant</h4>${goList(n.pw)}`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine</h4>${goList(n.dc)}`:""}`;
   else if(current==="orgs")links=n.ln?`<h4>In the atlas</h4>${goList(n.ln)}`:"";
@@ -924,7 +959,7 @@ function renderSheet(){
   sheet.querySelectorAll("[data-art]").forEach(b=>b.addEventListener("click",()=>openArt(b.dataset.art,b.dataset.cap)));
   sheet.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>goTo(b.dataset.go)));
   sheet.querySelectorAll("[data-ace]").forEach(b=>b.addEventListener("click",()=>showAce(b.dataset.ace)));
-  sheet.querySelectorAll("[data-map]").forEach(b=>b.addEventListener("click",()=>showOnSystem(b.dataset.map)));
+  sheet.querySelectorAll("[data-map]").forEach(b=>b.addEventListener("click",()=>showOnMap(b.dataset.map)));
   sheet.querySelectorAll(".lk[data-id]").forEach(b=>b.addEventListener("click",()=>{select(b.dataset.id);cards[b.dataset.id].scrollIntoView({block:"center",inline:"center",behavior:reduced?"auto":"smooth"})}));
 }
 // Selecting keeps a maker filter unless the entry lies outside it
@@ -944,17 +979,19 @@ document.addEventListener("keydown",e=>{if(lb.open)return;if(e.key!=="Escape")re
   if(state.sel||state.maker){state.sel=null;state.maker=null;apply()}});
 
 // ---- World map ----
-function future(){
-  const s={};
+function future(post){
+  // The war map (Gen 5), or after the war (post) the same powers without the fighting
+  const s={},w=post?{p:1}:{w:1};
   Object.entries(FUTURE).forEach(([b,ns])=>ns.forEach(n=>s[n]={b,l:"m"}));
   Object.entries(FUTURE_SPHERE).forEach(([b,ns])=>ns.forEach(n=>s[n]={b,l:"s"}));
-  Object.entries(FUTURE_FRONT).forEach(([b,ns])=>ns.forEach(n=>s[n]=b?{b,l:"c",w:1}:{l:"c",w:1}));
-  FUTURE_FIGHTING.forEach(n=>s[n]={...s[n],w:1});
-  s.Canada={split:CANADA_SPLIT,w:1};
+  Object.entries(FUTURE_FRONT).forEach(([b,ns])=>ns.forEach(n=>s[n]=b?{b,l:"c",...w}:{l:"c",...w}));
+  if(!post)FUTURE_FIGHTING.forEach(n=>s[n]={...s[n],w:1});
+  s.Canada={split:CANADA_SPLIT,...(post?{}:{w:1})};
   return s;
 }
 function politics(e){
   if(e===5)return future();
+  if(e>5)return Object.assign(future(true),FUTURE_OVR[e-6]||{});
   const s={};
   Object.entries(MEMB).forEach(([b,ns])=>ns.forEach(n=>s[n]={b,l:"m"}));
   US_ALLIES.forEach(n=>s[n]={b:"ATL",l:"a"});
@@ -967,10 +1004,6 @@ function politics(e){
 }
 const MINORX=Object.fromEntries(MINOR.map(n=>[n.id,n]));
 const FIGHT=new Set(["WAR","CLH","PRX","IRR"]);
-// Non-government organisations alive in an era: from their own column to the war, or to the column in "to"
-const orgNodes=e=>DATA.orgs.nodes.filter(n=>vis(n.id)&&ORGMAP[n.id]&&n.c<=e&&(ORGMAP[n.id].to==null||e<=ORGMAP[n.id].to));
-const orgPlace=id=>{const o=ORGMAP[id];return M.set==="nppl"&&o.sys?o.sys[1]:o.sky||(o.at?o.at.map(a=>a[2]).join("; "):o.sys[1])};
-const placeOf=id=>SOLAR.at[id]?SOLAR.at[id][1]:ORGMAP[id]?orgPlace(id):LOC[id]?LOC[id][2]:ORBIT[id]||MINORX[id].at[2];
 const pos=(v,[,l,r])=>v===0?"Neutral":`${Math.abs(v)===2?"Strongly":"Weakly"} ${v<0?l:r}`;
 const pcard=(p,colour,extra="")=>`<article class="pcard" style="--pc:var(${colour})"><h3>${p.n}</h3><span class="meta">${p.home} · Faith: ${p.faith}</span><p>${p.id}</p>
     <ul class="axes">${AXES.map((a,i)=>{const v=p.ax[i];return `<li title="${a[1]} ↔ ${a[2]}"><span class="an">${a[0]}</span><span class="dots" aria-hidden="true">${[-2,-1,0,1,2].map(x=>`<i${x===v?' class="on"':""}></i>`).join("")}</span><span>${v==null?"TBD":pos(v,a)}</span></li>`}).join("")}</ul>
@@ -994,49 +1027,65 @@ function renderHeirs(){
   bindArt(space);
 }
 renderHeirs();
-// The world map shows Gen 0–5 (No Haven on Earth); the inner-system map shows Gen 6–9 (No Peace Past Luna)
+// ---- The map: one generation at a time, Gen 0–9, seen four ways: Earth, the Moon, Mars and the inner system ----
+// Conflicts before Gen 6 belong to No Haven on Earth, from Gen 6 to No Peace Past Luna
 const SYS0=6;
-const M={orgs:true,era:4,past:true,sel:null,world:null,failed:false,num:{},zt:null,zoom:null,zsel:null,set:"haven",nera:1,eraSet:null};
-// The map shows one setting at a time: No Haven on Earth on the world map, or No Peace Past Luna on the inner system
-try{if(localStorage.getItem("atlas-map-set")==="nppl")M.set="nppl"}catch(e){}
-const yearOf=n=>n.d==="Now"?2186:(parseInt(n.d,10)||9999);
+const M={orgs:true,e:4,view:null,sel:null,world:null,failed:false,num:{},zt:null,zoom:null,zsel:null,eraN:0};
+// The reader's chosen view; without one the map opens on Earth up to the war and on the inner system after it
+try{const v=localStorage.getItem("atlas-map-view");if(["earth","moon","mars","sys"].includes(v))M.view=v}catch(e){}
+const MAPV=[["earth","Earth"],["moon","Moon"],["mars","Mars"],["sys","Inner system"]];
+const WHERE={earth:"on Earth",moon:"on the Moon",mars:"on Mars or its moons",sys:"in the inner system"};
+const curView=()=>M.view||(M.e<SYS0?"earth":"sys");
+const yearOf=n=>n.d==="Now"?2186:(parseInt(String(n.d).replace(/^c\.\s*/,""),10)||9999);
+const byYear=(a,b)=>yearOf(a)-yearOf(b);
 const fillFor=s=>{if(!s||!s.b)return "var(--land)";const pct=s.l==="m"?60:s.l==="n"?30:s.l==="c"?20:26;return `color-mix(in srgb,var(${BLOC[s.b][1]}) ${pct}%,var(--card))`};
-const stateOf=st=>{if(!st)return "";if(!st.b)return st.l==="c"?" · Contested frontline":"";const [nm,,ar]=BLOC[st.b];
-  return " · "+(st.l==="m"?nm:st.l==="n"?"Non-aligned":st.l==="c"?`Contested frontline, mostly ${ar}${nm}'s influence`:st.l==="s"?`In the sphere of ${ar}${nm}`:`Partner of ${ar}${nm}`)};
-const eraNodes=e=>DATA.conflicts.nodes.filter(n=>n.c===e&&vis(n.id)).sort((a,b)=>yearOf(a)-yearOf(b));
-const minorNodes=e=>MINOR.filter(n=>n.c===e&&vis(n.id)).sort((a,b)=>yearOf(a)-yearOf(b));
+const stateOf=st=>{if(!st)return "";if(!st.b)return st.l==="c"?(st.p?" · No single power":" · Contested frontline"):"";const [nm,,ar]=BLOC[st.b];
+  return " · "+(st.l==="m"?nm:st.l==="n"?"Non-aligned":st.l==="c"?(st.p?`Under ${ar}${nm}'s influence`:`Contested frontline, mostly ${ar}${nm}'s influence`):st.l==="s"?`In the sphere of ${ar}${nm}`:`Partner of ${ar}${nm}`)};
+// Where an entry sits in a view: a list of sites, [lon, lat, place] or [body, place]
+const sitesOf=(v,id)=>v==="earth"?(LOC[id]?[LOC[id]]:null):v==="sys"?(SOLAR.at[id]?[SOLAR.at[id]]:null):((SITES[v]||{})[id]||null);
+const sitePlace=s=>typeof s[0]==="number"?s[2]:s[1];
+const viewNodes=(v,e)=>DATA.conflicts.nodes.filter(n=>n.c===e&&vis(n.id)&&sitesOf(v,n.id)).sort(byYear);
+const minorNodes=e=>MINOR.filter(n=>n.c===e&&vis(n.id)).sort(byYear);
+const viewCount=(v,e)=>viewNodes(v,e).length+(v==="earth"?minorNodes(e).length:0);
+// Non-government organisations: from their own column to "to", which defaults to Gen 9 for anything placed off Earth or founded after the war, else to the war
+const orgTo=(n,o)=>o.to!=null?o.to:(o.sys||o.moon||o.mars||n.c>=SYS0?9:5);
+const orgSites=(o,v,e)=>v==="earth"?o.at||[]:v==="sys"?(o.sys?[o.sys]:[]):(o[v]||[]).filter(s=>s[3]==null||e<=s[3]);
+const homeless=o=>!o.at&&!o.sys&&!o.moon&&!o.mars;
+const orgsIn=(v,e)=>DATA.orgs.nodes.filter(n=>{const o=ORGMAP[n.id];return o&&vis(n.id)&&n.c<=e&&e<=orgTo(n,o)&&(orgSites(o,v,e).length||(v==="earth"&&homeless(o)))});
+const orgPlace=(id,v=curView())=>{const o=ORGMAP[id],s=orgSites(o,v,M.e);return s.length?s.map(sitePlace).join("; "):o.sky||[...(o.at||[]),...(o.sys?[o.sys]:[])].map(sitePlace).join("; ")};
+const placeOf=(id,v=curView())=>{if(ORGMAP[id]&&KEYOF[id]==="orgs")return orgPlace(id,v);if(MINORX[id])return MINORX[id].at[2];
+  const s=sitesOf(v,id)||MAPV.map(([k])=>sitesOf(k,id)).find(x=>x);return s?s.map(sitePlace).join("; "):""};
 
-const erasEl=document.getElementById("eras");
-// Era buttons follow the setting: the conflicts tree's columns, or the NPPL generations
+const erasEl=document.getElementById("eras"),viewsEl=document.getElementById("map-views");
+// One generation row for the whole map
 function buildEras(){
-  if(M.eraSet===M.set)return;M.eraSet=M.set;
-  const nppl=M.set==="nppl",cols=nppl?DATA.conflicts.cols.slice(SYS0):DATA.conflicts.cols.slice(0,SYS0);
-  erasEl.innerHTML="";erasEl.style.gridTemplateColumns=`repeat(${cols.length},minmax(0,1fr))`;
-  cols.forEach(([k,y],i)=>{
+  if(M.eraN)return;M.eraN=1;erasEl.innerHTML="";
+  DATA.conflicts.cols.forEach(([k,y],i)=>{
     const b=document.createElement("button");b.type="button";b.className="era-b";b.dataset.e=i;
     b.innerHTML=`<b>${k}</b><span>${y}</span>`;
-    b.addEventListener("click",()=>{if(nppl)M.nera=i;else M.era=i;M.sel=null;mapSelect(null);renderMap()});
+    b.addEventListener("click",()=>{M.e=i;mapSelect(null);renderMap()});
     erasEl.append(b);
   });
-  mapView.querySelectorAll("#map-set [data-set]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.set===M.set)));
-  document.getElementById("map-intro-haven").hidden=nppl;document.getElementById("map-intro-nppl").hidden=!nppl;
-  document.getElementById("mlist-box").hidden=nppl;document.getElementById("olist-box").hidden=false;document.getElementById("org-lbl").hidden=false;
-  mapView.setAttribute("aria-label",nppl?"Inner-system map":"World map");
 }
-function setMap(s){
-  if(s===M.set)return;
-  M.set=s;M.zt=null;M.sel=null;mapSelect(null);
-  try{localStorage.setItem("atlas-map-set",s)}catch(e){}
-  showMap();
+// The view switch: each button counts that view's conflicts in this generation
+function renderViews(){
+  const e=M.e,v=curView();
+  viewsEl.innerHTML=MAPV.map(([k,n])=>{const c=viewCount(k,e);return `<button type="button" data-v="${k}" aria-pressed="${k===v}" aria-label="${n}, ${c} ${c===1?"conflict":"conflicts"}"${c?"":' class="none"'}>${n} · ${c}</button>`}).join("");
+  viewsEl.querySelectorAll("[data-v]").forEach(b=>b.addEventListener("click",()=>setView(b.dataset.v)));
 }
-mapView.querySelectorAll("#map-set [data-set]").forEach(b=>b.addEventListener("click",()=>setMap(b.dataset.set)));
-// From a sheet for an entry after the war: open the inner-system map at the entry's generation with the entry selected
-function showOnSystem(id){
-  M.nera=IDX[id].c-SYS0;if(M.set!=="nppl"){M.set="nppl";M.zt=null;try{localStorage.setItem("atlas-map-set","nppl")}catch(e){}}
+function setView(v){
+  if(v===curView())return;
+  M.view=v;M.zt=null;try{localStorage.setItem("atlas-map-view",v)}catch(e){}
+  mapSelect(null);showMap();
+}
+// From a conflict's sheet: open the map at its generation, in a view that shows it, with the entry selected
+function showOnMap(id){
+  const n=IDX[id];M.e=n.c;
+  if(!sitesOf(curView(),id)){const v=MAPV.map(([k])=>k).find(k=>sitesOf(k,id));if(v){M.view=v;M.zt=null}}
   if(current==="map")showMap();else{build("map");remember("map")}
   mapSelect(id);
 }
-// Zoom buttons step the map in and out around its centre; Reset returns to the whole world
+// Zoom buttons step the map in and out around its centre; Reset returns to the whole map
 const zoomBy=f=>{if(!M.zsel)return;(reduced?M.zsel:M.zsel.transition().duration(250)).call(M.zoom.scaleBy,f)};
 document.getElementById("org-on").addEventListener("change",e=>{M.orgs=e.target.checked;if(M.sel&&ORGMAP[M.sel]&&!M.orgs)mapSelect(null);drawMap()});
 document.getElementById("z-in").addEventListener("click",()=>zoomBy(1.6));
@@ -1045,64 +1094,113 @@ document.getElementById("z-reset").addEventListener("click",()=>{if(M.zsel)(redu
 
 function showMap(){
   renderMap();
-  if(M.world||M.failed)return;
+  if(curView()!=="earth"||M.world||M.failed)return;
   if(!window.d3||!window.topojson){M.failed=true;drawMap();return}
   fetch("world-110m.json").then(r=>{if(!r.ok)throw 0;return r.json()}).then(t=>{
-    M.world=topojson.feature(t,t.objects.countries).features.filter(f=>!/Antarctic/.test(f.properties.name));drawMap();
-  }).catch(()=>{M.failed=true;drawMap()});
+    M.world=topojson.feature(t,t.objects.countries).features.filter(f=>!/Antarctic/.test(f.properties.name));if(curView()==="earth")drawMap();
+  }).catch(()=>{M.failed=true;if(curView()==="earth")drawMap()});
 }
 function renderMap(){
   buildEras();
-  if(M.set==="nppl")return renderSystem();
-  const e=M.era,[k,y]=DATA.conflicts.cols[e];
+  const e=M.e,v=curView(),[k,y]=DATA.conflicts.cols[e];
   erasEl.querySelectorAll(".era-b").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.e===e)));
+  renderViews();
   document.getElementById("era-k").textContent=`${k} · ${y}`;
-  document.getElementById("era-h").textContent=ERA_NOTE[e][0];
-  document.getElementById("era-p").textContent=ERA_NOTE[e][1];
-  const nodes=eraNodes(e),minor=minorNodes(e);
+  document.getElementById("era-h").textContent=(MAPNOTE[e]||[""])[0];
+  document.getElementById("era-p").textContent=(MAPNOTE[e]||["",""])[1];
+  const nodes=viewNodes(v,e),minor=v==="earth"?minorNodes(e):[],none=document.getElementById("map-none");
+  none.hidden=!!(nodes.length||minor.length);
+  none.textContent=`Nothing ${WHERE[v]} this generation. The numbers on the view buttons show where this generation's conflicts are.`;
   M.num={};[...nodes,...minor].forEach((n,i)=>M.num[n.id]=i+1);
-  document.getElementById("list-h").textContent=`Conflicts this era · ${nodes.length}`;
+  document.getElementById("list-h").textContent=`Conflicts ${WHERE[v]} this generation · ${nodes.length}`;
+  document.getElementById("mlist-box").hidden=v!=="earth";
   document.getElementById("mlist-h").textContent=`Smaller incidents · ${minor.length}`;
-  const row=(n,mark)=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}">${mark}<span><span class="cn">${n.n}</span><span class="cp">${placeOf(n.id)} · ${GROUPS[n.m][0]}</span></span><span class="cy">${n.d}</span></button></li>`;
+  const row=(n,mark)=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}">${mark}<span><span class="cn">${n.n}</span><span class="cp">${placeOf(n.id,v)} · ${GROUPS[n.m][0]}</span></span><span class="cy">${n.d}</span></button></li>`;
   document.getElementById("clist").innerHTML=nodes.map(n=>row(n,`<span class="num" style="--mc:${col(n.m)}">${M.num[n.id]}</span>`)).join("");
   document.getElementById("mlist").innerHTML=minor.map(n=>row(n,`<span class="num dia" style="--mc:${col(n.m)}"><i>${M.num[n.id]}</i></span>`)).join("");
-  const orgs=orgNodes(e);
-  document.getElementById("olist-h").textContent=`Organisations this era · ${orgs.length}`;
-  document.getElementById("olist").innerHTML=orgs.map(n=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}"><span class="num org" style="--mc:${col(n.m)}"></span><span><span class="cn">${n.n}</span><span class="cp">${orgPlace(n.id)} · ${GROUPS[n.m][1]}</span></span><span class="cy">${ORGMAP[n.id].sky?"Off the map":"Since "+DATA.orgs.cols[n.c][0]}</span></button></li>`).join("");
+  const orgs=orgsIn(v,e);
+  document.getElementById("olist-h").textContent=`Organisations ${WHERE[v]} this generation · ${orgs.length}`;
+  document.getElementById("olist").innerHTML=orgs.map(n=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}"><span class="num org" style="--mc:${col(n.m)}"></span><span><span class="cn">${n.n}</span><span class="cp">${orgPlace(n.id,v)} · ${GROUPS[n.m][1]}</span></span><span class="cy">${homeless(ORGMAP[n.id])?"Off the map":"Since "+DATA.orgs.cols[n.c][0]}</span></button></li>`).join("");
   mapView.querySelectorAll("[data-cid]").forEach(b=>b.addEventListener("click",()=>mapSelect(M.sel===b.dataset.cid?null:b.dataset.cid)));
-  const types=[...new Set(DATA.conflicts.nodes.map(n=>n.m))];
   const sw=(st,l)=>`<span class="lg"><span class="sw" style="background:${st}"></span>${l}</span>`;
-  document.getElementById("map-legend").innerHTML=(e===5
+  const pins=`<span class="lg"><span class="num org" style="--mc:var(--ink-2);margin:0"></span>Organisation</span><span class="lg"><span class="num" style="--mc:var(--ink-2);width:14px;height:14px"></span>Conflict, numbered in order</span>`;
+  const types=`<span class="lg" style="color:var(--ink-2)">Pins by type:</span>`+[...new Set(nodes.map(n=>n.m))].map(c=>`<span class="lg"><span class="num" style="--mc:${col(c)};width:12px;height:12px"></span>${GROUPS[c][0]}</span>`).join("");
+  const town=`<span class="lg"><span class="sw-town"></span>Settlement</span>`,note=t=>`<span class="lg" style="color:var(--ink-2)">${t}</span>`;
+  let lg;
+  if(v==="earth")lg=(e>=5
     ?[...FUT].map(b=>sw(fillFor({b,l:"m"}),BLOC[b][0])).join("")+
       sw(`linear-gradient(90deg,${fillFor({b:"CHN",l:"s"})} 50%,${fillFor({b:"AFC",l:"s"})} 50%)`,"Sphere of influence")+
       sw(`linear-gradient(90deg,${fillFor({b:"USA",l:"c"})} 50%,${fillFor({b:"EAS",l:"c"})} 50%)`,"Influence, not control")+
-      `<span class="lg"><span class="sw war"></span>Front line</span>`
+      (e===5?`<span class="lg"><span class="sw war"></span>Front line</span>`:"")
     :Object.entries(BLOC).filter(([b])=>!FUT.has(b)&&(b!=="MER"||e>=2)&&(SPLIT.has(b)?e===4:!(e===4&&b==="EUR"))).map(([b,[nm]])=>sw(fillFor({b,l:"m"}),nm+(b==="MER"?" (from 2177)":""))).join("")+
       (e<2?sw(fillFor({b:"MER",l:"n"}),"Non-aligned states"):"")+
       sw(`linear-gradient(90deg,${fillFor({b:"CON",l:"a"})} 50%,${fillFor({b:"ATL",l:"a"})} 50%)`,"Ally, partner or associate")+
-      `<span class="lg"><span class="sw war"></span>Fighting this era</span>`)+sw("var(--land)","Other states")+
-    `<span class="lg"><span class="num org" style="--mc:var(--ink-2);margin:0"></span>Organisation</span><span class="lg"><span class="num" style="--mc:var(--ink-2);width:14px;height:14px"></span>Conflict</span><span class="lg"><span class="num dia" style="--mc:var(--ink-2);width:11px;height:11px"></span>Smaller incident</span>`+
-    `<span class="lg" style="color:var(--ink-2)">Pins by type:</span>`+types.map(c=>`<span class="lg"><span class="num" style="--mc:${col(c)};width:12px;height:12px"></span>${GROUPS[c][0]}</span>`).join("");
+      `<span class="lg"><span class="sw war"></span>Fighting this era</span>`)+sw("var(--land)","Other states")+pins+
+    `<span class="lg"><span class="num dia" style="--mc:var(--ink-2);width:11px;height:11px"></span>Smaller incident</span>`+types;
+  else if(v==="moon")lg=pins+town+note("The south pole is drawn again, enlarged, in the middle; the dashed curve on each side marks its edge.")+types;
+  else if(v==="mars")lg=pins+town+(e>=6&&e<=7?`<span class="lg"><span class="sw-line"></span>Line of Control</span>`:"")+(e>=7?`<span class="lg"><span class="sw-wall"></span>Red Wall</span>`:"")+note("Phobos and Deimos sit in the band above the map.")+types;
+  else lg=pins+note("Events on the surface of Earth are on the Earth view; Earth orbit and the lanes sit around Earth. Distances are not to scale.")+types;
+  document.getElementById("map-legend").innerHTML=lg;
+  mapView.setAttribute("aria-label",{earth:"World map",moon:"Map of the Moon",mars:"Map of Mars",sys:"Inner-system map"}[v]);
   drawMap();
 }
-// Split a label into at most two lines of `max` characters, shortening the second if it still overflows
-function wrap(t,max){
-  const out=[];t.split(" ").forEach(w=>{const l=out[out.length-1];if(l!=null&&(l+" "+w).length<=max)out[out.length-1]=l+" "+w;else out.push(w)});
-  if(out.length>2)out.splice(1,out.length,out.slice(1).join(" "));
-  return out.map(l=>l.length>max?l.slice(0,max-1)+"…":l);
+// ---- Pins, shared by every view ----
+// Pins that would overlap fan out on a ring round their sites, each with a leader line back to its own site; neighbouring groups merge only when they would cover each other
+function fan(list,k){
+  const cl=[];list.forEach(p=>{const c=cl.find(c=>Math.hypot(c.x-p.x,c.y-p.y)<1);if(c)c.m.push(p);else cl.push({x:p.x,y:p.y,m:[p]})});
+  const rad=c=>{const r=Math.max(...c.m.map(p=>p.r));return [r,c.m.length<2?0:Math.max(r*1.5,c.m.length*(2*r+4*k)/(2*Math.PI))]};
+  for(let again=true;again;){again=false;
+    for(let i=0;i<cl.length&&!again;i++)for(let j=i+1;j<cl.length&&!again;j++){const [ri,ai]=rad(cl[i]),[rj,aj]=rad(cl[j]);
+      if(Math.hypot(cl[i].x-cl[j].x,cl[i].y-cl[j].y)<ri+rj+(ai+aj)/2){const m=[...cl[i].m,...cl[j].m];
+        cl[i]={x:m.reduce((a,p)=>a+p.x,0)/m.length,y:m.reduce((a,p)=>a+p.y,0)/m.length,m};cl.splice(j,1);again=true}}}
+  cl.forEach(c=>{const [r,rr]=rad(c),n=c.m.length;
+    c.m.map(p=>[p,Math.atan2(p.y-c.y,p.x-c.x)]).sort((a,b)=>a[1]-b[1]).forEach(([p],i)=>{const a=-Math.PI/2+i*2*Math.PI/n;
+      p.dx=n<2?0:c.x-p.x+rr*Math.cos(a);p.dy=n<2?0:c.y-p.y+rr*Math.sin(a);p.cx=c.x;p.cy=c.y;p.ext=rr+r})});
+  return list;
 }
+// p: {n entry, x, y site, dx, dy fan offset, where, org, dia}; pins live in a fixed-size layer the zoom handler moves
+function pinSVG(p,k){
+  const {n,x,y,where}=p,dx=p.dx||0,dy=p.dy||0,sel=M.sel===n.id;
+  const lead=dx||dy?`<line class="ldr" x1="${(-dx).toFixed(1)}" y1="${(-dy).toFixed(1)}" x2="0" y2="0" style="stroke-width:${k}"/><circle class="sdot" cx="${(-dx).toFixed(1)}" cy="${(-dy).toFixed(1)}" r="${2*k}"/>`:"";
+  const g=`<g class="pin${p.org?" opin":""}${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${where}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" data-dx="${dx.toFixed(1)}" data-dy="${dy.toFixed(1)}" transform="translate(${(x+dx).toFixed(1)} ${(y+dy).toFixed(1)})">${lead}`;
+  if(p.org){const r=6*k;return g+`<rect class="om" x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" rx="${1.5*k}" style="stroke-width:${(sel?2.6:1.6)*k}"/><rect class="oi" x="${-r*.5}" y="${-r*.5}" width="${r}" height="${r}" fill="${col(n.m)}"/><title>${n.n} · ${where}</title></g>`}
+  const r=(p.dia?8.5:10)*k,sw=`stroke-width:${(sel?3:1.5)*k}`;
+  const shape=p.dia?`<rect class="pm" x="${-r*.78}" y="${-r*.78}" width="${r*1.56}" height="${r*1.56}" rx="${1.5*k}" transform="rotate(45)" fill="${col(n.m)}" style="${sw}"/>`:`<circle class="pm" r="${r}" fill="${col(n.m)}" style="${sw}"/>`;
+  return g+`${shape}<text style="font-size:${(p.dia?(M.num[n.id]>9?8:10):11)*k}px">${M.num[n.id]}</text><title>${n.n} · ${n.d} · ${where}</title></g>`;
+}
+// Pan and zoom the drawing layer; pins, labels and settlements are moved, never scaled
+function attachZoom(box,W,H){
+  box.querySelectorAll("[data-pin]").forEach(g=>{
+    g.addEventListener("click",()=>mapSelect(M.sel===g.dataset.pin?null:g.dataset.pin));
+    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();mapSelect(g.dataset.pin)}});
+  });
+  if(!window.d3){M.zsel=null;return}
+  const svgEl=box.querySelector("svg"),zs=d3.select(box).select(".zm"),zl=zs.select(".zl"),zp=zs.selectAll(".zp > g");
+  const place=t=>{zl.attr("transform",t);svgEl.classList.toggle("zin",t.k>=1.5);zp.attr("transform",function(){return `translate(${(t.applyX(+this.dataset.x)+(+this.dataset.dx||0)).toFixed(1)} ${(t.applyY(+this.dataset.y)+(+this.dataset.dy||0)).toFixed(1)})`})};
+  M.zoom=d3.zoom().scaleExtent([1,8]).extent([[0,0],[W,H]]).translateExtent([[0,0],[W,H]])
+    .filter(e=>e.type==="wheel"?(e.ctrlKey||e.metaKey):!e.button)
+    .on("zoom",e=>{M.zt=e.transform;place(e.transform)});
+  M.zsel=zs.call(M.zoom).on("dblclick.zoom",null);
+  if(M.zt)M.zsel.call(M.zoom.transform,M.zt);
+}
+// Pin scale: pins grow on narrow screens so they stay tappable
+const pinK=box=>{const px=Math.max(box.clientWidth,1)/1000;return Math.min(2.4,Math.max(1,.75/px))};
 function drawMap(){
-  if(M.set==="nppl")return drawSystem();
+  const v=curView();
+  if(v==="sys")return drawSystem();
+  if(v==="moon"||v==="mars")return drawBody(v);
+  drawWorld();
+}
+function drawWorld(){
   const box=document.getElementById("map-box");
-  if(M.failed){box.innerHTML=`<p class="map-msg">The map couldn't load in this browser. The conflict lists below still work.</p>`;return}
-  if(!M.world)return;
+  if(M.failed){box.innerHTML=`<p class="map-msg">The map couldn't load in this browser. The conflict lists below still work.</p>`;M.zsel=null;return}
+  if(!M.world){box.innerHTML=`<p class="map-msg">Loading the map…</p>`;M.zsel=null;return}
   const W=1000,fc={type:"FeatureCollection",features:M.world};
   const proj=d3.geoEqualEarth();proj.fitWidth(W,fc);const H=Math.ceil(d3.geoPath(proj).bounds(fc)[1][1])+4;
-  const path=d3.geoPath(proj),pol=politics(M.era);
-  const px=Math.max(box.clientWidth,1)/W,k=Math.min(2.4,Math.max(1,.75/px)),B=Math.round(64*Math.min(k,1.6));
-  let s=`<svg viewBox="0 0 ${W} ${H+B}" role="img" aria-label="World map, ${DATA.conflicts.cols[M.era][0]}: bloc territories and conflict locations, with orbital events above">
+  const path=d3.geoPath(proj),pol=politics(M.e),k=pinK(box);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="World map, ${DATA.conflicts.cols[M.e][0]}: ${M.e>=SYS0?"the Earth powers after the war":"bloc territories"} and conflict locations">
 <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.6" height="6" fill="var(--ink)" opacity=".5"/></pattern>
-<clipPath id="mclip"><rect width="${W}" height="${H}"/></clipPath></defs><g class="zm" transform="translate(0 ${B})"><rect width="${W}" height="${H}" fill="transparent"/><g clip-path="url(#mclip)"><g class="zl">
+<clipPath id="mclip"><rect width="${W}" height="${H}"/></clipPath></defs><g class="zm"><rect width="${W}" height="${H}" fill="transparent"/><g clip-path="url(#mclip)"><g class="zl">
 <path class="grat" d="${path(d3.geoGraticule10())}"/>`;
   M.world.forEach(f=>{const st=pol[f.properties.name],d=path(f);if(!d)return;
     if(st&&st.split){const {at,west,east}=st.split,half=(id,b,w,e,side)=>`<clipPath id="${id}"><path d="${path(d3.geoGraticule().extent([[w,25],[e,88]]).outline())}"/></clipPath><path class="ctry" d="${d}" clip-path="url(#${id})" style="fill:${fillFor({b,l:"m"})}"><title>${f.properties.name} · ${side} to ${BLOC[b][2]}${BLOC[b][0]}</title></path>`;
@@ -1110,123 +1208,123 @@ function drawMap(){
     else s+=`<path class="ctry" d="${d}" style="fill:${fillFor(st)}"><title>${f.properties.name}${stateOf(st)}</title></path>`;
     if(st&&st.w)s+=`<path d="${d}" fill="url(#hatch)" pointer-events="none"/>`;
   });
-  // Pins sit outside the zoomed layer so they keep their size; the zoom handler moves them
   s+=`</g><g class="zp">`;
-  const pin=(n,x,y,lbl,dia)=>{const r=(dia?8.5:10)*k,sel=M.sel===n.id,sw=`stroke-width:${(sel?3:1.5)*k}`;
-    const shape=dia?`<rect class="pm" x="${-r*.78}" y="${-r*.78}" width="${r*1.56}" height="${r*1.56}" rx="${1.5*k}" transform="rotate(45)" fill="${col(n.m)}" style="${sw}"/>`:`<circle class="pm" r="${r}" fill="${col(n.m)}" style="${sw}"/>`;
-    return `<g class="pin${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${n.d}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
-${shape}<text style="font-size:${(dia?(M.num[n.id]>9?8:10):11)*k}px">${M.num[n.id]}</text>${lbl?(()=>{const ls=wrap(n.n,lbl),lx=r+7*k;return `<text class="olbl" x="${lx}" style="font-size:${13*k}px">${ls.map((l,i)=>`<tspan x="${lx}" dy="${i?1.15:-0.575*(ls.length-1)}em">${l}</tspan>`).join("")}</text>`})():""}<title>${n.n} · ${n.d}</title></g>`};
-  const now=eraNodes(M.era),inView=(x,y)=>x>-20&&x<W+20&&y>-20&&y<H+20;
-  // Organisation pins: a hollow square in the maker's colour, one per site, unnumbered
-  const opin=(n,x,y,where)=>{const r=6*k,sel=M.sel===n.id;
-    return `<g class="pin opin${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${where}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><rect class="om" x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" rx="${1.5*k}" style="stroke-width:${(sel?2.6:1.6)*k}"/><rect class="oi" x="${-r*.5}" y="${-r*.5}" width="${r}" height="${r}" fill="${col(n.m)}"/><title>${n.n} · ${where}</title></g>`};
-  if(M.orgs)orgNodes(M.era).forEach(n=>(ORGMAP[n.id].at||[]).forEach(([lon,lat,where])=>{const [x,y]=proj([lon,lat]);if(inView(x,y))s+=opin(n,x,y,where)}));
-  minorNodes(M.era).forEach(n=>{const [x,y]=proj(n.at);if(inView(x,y))s+=pin(n,x,y,false,true)});
-  now.filter(n=>LOC[n.id]).forEach(n=>{const [x,y]=proj(LOC[n.id]);if(inView(x,y))s+=pin(n,x,y)});
-  s+=`</g></g></g>`;
-  // Orbit band: events above the atmosphere, laid out left to right in year order
-  s+=`<rect width="${W}" height="${B}" fill="var(--band)"/><line x1="0" x2="${W}" y1="${B}" y2="${B}" stroke="var(--rule)" stroke-dasharray="4 4"/>
-<text class="oband" x="14" y="${16*Math.min(k,1.6)}" style="font-size:${10*Math.min(k,1.6)}px">ORBIT &amp; MARS</text>`;
-  // Each label gets its slot's width: long names wrap to two lines, and narrow screens show numbers only
-  const orb=now.filter(n=>ORBIT[n.id]),step=(W-40)/Math.max(orb.length,1),fit=Math.floor((step-33*k)/(7.3*k));
-  orb.forEach((n,i)=>s+=pin(n,40+14*k+i*step,B/2+8*Math.min(k,1.6),fit>=9?fit:0));
-  if(!orb.length)s+=`<text class="oband" x="${W/2}" y="${B/2+10}" text-anchor="middle" style="font-size:${11*Math.min(k,1.6)}px;letter-spacing:0;text-transform:none">Nothing in orbit this era</text>`;
-  s+=`</svg>`;
+  const inView=(x,y)=>x>-20&&x<W+20&&y>-20&&y<H+20,pins=[];
+  if(M.orgs)orgsIn("earth",M.e).forEach(n=>(ORGMAP[n.id].at||[]).forEach(([lon,lat,where])=>{const [x,y]=proj([lon,lat]);if(inView(x,y))pins.push({n,x,y,where,org:1,r:7*k})}));
+  minorNodes(M.e).forEach(n=>{const [x,y]=proj(n.at);if(inView(x,y))pins.push({n,x,y,where:n.at[2],dia:1,r:9*k})});
+  viewNodes("earth",M.e).forEach(n=>{const [x,y]=proj(LOC[n.id]);if(inView(x,y))pins.push({n,x,y,where:LOC[n.id][2],r:10*k})});
+  fan(pins,k);
+  s+=pins.map(p=>pinSVG(p,k)).join("")+`</g></g></g></svg>`;
   box.innerHTML=s;
-  // Pan and zoom the map layer; pins are repositioned rather than scaled
-  const zs=d3.select(box).select(".zm"),zl=zs.select(".zl"),zp=zs.selectAll(".zp .pin");
-  const place=t=>{zl.attr("transform",t);zp.attr("transform",function(){return `translate(${t.applyX(+this.dataset.x).toFixed(1)} ${t.applyY(+this.dataset.y).toFixed(1)})`})};
-  M.zoom=d3.zoom().scaleExtent([1,8]).extent([[0,0],[W,H]]).translateExtent([[0,0],[W,H]])
-    .filter(e=>e.type==="wheel"?(e.ctrlKey||e.metaKey):!e.button)
-    .on("zoom",e=>{M.zt=e.transform;place(e.transform)});
-  M.zsel=zs.call(M.zoom).on("dblclick.zoom",null);
-  if(M.zt)M.zsel.call(M.zoom.transform,M.zt);
-  box.querySelectorAll("[data-pin]").forEach(g=>{
-    g.addEventListener("click",()=>mapSelect(M.sel===g.dataset.pin?null:g.dataset.pin));
-    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();mapSelect(g.dataset.pin)}});
-  });
+  attachZoom(box,W,H);
 }
-// ---- Inner-system map (No Peace Past Luna) ----
-// Same pins, lists and sheet as the world map; Earth's events sit in the band above, as orbit events do on the world map
-const sysYear=n=>parseInt(String(n.d).replace(/^c\.\s*/,""),10)||9999;
-const sysNodes=e=>DATA.conflicts.nodes.filter(n=>n.c===e+SYS0&&vis(n.id)).sort((a,b)=>sysYear(a)-sysYear(b));
-// Organisations with a sys place, alive in this generation of the inner-system map (its era 0 is Gen 6)
-const sysOrgs=e=>{const g=e+SYS0;return DATA.orgs.nodes.filter(n=>vis(n.id)&&ORGMAP[n.id]&&ORGMAP[n.id].sys&&n.c<=g&&(ORGMAP[n.id].to==null||g<=ORGMAP[n.id].to))};
-function renderSystem(){
-  const e=M.nera,[k,y]=DATA.conflicts.cols[e+SYS0];
-  erasEl.querySelectorAll(".era-b").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.e===e)));
-  document.getElementById("era-k").textContent=`${k} · ${y}`;
-  document.getElementById("era-h").textContent=(SOLAR.eras[e]||[""])[0];
-  document.getElementById("era-p").textContent=(SOLAR.eras[e]||["",""])[1];
-  const nodes=sysNodes(e);
-  M.num={};nodes.forEach((n,i)=>M.num[n.id]=i+1);
-  document.getElementById("list-h").textContent=`Conflicts this generation · ${nodes.length}`;
-  document.getElementById("clist").innerHTML=nodes.map(n=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}"><span class="num" style="--mc:${col(n.m)}">${M.num[n.id]}</span><span><span class="cn">${n.n}</span><span class="cp">${placeOf(n.id)} · ${GROUPS[n.m][0]}</span></span><span class="cy">${n.d}</span></button></li>`).join("");
-  mapView.querySelectorAll("#clist [data-cid]").forEach(b=>b.addEventListener("click",()=>mapSelect(M.sel===b.dataset.cid?null:b.dataset.cid)));
-  const orgs=sysOrgs(e);
-  document.getElementById("olist-h").textContent=`Organisations this generation · ${orgs.length}`;
-  document.getElementById("olist").innerHTML=orgs.map(n=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}"><span class="num org" style="--mc:${col(n.m)}"></span><span><span class="cn">${n.n}</span><span class="cp">${orgPlace(n.id)} · ${GROUPS[n.m][1]}</span></span><span class="cy">Since ${DATA.orgs.cols[n.c][0]}</span></button></li>`).join("");
-  mapView.querySelectorAll("#olist [data-cid]").forEach(b=>b.addEventListener("click",()=>mapSelect(M.sel===b.dataset.cid?null:b.dataset.cid)));
-  const types=[...new Set(DATA.conflicts.nodes.filter(n=>n.c>=SYS0).map(n=>n.m))];
-  document.getElementById("map-legend").innerHTML=`<span class="lg"><span class="num" style="--mc:var(--ink-2);width:14px;height:14px"></span>Conflict, numbered in order</span><span class="lg" style="color:var(--ink-2)">Events on Earth sit in the band above the map. Distances are not to scale.</span>`+
-    `<span class="lg" style="color:var(--ink-2)">Pins by type:</span>`+types.map(c=>`<span class="lg"><span class="num" style="--mc:${col(c)};width:12px;height:12px"></span>${GROUPS[c][0]}</span>`).join("");
-  drawSystem();
-}
+// ---- Inner-system view ----
+// Several conflicts at one body sit on a ring around it; Earth's ring holds events in orbit and on the lanes
 function drawSystem(){
   const box=document.getElementById("map-box");
-  const W=1000,H=620,sx=-30,sy=H/2;
-  const px=Math.max(box.clientWidth,1)/W,k=Math.min(2.4,Math.max(1,.75/px)),B=Math.round(64*Math.min(k,1.6));
+  const W=1000,H=620,sx=-30,sy=H/2,k=pinK(box),lk=Math.min(k,1.6),e=M.e;
   const P={};
   for(let pass=0;pass<2;pass++)Object.entries(SOLAR.bodies).forEach(([key,b])=>{
     if(b.of){if(P[b.of])P[key]=[P[b.of][0]+b.dx,P[b.of][1]+b.dy]}
     else if(b.x!=null)P[key]=[b.x,b.y];
     else{const a=b.a*Math.PI/180;P[key]=[sx+b.r*Math.cos(a),sy+b.r*Math.sin(a)]}});
-  const [ek]=DATA.conflicts.cols[M.nera+SYS0];
-  let s=`<svg viewBox="0 0 ${W} ${H+B}" role="img" aria-label="Inner-system map, ${ek}: the planets and the Belt with conflict locations, and Earth's events above">
-<defs><clipPath id="sclip"><rect width="${W}" height="${H}"/></clipPath></defs><g class="zm" transform="translate(0 ${B})"><rect width="${W}" height="${H}" fill="transparent"/><g clip-path="url(#sclip)"><g class="zl">
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Inner-system map, ${DATA.conflicts.cols[e][0]}: the planets and the Belt with conflict locations">
+<defs><clipPath id="sclip"><rect width="${W}" height="${H}"/></clipPath></defs><g class="zm"><rect width="${W}" height="${H}" fill="transparent"/><g clip-path="url(#sclip)"><g class="zl">
 <circle class="sys-sun" cx="${sx}" cy="${sy}" r="70" opacity=".16"/><circle class="sys-sun" cx="${sx}" cy="${sy}" r="42"/>
 <circle class="sys-belt" cx="${sx}" cy="${sy}" r="598" stroke-width="118"/>`;
   ["mercury","venus","earth","eros","mars","jupiter"].forEach(key=>{const b=SOLAR.bodies[key];if(b)s+=`<circle class="sys-orbit" cx="${sx}" cy="${sy}" r="${b.r}"${key==="eros"?' stroke-dasharray="3 5"':""}/>`});
   Object.entries(SOLAR.bodies).forEach(([key,b])=>{if(!b.s||!P[key])return;s+=`<circle class="${b.s>15?"sys-giant":"sys-body"}" cx="${P[key][0].toFixed(1)}" cy="${P[key][1].toFixed(1)}" r="${b.s}"><title>${b.n}</title></circle>`});
-  s+=`</g></g><g class="zp">`;
-  // Several conflicts at one body sit on a ring around it; a single one sits above and to the right
-  const now=sysNodes(M.nera),by={},ring={};
-  now.forEach(n=>{const at=SOLAR.at[n.id];if(at&&at[0]!=="earth"&&P[at[0]])(by[at[0]]=by[at[0]]||[]).push(n)});
+  s+=`</g><g class="zp">`;
+  const now=viewNodes("sys",e),by={},ring={};
+  now.forEach(n=>{const at=SOLAR.at[n.id];if(P[at[0]])(by[at[0]]=by[at[0]]||[]).push(n)});
   Object.entries(by).forEach(([key,list])=>ring[key]=Math.max((SOLAR.bodies[key].s+14)*k,list.length*23*k/(2*Math.PI)));
-  // Body names sit centred below the body, clear of its ring of pins, and keep their size when zoomed
-  const lk=Math.min(k,1.6);
+  // Body names sit centred below the body, clear of its ring of pins
   Object.entries(SOLAR.bodies).forEach(([key,b])=>{if(!P[key])return;const [x,y]=P[key],cnt=(by[key]||[]).length;
     const dy=cnt>1?ring[key]+10*k+11*lk:b.s+12*lk;
     s+=`<g class="blab" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><text class="sys-lbl" y="${dy.toFixed(1)}" text-anchor="middle" style="font-size:${10.5*lk}px">${b.n}</text></g>`});
-  const pin=(n,x,y,lbl)=>{const r=10*k,sel=M.sel===n.id;
-    return `<g class="pin${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${n.d}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><circle class="pm" r="${r}" fill="${col(n.m)}" style="stroke-width:${(sel?3:1.5)*k}"/><text style="font-size:${11*k}px">${M.num[n.id]}</text>${lbl?(()=>{const ls=wrap(n.n,lbl),lx=r+7*k;return `<text class="olbl" x="${lx}" style="font-size:${13*k}px">${ls.map((l,i)=>`<tspan x="${lx}" dy="${i?1.15:-0.575*(ls.length-1)}em">${l}</tspan>`).join("")}</text>`})():""}<title>${n.n} · ${n.d}</title></g>`};
+  const pins=[];
   Object.entries(by).forEach(([key,list])=>{const [bx,by0]=P[key],cnt=list.length,rr=ring[key];
-    list.forEach((n,i)=>{const a=(cnt===1?-50:-90+i*360/cnt)*Math.PI/180;s+=pin(n,bx+rr*Math.cos(a),by0+rr*Math.sin(a))})});
-  // Organisation pins: the world map's hollow squares, on an arc above their body (its name sits below), outside any ring of conflicts
-  if(M.orgs){const ob={};sysOrgs(M.nera).forEach(n=>{const b=ORGMAP[n.id].sys[0];if(P[b])(ob[b]=ob[b]||[]).push(n)});
-    Object.entries(ob).forEach(([key,list])=>{const [bx,by0]=P[key],rr=(ring[key]||(SOLAR.bodies[key].s+8)*k)+14*k;
-      const da=Math.max(26*Math.PI/180,16*k/rr);list.forEach((n,i)=>{const a=-150*Math.PI/180+i*da,x=bx+rr*Math.cos(a),y=by0+rr*Math.sin(a),r=6*k,sel=M.sel===n.id,where=ORGMAP[n.id].sys[1];
-        s+=`<g class="pin opin${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${where}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><rect class="om" x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" rx="${1.5*k}" style="stroke-width:${(sel?2.6:1.6)*k}"/><rect class="oi" x="${-r*.5}" y="${-r*.5}" width="${r}" height="${r}" fill="${col(n.m)}"/><title>${n.n} · ${where}</title></g>`})})}
-  s+=`</g></g>`;
-  s+=`<rect width="${W}" height="${B}" fill="var(--band)"/><line x1="0" x2="${W}" y1="${B}" y2="${B}" stroke="var(--rule)" stroke-dasharray="4 4"/>
-<text class="oband" x="14" y="${16*Math.min(k,1.6)}" style="font-size:${10*Math.min(k,1.6)}px">EARTH</text>`;
-  const earth=now.filter(n=>SOLAR.at[n.id]&&SOLAR.at[n.id][0]==="earth"),step=(W-40)/Math.max(earth.length,1),fit=Math.floor((step-33*k)/(7.3*k));
-  earth.forEach((n,i)=>s+=pin(n,40+14*k+i*step,B/2+8*Math.min(k,1.6),fit>=9?fit:0));
-  if(!earth.length)s+=`<text class="oband" x="${W/2}" y="${B/2+10}" text-anchor="middle" style="font-size:${11*Math.min(k,1.6)}px;letter-spacing:0;text-transform:none">Nothing on Earth this generation</text>`;
-  s+=`</svg>`;
+    list.forEach((n,i)=>{const a=(cnt===1?-50:-90+i*360/cnt)*Math.PI/180;pins.push({n,x:bx+rr*Math.cos(a),y:by0+rr*Math.sin(a),where:SOLAR.at[n.id][1]})})});
+  // Organisation pins: hollow squares on an arc above their body (its name sits below), outside any ring of conflicts
+  if(M.orgs){const ob={};orgsIn("sys",e).forEach(n=>{const b=ORGMAP[n.id].sys[0];if(P[b])(ob[b]=ob[b]||[]).push(n)});
+    Object.entries(ob).forEach(([key,list])=>{const [bx,by0]=P[key],rr=(ring[key]||(SOLAR.bodies[key].s+8)*k)+18*k;
+      const da=Math.max(26*Math.PI/180,16*k/rr);list.forEach((n,i)=>{const a=-150*Math.PI/180+i*da;pins.push({n,x:bx+rr*Math.cos(a),y:by0+rr*Math.sin(a),where:ORGMAP[n.id].sys[1],org:1})})})}
+  s+=pins.map(p=>pinSVG(p,k)).join("")+`</g></g></g></svg>`;
   box.innerHTML=s;
-  box.querySelectorAll("[data-pin]").forEach(g=>{
-    g.addEventListener("click",()=>mapSelect(M.sel===g.dataset.pin?null:g.dataset.pin));
-    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();mapSelect(g.dataset.pin)}});
-  });
-  if(!window.d3){M.zsel=null;return}
-  const zs=d3.select(box).select(".zm"),zl=zs.select(".zl"),zp=zs.selectAll(".zp > g");
-  const place=t=>{zl.attr("transform",t);zp.attr("transform",function(){return `translate(${t.applyX(+this.dataset.x).toFixed(1)} ${t.applyY(+this.dataset.y).toFixed(1)})`})};
-  M.zoom=d3.zoom().scaleExtent([1,8]).extent([[0,0],[W,H]]).translateExtent([[0,0],[W,H]])
-    .filter(e=>e.type==="wheel"?(e.ctrlKey||e.metaKey):!e.button)
-    .on("zoom",e=>{M.zt=e.transform;place(e.transform)});
-  M.zsel=zs.call(M.zoom).on("dblclick.zoom",null);
-  if(M.zt)M.zsel.call(M.zoom.transform,M.zt);
+  attachZoom(box,W,H);
+}
+// ---- Moon and Mars views: hand-drawn from MOON and MARS, with SITES for the pins ----
+const RAD=Math.PI/180;
+// A small circle of angular radius r degrees around [lon, lat], as a [lon, lat] ring
+function circle([lo,la,r],n=28){const out=[],p1=la*RAD,l1=lo*RAD,d=r*RAD;for(let i=0;i<n;i++){const b=i/n*2*Math.PI,p2=Math.asin(Math.sin(p1)*Math.cos(d)+Math.cos(p1)*Math.sin(d)*Math.cos(b));
+  out.push([(l1+Math.atan2(Math.sin(b)*Math.sin(d)*Math.cos(p1),Math.cos(d)-Math.sin(p1)*Math.sin(p2)))/RAD,p2/RAD])}return out}
+const ringOf=s=>Array.isArray(s)?s:circle(s.c);
+// A Moon panel's projection: orthographic hemisphere, or azimuthal equidistant round the south pole. Returns [x, y, on this panel]
+function panelProj(P){
+  if(P.pole!=null)return ([lo,la])=>{const rho=(90+la)/P.span,c=Math.min(rho,1)*P.r;return [P.x+c*Math.sin(lo*RAD),P.y-c*Math.cos(lo*RAD),rho<=1]};
+  const l0=P.c[0];return ([lo,la])=>{const dl=(lo-l0)*RAD,x=Math.cos(la*RAD)*Math.sin(dl),y=-Math.sin(la*RAD),cz=Math.cos(la*RAD)*Math.cos(dl);
+    if(cz>=0)return [P.x+P.r*x,P.y+P.r*y,true];const h=Math.hypot(x,y)||1;return [P.x+P.r*x/h,P.y+P.r*y/h,false]};
+}
+const pathOf=(pts,f,close=true)=>pts.map((p,i)=>{const [x,y]=f(p);return (i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)}).join("")+(close?"Z":"");
+function drawBody(v){
+  const box=document.getElementById("map-box"),D=v==="moon"?MOON:MARS;
+  if(!D){box.innerHTML=`<p class="map-msg">This map isn't in the atlas data yet.</p>`;M.zsel=null;return}
+  const k=pinK(box),lk=k,e=M.e,W=D.W,H=D.H,pins=[];
+  viewNodes(v,e).forEach(n=>SITES[v][n.id].forEach(st=>pins.push({n,st,where:sitePlace(st),r:10*k})));
+  if(M.orgs)orgsIn(v,e).forEach(n=>orgSites(ORGMAP[n.id],v,e).forEach(st=>pins.push({n,st,where:st[2],r:7*k,org:1})));
+  const lbl=(x,y,t,cls,size,prio,dy=0,anchor="middle")=>`<g class="lab${prio>1?" lp2":""}${cls==="ptitle"||cls==="lname"?" lt":""}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><text class="bl ${cls}" text-anchor="${anchor}" y="${dy}" style="font-size:${size}px">${t}</text></g>`;
+  let s="",L="",B=0,band="";
+  const busy=(x,y)=>pins.find(p=>!p.band&&Math.hypot(p.x-x,p.y-y)<4);
+  // A settlement: a ring and its name, moved clear of any pins on it
+  const town=(x,y,t,reg)=>{if(reg==="region")return lbl(x,y,t,"area",10*lk,1);const b=busy(x,y),left=reg==="left";
+    const tx=b?(b.cx-x+(left?-1:1)*(b.ext+4*k)):(left?-5:5)*k,ty=b?(b.cy-y+4*k):-5*k;
+    return `<g class="town${b?"":" tl"}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><circle r="${3*k}" style="stroke-width:${1.3*k}"/><text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}"${left?' text-anchor="end"':""} style="font-size:${11*lk}px;stroke-width:${3*k}px">${t}</text></g>`};
+  if(v==="moon"){
+    const pole=D.panels.find(P=>P.pole!=null),edge=-90+pole.span;
+    const panelOf=([lo,la])=>la<=edge?pole:D.panels.find(P=>P.c&&Math.cos((lo-P.c[0])*RAD)>=0)||D.panels[0];
+    s=`<defs>${D.panels.map(P=>`<clipPath id="mc-${P.k}"><circle cx="${P.x}" cy="${P.y}" r="${P.r}"/></clipPath>`).join("")}</defs>`;
+    D.panels.forEach(P=>{const f=panelProj(P),seen=pts=>pts.some(p=>f(p)[2]);
+      s+=`<circle class="bd-disc" cx="${P.x}" cy="${P.y}" r="${P.r}"/><g clip-path="url(#mc-${P.k})">`;
+      if(P.pole!=null){[84,78].forEach(la=>s+=`<circle class="bd-grat" cx="${P.x}" cy="${P.y}" r="${((90-la)/P.span*P.r).toFixed(1)}"/>`);
+        for(let lo=0;lo<180;lo+=30){const [a,b]=[f([lo,edge]),f([lo+180,edge])];s+=`<line class="bd-grat" x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"/>`}}
+      else{for(let la=-60;la<=60;la+=30){const pts=[];for(let lo=P.c[0]-90;lo<=P.c[0]+90;lo+=10)pts.push([lo,la]);s+=`<path class="bd-grat" d="${pathOf(pts,f,false)}"/>`}
+        for(let lo=P.c[0]-60;lo<=P.c[0]+60;lo+=30){const pts=[];for(let la=-90;la<=90;la+=10)pts.push([lo,la]);s+=`<path class="bd-grat" d="${pathOf(pts,f,false)}"/>`}}
+      D.maria.forEach(m=>{const pts=ringOf(m);if(seen(pts))s+=`<path class="bd-mare" d="${pathOf(pts,f)}"/>`});
+      D.rings.forEach(m=>{const pts=ringOf(m);if(seen(pts))s+=`<path class="bd-ring${m.dash?" dash":""}" d="${pathOf(pts,f)}"/>`});
+      if(P.pole==null){const pts=[];for(let lo=P.c[0]-90;lo<=P.c[0]+90;lo+=6)pts.push([lo,edge]);s+=`<path class="bd-cut" d="${pathOf(pts,f,false)}"/>`}
+      s+=`</g>`});
+    pins.forEach(p=>{[p.x,p.y]=panelProj(panelOf(p.st))(p.st)});fan(pins,k);
+    D.panels.forEach(P=>L+=lbl(P.x,24,P.n,"ptitle",10*Math.min(k,1.6),1));
+    D.labels.forEach(([lo,la,t,c,pr])=>{const [x,y,ok]=panelProj(panelOf([lo,la]))([lo,la]);if(ok)L+=lbl(x,y,t,c,(c==="sea"?10.5:9)*lk,pr,c==="crater"?-6*lk:0)});
+    D.towns.filter(t=>e>=t[3]&&e<=t[4]).forEach(([lo,la,t,,,reg])=>{const [x,y]=panelProj(panelOf([lo,la]))([lo,la]);L+=town(x,y,t,reg)});
+  }else{
+    B=Math.round(56*Math.min(k,1.6));const f=([lo,la])=>[(lo+180)/360*W,(90-la)/180*H];
+    s=`<rect class="bd-up" width="${W}" height="${H}"/>`;
+    D.lowlands.forEach(m=>s+=`<path class="bd-low" d="${pathOf(ringOf(m),f)}"/>`);
+    D.uplands.forEach(m=>s+=`<path class="bd-up" d="${pathOf(ringOf(m),f)}"/>`);
+    for(let lo=-150;lo<180;lo+=30)s+=`<line class="bd-grat" x1="${f([lo,0])[0]}" x2="${f([lo,0])[0]}" y1="0" y2="${H}"/>`;
+    for(let la=-60;la<=60;la+=30)s+=`<line class="bd-grat" x1="0" x2="${W}" y1="${f([0,la])[1]}" y2="${f([0,la])[1]}"${la?"":' style="stroke-dasharray:2 3"'}/>`;
+    D.rise.forEach(m=>s+=`<path class="bd-rise" d="${pathOf(ringOf(m),f)}"/>`);
+    D.caps.forEach(m=>s+=`<path class="bd-cap" d="${pathOf(m,f)}"/>`);
+    D.canyons.forEach((m,i)=>s+=`<path class="bd-canyon" style="stroke-width:${i?1.6:4.2}" d="${pathOf(m,f,false)}"/>`);
+    D.volcanoes.forEach(([lo,la,r])=>s+=`<path class="bd-volc" d="${pathOf(circle([lo,la,r]),f)}"/><path class="bd-volc" d="${pathOf(circle([lo,la,r*.3]),f)}"/>`);
+    D.craters.forEach(c=>s+=`<path class="bd-ring" d="${pathOf(circle(c),f)}"/>`);
+    const lines=D.lines.filter(l=>e>=l.from&&e<=l.to);
+    lines.forEach(l=>s+=`<path class="bd-${l.k}" d="${pathOf(l.pts,f,false)}"><title>${l.n}</title></path>`);
+    // Phobos and Deimos in the band above the map, their pins in a row to the right of each
+    const mx={},cnt={};D.moons.forEach((m,i)=>{mx[m.k]=W*(.08+i*.46);cnt[m.k]=0});
+    pins.forEach(p=>{if(typeof p.st[0]==="number")[p.x,p.y]=f(p.st);else{p.band=1;p.x=mx[p.st[0]]+(24+cnt[p.st[0]]++*24)*k;p.y=B/2}});
+    fan(pins.filter(p=>!p.band),k);
+    band=`<rect width="${W}" height="${B}" fill="var(--band)"/><line x1="0" x2="${W}" y1="${B}" y2="${B}" stroke="var(--rule)" stroke-dasharray="4 4"/>`+
+      D.moons.map(m=>`<ellipse class="bd-moon" cx="${mx[m.k]}" cy="${B/2}" rx="${(m.k==="phobos"?7:5)*Math.min(k,1.6)}" ry="${(m.k==="phobos"?5.5:4)*Math.min(k,1.6)}"><title>${m.n}</title></ellipse><text class="oband" x="${mx[m.k]}" y="${B/2+17*Math.min(k,1.6)}" text-anchor="middle" style="font-size:${9.5*Math.min(k,1.6)}px">${m.n.toUpperCase()}</text>`).join("");
+    D.labels.forEach(([lo,la,t,c,pr])=>{const [x,y]=f([lo,la]);L+=lbl(x,y,t,c,9.5*lk,pr)});
+    lines.forEach(l=>{const [x,y]=f(l.k==="loc"?[-150,-6]:[-150,9]);L+=lbl(x,y,l.n,"lname",9.5*lk,1,l.k==="loc"?13*lk:-6*lk)});
+    D.towns.filter(t=>e>=t[3]&&e<=t[4]).forEach(([lo,la,t,,,reg])=>{const [x,y]=f([lo,la]);L+=town(x,y,t,reg)});
+  }
+  const mapPins=pins.filter(p=>!p.band),bandPins=pins.filter(p=>p.band);
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H+B}" class="${k<1.3?"wide":""}" role="img" aria-label="${v==="moon"?"Map of the Moon, near side, south pole and far side":"Map of Mars"}, ${DATA.conflicts.cols[e][0]}: conflict and settlement locations">
+<defs><clipPath id="bclip"><rect width="${W}" height="${H}"/></clipPath></defs><g class="zm"${B?` transform="translate(0 ${B})"`:""}><rect width="${W}" height="${H}" fill="transparent"/><g clip-path="url(#bclip)"><g class="zl">${s}</g><g class="zp">${L}${mapPins.map(p=>pinSVG(p,k)).join("")}</g></g></g>${band}${bandPins.map(p=>pinSVG(p,k)).join("")}</svg>`;
+  attachZoom(box,W,H);
 }
 function mapSelect(id){
   M.sel=id;
@@ -1296,7 +1394,7 @@ function renderChrono(){
     return `<li>${b.id&&(IDX[b.id]||ACEX[b.id])?`<button type="button" class="${cls}" style="--bc:${bc}" ${IDX[b.id]?`data-go="${b.id}"`:`data-ace="${b.id}"`}>${inner}</button>`:`<div class="${cls}" style="--bc:${bc}">${inner}</div>`}</li>`};
   document.getElementById("chr-list").innerHTML=cols.map(([k,y],e)=>{
     const list=shown.filter(b=>b.e===e);if(!list.length)return "";
-    const note=e===5?"The Third World War":e<5?ERA_NOTE[e][0]:SOLAR.eras[e-6]?SOLAR.eras[e-6][0]:"Where the stories end";
+    const note=e===5?"The Third World War":MAPNOTE[e]?MAPNOTE[e][0]:"Where the stories end";
     return `<section class="chr-era"><div class="chr-era-h"><h2>${k}</h2><span>${y} · ${list.length} ${list.length===1?"entry":"entries"}</span><p>${note}</p></div><ol class="chr-list">${list.map(beat).join("")}</ol></section>`;
   }).join("");
   fac.querySelectorAll("[data-l]").forEach(b=>b.addEventListener("click",()=>{CH.fac=b.dataset.l===""?null:+b.dataset.l;try{localStorage.setItem("atlas-chrono-fac",CH.fac==null?"":String(CH.fac))}catch(e){}renderChrono()}));

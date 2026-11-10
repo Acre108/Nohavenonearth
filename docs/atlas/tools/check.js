@@ -4,7 +4,7 @@ const fs=require("fs"),path=require("path");
 const html=fs.readFileSync(process.argv[2],"utf8");
 const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
 new Function(scripts[scripts.length-1]); // syntax check
-const {GROUPS,COLS,VART,PLATES,SCENES,DATA,LOC,MINOR,ORBIT,POWERS,SPACE,UNEL,TIMELINE,BLOC,ACE_FACTIONS,ACE_ERAS,ACES,SOLAR,CHRONO=[]}=JSON.parse(fs.readFileSync(path.join(path.dirname(process.argv[2]),"atlas-data.json"),"utf8"));
+const {GROUPS,COLS,GENS=[],VART,PLATES,SCENES,DATA,LOC,MINOR,POWERS,SPACE,UNEL,TIMELINE,BLOC,ACE_FACTIONS,ACE_ERAS,ACES,SOLAR,CHRONO=[],ORGMAP={},SITES={},MOON,MARS,MAPNOTE=[],FUTURE_OVR=[]}=JSON.parse(fs.readFileSync(path.join(path.dirname(process.argv[2]),"atlas-data.json"),"utf8"));
 const IDX={};let errs=[];
 for(const [k,t] of Object.entries(DATA))for(const n of t.nodes){if(IDX[n.id])errs.push("dup "+n.id);IDX[n.id]=k;if(!GROUPS[n.m])errs.push("group "+n.id+" "+n.m);}
 for(const [k,t] of Object.entries(DATA)){const cells={};const ncol=(t.cols||COLS).length;const fams=new Set(t.fams.map(f=>f[0]));
@@ -12,15 +12,32 @@ for(const [k,t] of Object.entries(DATA)){const cells={};const ncol=(t.cols||COLS
   if(!fams.has(n.f))errs.push("fam "+n.id);if(n.c>=ncol)errs.push("col "+n.id);
   for(const [p,t2] of n.p||[]){if(IDX[p]!==k)errs.push(`parent ${n.id}->${p}`);if(!DATA[k].rel[t2])errs.push(`relation ${n.id}->${p} ${t2}`)}
   for(const f of ["fr","mx","pw","wp","dc","ln"])for(const id of n[f]||[])if(!IDX[id]&&!(f==="ln"&&(k==="people"||k==="mysteries")&&ACES.some(a=>a.id===id)))errs.push(`ref ${n.id}.${f} ${id}`);}}
-// Conflicts up to the war (Gen 0–5) sit on the world map; those after it (Gen 6–9) on the inner-system map
-const SYS0=6;
-for(const n of DATA.conflicts.nodes)if(n.c<SYS0&&!LOC[n.id]&&!ORBIT[n.id])errs.push("no LOC or ORBIT "+n.id);
-for(const n of MINOR)for(const f of ["mx","pw","wp","dc"])for(const id of n[f]||[])if(!IDX[id])errs.push(`minor ref ${n.id} ${id}`);
-{const B=(SOLAR&&SOLAR.bodies)||{},AT=(SOLAR&&SOLAR.at)||{},late=DATA.conflicts.nodes.filter(n=>n.c>=SYS0);
- if(!SOLAR||(SOLAR.eras||[]).length!==DATA.conflicts.cols.length-SYS0)errs.push("SOLAR.eras needs one entry per generation from Gen 6");
+// The map: every conflict has a place in at least one view (Earth LOC, Moon or Mars SITES, inner-system SOLAR.at)
+{const B=(SOLAR&&SOLAR.bodies)||{},AT=(SOLAR&&SOLAR.at)||{},NG=DATA.conflicts.cols.length,isGen=g=>Number.isInteger(g)&&g>=0&&g<NG;
+ const ll=(lon,lat)=>typeof lon==="number"&&typeof lat==="number"&&lon>=-180&&lon<=180&&lat>=-90&&lat<=90;
+ const place=(p,what)=>{if(typeof p!=="string"||!p)errs.push("no place "+what)};
  for(const [k,b] of Object.entries(B))if(b.of&&!B[b.of])errs.push(`body ${k} orbits unknown ${b.of}`);
- for(const n of late)if(!AT[n.id])errs.push("no SOLAR.at "+n.id);else if(!B[AT[n.id][0]])errs.push(`SOLAR.at ${n.id} unknown body ${AT[n.id][0]}`);
- for(const id of Object.keys(AT))if(!late.some(n=>n.id===id))errs.push("SOLAR.at for an entry that is not a conflict after the war "+id);}
+ for(const n of DATA.conflicts.nodes)if(!LOC[n.id]&&!AT[n.id]&&!(SITES.moon||{})[n.id]&&!(SITES.mars||{})[n.id])errs.push("no map place "+n.id);
+ for(const [id,v] of Object.entries(LOC)){if(IDX[id]!=="conflicts")errs.push("LOC for a non-conflict "+id);if(!ll(v[0],v[1]))errs.push("LOC coordinates "+id);place(v[2],"LOC "+id)}
+ for(const [id,v] of Object.entries(AT)){if(IDX[id]!=="conflicts")errs.push("SOLAR.at for a non-conflict "+id);if(!B[v[0]])errs.push(`SOLAR.at ${id} unknown body ${v[0]}`);place(v[1],"SOLAR.at "+id)}
+ for(const [v,t] of Object.entries(SITES)){if(v!=="moon"&&v!=="mars")errs.push("SITES view "+v);
+  for(const [id,list] of Object.entries(t)){if(IDX[id]!=="conflicts")errs.push(`SITES.${v} for a non-conflict ${id}`);if(!Array.isArray(list)||!list.length)errs.push(`SITES.${v} ${id} empty`);
+   for(const st of list||[])if(typeof st[0]==="number"){if(!ll(st[0],st[1]))errs.push(`SITES.${v} ${id} coordinates`);place(st[2],`SITES.${v} ${id}`)}
+    else{if(v!=="mars"||!["phobos","deimos"].includes(st[0]))errs.push(`SITES.${v} ${id} body ${st[0]}`);place(st[1],`SITES.${v} ${id}`)}}}
+ for(const n of MINOR){if(!ll(n.at[0],n.at[1]))errs.push("minor coordinates "+n.id);place(n.at[2],"minor "+n.id)}
+ for(const [id,o] of Object.entries(ORGMAP)){if(IDX[id]!=="orgs")errs.push("ORGMAP for a non-organisation "+id);if(o.to!=null&&!isGen(o.to))errs.push("ORGMAP to "+id);
+  for(const st of o.at||[]){if(!ll(st[0],st[1]))errs.push("ORGMAP at "+id);place(st[2],"ORGMAP at "+id)}
+  for(const v of ["moon","mars"])for(const st of o[v]||[]){if(!ll(st[0],st[1]))errs.push(`ORGMAP ${v} ${id}`);place(st[2],`ORGMAP ${v} ${id}`);if(st[3]!=null&&!isGen(st[3]))errs.push(`ORGMAP ${v} last Gen ${id}`)}
+  if(o.sys){if(!B[o.sys[0]])errs.push(`ORGMAP sys ${id} unknown body ${o.sys[0]}`);place(o.sys[1],"ORGMAP sys "+id)}}
+ if(MAPNOTE.length!==NG)errs.push(`MAPNOTE needs one note per generation (${NG})`);
+ for(const [i,nt] of MAPNOTE.entries())if(!nt||!nt[0]||!nt[1])errs.push("MAPNOTE "+i);
+ if(GENS.length&&GENS.length!==NG)errs.push("GENS and the conflicts columns differ");
+ if(FUTURE_OVR.length>NG-6)errs.push("FUTURE_OVR has more entries than post-war generations");
+ const towns=(D,nm)=>{for(const t of D.towns||[]){if(!ll(t[0],t[1])||!t[2])errs.push(nm+" town "+t[2]);if(!isGen(t[3])||!isGen(t[4])||t[3]>t[4])errs.push(nm+" town Gens "+t[2])}
+  for(const l of D.labels||[])if(!ll(l[0],l[1])||!l[2]||![1,2].includes(l[4]))errs.push(nm+" label "+l[2])};
+ if(SITES.moon&&Object.keys(SITES.moon).length){if(!MOON)errs.push("SITES.moon without MOON");else{if((MOON.panels||[]).length!==3||MOON.panels.filter(p=>p.pole!=null).length!==1)errs.push("MOON needs three panels, one of them the pole");towns(MOON,"MOON")}}
+ if(SITES.mars&&Object.keys(SITES.mars).length){if(!MARS)errs.push("SITES.mars without MARS");else{towns(MARS,"MARS");
+  for(const l of MARS.lines||[])if(!isGen(l.from)||!isGen(l.to)||l.from>l.to||(l.pts||[]).length<2||!["loc","wall"].includes(l.k))errs.push("MARS line "+l.n)}}}
 {const FV=JSON.parse(fs.readFileSync(path.join(path.dirname(process.argv[2]),"atlas-data.json"),"utf8")).FACTION_VIEWS;
  if(FV){const keys=new Set(FV.factions.map(f=>f.k)),lanes=new Set(TIMELINE.map(l=>l.g)),afs=new Set(ACE_FACTIONS.map(a=>a[0]));
   for(const f of FV.factions){const c=f.card==="UNEL"?UNEL:f.kind==="power"?POWERS.find(p=>p.b===f.card):SPACE.find(p=>p.n===f.card);if(!c)errs.push("view card "+f.k);
