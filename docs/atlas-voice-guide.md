@@ -173,6 +173,11 @@ Work tab by tab. Status:
 | Weapons, Power, Doctrine, Supers, Vehicles | v131 |
 | ACES, CHRONO, POWERS/SPACE/UNEL, TIMELINE, SCENES/PLATES captions, MINOR | v132 |
 | Final sweep: turning points, family labels, faction profiles, map notes, plus pattern hits across everything | v133 |
-| Faction-tone pass (rewriting rhythm and register per faction, beyond kickers) | not yet |
+| Faction-tone pass (rewriting rhythm and register per faction, beyond kickers) | v134: one agent per tab, about 720 fields |
+
+Lessons from the tone pass:
+- Watch for new tics. Several agents reached for the same "people like to point out / like to say" frame for the Commonwealth's oral tone (fifteen uses before thinning). Keep stock framing phrases to a handful across the whole atlas.
+- The id hash can pick a faction that isn't the card's subject: the UNEL's own org card drew Colony One. Voice a card as its subject when the two clash.
+- Agents sometimes treat a sentence with a missing comma as garbled and cut it, losing a fact (wO20). Read those changes rather than trusting the summary.
 
 For text outside DATA, `voice-apply.js` also takes an array of `["old text", "new text"]` pairs. Each old text must match exactly once, either as a whole value or as a run inside one.
