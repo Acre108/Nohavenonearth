@@ -157,7 +157,8 @@ Scripts are in `docs/atlas/tools/`:
 1. `node tools/voice-tags.js atlas-data.json [tab] [out.json]` tags every card with a faction tone and an ending code.
 2. `node tools/voice-show.js atlas-data.json <tab> [from] [count] [cards.json]` prints cards with their codes for review.
 3. Write the rewrites as `{"<id>": {"x": "…", "z": "…"}}` and run `node tools/voice-apply.js atlas-data.json edits.json`. It edits each node's own line in place, keeping the hand-kept layout, and refuses to write if a bar changed or an em dash appeared.
-4. Run `node tools/check.js mech-lineage-atlas.html`, diff against the live artifact, publish, commit.
+4. Optionally run `node tools/voice-sweep.js atlas-data.json hits.txt` to list remaining kicker patterns; most hits are deliberate keeps or spec lines.
+5. Run `node tools/check.js mech-lineage-atlas.html`, diff against the live artifact, publish, commit.
 
 Work tab by tab. Status:
 
@@ -171,6 +172,7 @@ Work tab by tab. Status:
 | Fleets & Carriers | v130 |
 | Weapons, Power, Doctrine, Supers, Vehicles | v131 |
 | ACES, CHRONO, POWERS/SPACE/UNEL, TIMELINE, SCENES/PLATES captions, MINOR | v132 |
+| Final sweep: turning points, family labels, faction profiles, map notes, plus pattern hits across everything | v133 |
 | Faction-tone pass (rewriting rhythm and register per faction, beyond kickers) | not yet |
 
 For text outside DATA, `voice-apply.js` also takes an array of `["old text", "new text"]` pairs. Each old text must match exactly once, either as a whole value or as a run inside one.
