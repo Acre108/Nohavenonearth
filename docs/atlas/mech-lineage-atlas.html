@@ -1532,7 +1532,9 @@ function exTile(kind,id){
   const tabName=k=>{const t=document.getElementById("tab-"+k);return t?t.firstChild.textContent:"the atlas"};
   let img="",name,sub,body;
   if(a){const [fid,,vn]=a.fr[0],stem=isOwn(fid,vn)?ART[fid]:VART[vn],sig=isOwn(fid,vn)?label(IDX[fid]):vn;
-    if(stem)img=`<img src="thumb/${stem}-scene.jpg" alt="${sig}" loading="lazy" decoding="async">`;
+    // The ace's own key art wins over their signature frame's
+    if(SCENES[id])img=`<img src="art/${SCENES[id].f}.jpg" alt="${a.n}" loading="lazy" decoding="async">`;
+    else if(stem)img=`<img src="thumb/${stem}-scene.jpg" alt="${sig}" loading="lazy" decoding="async">`;
     name=`${a.n}${a.cs?` <i>“${a.cs}”</i>`:""}`;sub=`${a.r?a.r+" · ":""}${a.y} · ${sig}`;
     body=`<p class="rec"><b>RECORD</b>${a.k}</p><p class="sum-x">${a.x}</p>`;
     return `<article class="sum-t">${img}<span class="lc-k">${kind}</span><b class="sum-tn">${name}</b><span class="meta">${sub}</span>${body}<button type="button" class="go" data-tace="${id}">Open ace card →</button></article>`}
