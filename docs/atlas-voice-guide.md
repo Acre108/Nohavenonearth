@@ -170,4 +170,7 @@ Work tab by tab. Status:
 | Frames | v129 |
 | Fleets & Carriers | v130 |
 | Weapons, Power, Doctrine, Supers, Vehicles | v131 |
-| ACES, CHRONO, POWERS/SPACE/UNEL, TIMELINE, SCENES/PLATES captions, MINOR | not yet |
+| ACES, CHRONO, POWERS/SPACE/UNEL, TIMELINE, SCENES/PLATES captions, MINOR | v132 |
+| Faction-tone pass (rewriting rhythm and register per faction, beyond kickers) | not yet |
+
+For text outside DATA, `voice-apply.js` also takes an array of `["old text", "new text"]` pairs. Each old text must match exactly once, either as a whole value or as a run inside one.
