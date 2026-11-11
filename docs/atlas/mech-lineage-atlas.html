@@ -46,7 +46,31 @@ header{display:flex;flex-direction:column;gap:10px}
 h1{font-size:clamp(32px,5vw,52px);line-height:1;font-weight:700;letter-spacing:-.01em}
 header p{margin:0;color:var(--ink-2)}
 
-.tabs{display:flex;gap:0;border-bottom:2px solid var(--ink);margin-top:10px;flex-wrap:wrap}
+/* Tabs sit in four labelled groups: Story, People, Machines, World */
+.tabs{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 18px;border-bottom:2px solid var(--ink);margin-top:10px}
+.tg{display:flex;flex-direction:column;gap:1px;min-width:0}
+.tg-l{font:500 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);padding-left:9px}
+.tg-t{display:flex;flex-wrap:wrap}
+/* The guide: how to use the atlas, shown on a first visit and from the Guide button */
+.guide{border:1px solid var(--rule);border-radius:4px;padding:0;background:var(--paper);color:var(--ink);width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+.guide::backdrop{background:rgba(10,12,11,.6)}
+.guide-in{padding:22px 24px 20px;display:flex;flex-direction:column;gap:14px}
+.guide h2{font-size:26px;font-weight:700}
+.guide h3{font-size:17px;font-weight:600;margin-top:4px}
+.guide p{margin:0;font-size:14.5px;line-height:1.5}
+.guide ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14.5px;line-height:1.45}
+.guide li b{font-family:var(--display)}
+.gd-groups li{display:grid;grid-template-columns:92px 1fr;gap:10px;border-top:1px solid var(--rule);padding-top:6px}
+.gd-groups li>span:first-child{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);padding-top:2px}
+.gd-tree{display:grid;grid-template-columns:minmax(0,340px) 1fr;gap:16px;align-items:start}
+.gd-tree svg{width:100%;height:auto;display:block}
+.gd-band{fill:var(--band)}.gd-card{fill:var(--card);stroke:var(--ink-2);stroke-width:1}
+.gd-ln{stroke:var(--line);stroke-width:2;fill:none}.gd-ln.x{stroke-dasharray:4 3}
+.gd-h{fill:var(--ink-2);font:500 10px var(--mono);letter-spacing:.08em}.gd-c{fill:var(--ink);font:600 11px var(--display)}
+.guide-act{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;border-top:1px solid var(--rule);padding-top:14px}
+.guide .sum-go{font-size:15px;padding:8px 16px}
+.guide button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+@media (max-width:560px){.gd-tree{grid-template-columns:1fr}.gd-groups li{grid-template-columns:1fr;gap:2px}.guide-in{padding:18px 16px}}
 .tab{background:none;border:1px solid transparent;border-bottom:0;border-radius:3px 3px 0 0;padding:9px 9px 8px;font:600 15px var(--display);color:var(--ink-2);cursor:pointer;margin-bottom:-2px}
 .tab:hover{color:var(--ink)}
 .tab[aria-selected="true"]{color:var(--paper);background:var(--ink);border-color:var(--ink)}
@@ -608,6 +632,40 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
 <section class="landing" id="landing" hidden aria-label="Choose a view of the atlas"></section>
 <aside class="sheet" id="sheet" hidden aria-live="polite"></aside>
+<dialog class="guide" id="guide" aria-labelledby="guide-h"><div class="guide-in">
+  <span class="eyebrow">Getting around</span><h2 id="guide-h" tabindex="-1" autofocus style="outline:none">How to use the atlas</h2>
+  <h3>Where to start</h3>
+  <p>New to the setting? The <b>Timeline</b> tells the whole story in order, from before the first mechs to 2327. Or open a faction's <b>Summary</b> from the bar under the title, and follow just its story through every tab.</p>
+  <h3>What's in each tab</h3>
+  <ul class="gd-groups">
+    <li><span>Story</span><span><b>Timeline, Conflicts, Map and Factions</b>: what happened, where, and what became of each power.</span></li>
+    <li><span>People</span><span><b>Persons of Interest and Aces</b>: the families and the famous pilots behind events.</span></li>
+    <li><span>Machines</span><span><b>Frames, Supers, Vehicles, Fleets &amp; Carriers, Weapons and Power</b>: what everyone fights with, and where each design came from.</span></li>
+    <li><span>World</span><span><b>Organisations, Doctrine and Mysteries</b>: who builds and decides, how each side fights, and the stories nobody has told yet.</span></li>
+  </ul>
+  <h3>Reading a tree</h3>
+  <div class="gd-tree">
+    <svg viewBox="0 0 340 168" role="img" aria-label="A small example tree: generations as columns, families as rows, and lines joining each entry to what it grew from">
+      <text class="gd-h" x="60" y="12" text-anchor="middle">GEN 2</text><text class="gd-h" x="170" y="12" text-anchor="middle">GEN 3</text><text class="gd-h" x="280" y="12" text-anchor="middle">GEN 4</text>
+      <rect class="gd-band" x="0" y="20" width="340" height="68"/><rect class="gd-band" x="0" y="96" width="340" height="68"/>
+      <text class="gd-h" x="6" y="32">ONE MAKER</text><text class="gd-h" x="6" y="108">ANOTHER MAKER</text>
+      <path class="gd-ln" d="M102 58 H128"/><path class="gd-ln" d="M212 58 H238"/><path class="gd-ln x" d="M212 58 C226 58 222 134 238 134"/>
+      <rect class="gd-card" x="18" y="42" width="84" height="32" rx="3"/><text class="gd-c" x="60" y="62" text-anchor="middle">First frame</text>
+      <rect class="gd-card" x="128" y="42" width="84" height="32" rx="3"/><text class="gd-c" x="170" y="62" text-anchor="middle">Its successor</text>
+      <rect class="gd-card" x="238" y="42" width="84" height="32" rx="3"/><text class="gd-c" x="280" y="62" text-anchor="middle">Next in line</text>
+      <rect class="gd-card" x="238" y="118" width="84" height="32" rx="3"/><text class="gd-c" x="280" y="138" text-anchor="middle">A copy</text>
+    </svg>
+    <ul>
+      <li><b>Columns are generations</b>, from Gen 0 before the first mechs to Gen 9 in 2327.</li>
+      <li><b>Rows are families</b>: one maker, nation or line in each band.</li>
+      <li><b>Lines</b> join each entry to what it grew from. The key above each tree explains the line styles.</li>
+      <li><b>Click any card</b> to open its full entry, with links onward.</li>
+    </ul>
+  </div>
+  <h3>Faction views</h3>
+  <p><b>Change view</b>, in the bar under the title, filters every tab to one faction's story; the whole atlas shows everything. You can reopen this guide at any time from the <b>Guide</b> button in the same bar.</p>
+  <div class="guide-act"><button type="button" class="x" data-gclose>Close</button><button type="button" class="sum-go" data-gtimeline>Start with the Timeline</button></div>
+</div></dialog>
 <dialog class="lb" id="lb" aria-label="Concept art"><figure><img id="lb-img" alt=""><figcaption><span id="lb-cap"></span><button type="button" class="lb-x" id="lb-x">Close</button></figcaption></figure></dialog>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -685,31 +743,22 @@ function goTo(id){const k=KEYOF[id];if(k!==current){build(k);remember(k)}select(
 
 // tabs
 const tabs=document.getElementById("tabs");
-{const c=document.createElement("button");c.type="button";c.className="tab";c.role="tab";c.id="tab-chrono";c.dataset.k="chrono";
-  c.textContent="Timeline";c.addEventListener("click",()=>{build("chrono");remember("chrono")});tabs.append(c)}
-ORDER.forEach(k=>{
-  const v=DATA[k];
-  const b=document.createElement("button");b.type="button";b.className="tab";b.role="tab";b.id="tab-"+k;b.dataset.k=k;
-  b.innerHTML=`${v.label}<small>${v.nodes.length}</small>`;
-  b.addEventListener("click",()=>{build(k);remember(k)});
-  tabs.append(b);
-  if(k==="frames"){
-    const a=document.createElement("button");a.type="button";a.className="tab";a.role="tab";a.id="tab-aces";a.dataset.k="aces";
-    a.innerHTML=`Aces<small>${ACES.length}</small>`;
-    a.addEventListener("click",()=>{build("aces");remember("aces")});
-    tabs.append(a);
-  }
-  if(k==="conflicts"){
-    const m=document.createElement("button");m.type="button";m.className="tab";m.role="tab";m.id="tab-map";m.dataset.k="map";
-    m.textContent="Map";
-    m.addEventListener("click",()=>{build("map");remember("map")});
-    tabs.append(m);
-    const f=document.createElement("button");f.type="button";f.className="tab";f.role="tab";f.id="tab-timeline";f.dataset.k="timeline";
-    f.textContent="Factions";
-    f.addEventListener("click",()=>{build("timeline");remember("timeline")});
-    tabs.append(f);
-  }
-});
+// Every tab button, keyed by what it builds; then laid out in four labelled groups
+const TABB={};
+const mkTab=(k,label,count)=>{const b=document.createElement("button");b.type="button";b.className="tab";b.role="tab";b.id="tab-"+k;b.dataset.k=k;
+  b.innerHTML=count==null?label:`${label}<small>${count}</small>`;b.addEventListener("click",()=>{build(k);remember(k)});TABB[k]=b;return b};
+mkTab("chrono","Timeline");mkTab("map","Map");mkTab("timeline","Factions");mkTab("aces","Aces",ACES.length);
+ORDER.forEach(k=>mkTab(k,DATA[k].label,DATA[k].nodes.length));
+const TAB_GROUPS=[["Story",["chrono","conflicts","map","timeline"]],["People",["people","aces"]],
+  ["Machines",["frames","supers","vehicles","fleets","weapons","power"]],["World",["orgs","doctrine","mysteries"]]];
+{const placed=new Set(TAB_GROUPS.flatMap(g=>g[1])),rest=ORDER.filter(k=>!placed.has(k));
+  if(rest.length)TAB_GROUPS.push(["More",rest]);
+  TAB_GROUPS.forEach(([name,keys])=>{const ks=keys.filter(k=>TABB[k]);if(!ks.length)return;
+    const g=document.createElement("div");g.className="tg";g.setAttribute("role","presentation");g.dataset.g=name;
+    g.innerHTML=`<span class="tg-l" aria-hidden="true">${name}</span><div class="tg-t" role="presentation"></div>`;
+    ks.forEach(k=>g.lastChild.append(TABB[k]));tabs.append(g)})}
+// A group whose tabs are all hidden in a faction view hides its label too
+function syncTabGroups(){tabs.querySelectorAll(".tg").forEach(g=>{g.hidden=![...g.querySelectorAll(".tab")].some(b=>!b.hidden)})}
 const chView=document.getElementById("chView"),treeView=document.getElementById("treeView"),mapView=document.getElementById("mapView"),tlView=document.getElementById("tlView"),aceView=document.getElementById("aceView");
 // Views that aren't lineage trees, by tab key
 const VIEWS={chrono:chView,map:mapView,timeline:tlView,aces:aceView};
@@ -1006,7 +1055,15 @@ function openArt(src,cap){document.getElementById("lb-img").src=src;document.get
   if(lb.showModal)lb.showModal();else window.open(src,"_blank")}
 document.getElementById("lb-x").addEventListener("click",()=>lb.close());
 lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});
-document.addEventListener("keydown",e=>{if(lb.open)return;if(e.key!=="Escape")return;
+// The guide: how to use the atlas. It opens by itself once, the first time a visitor enters, and from the Guide button after that
+const guide=document.getElementById("guide");
+function openGuide(){if(guide.open)return;if(guide.showModal)guide.showModal();else guide.setAttribute("open","")}
+function maybeGuide(){let seen=false;try{seen=localStorage.getItem("atlas-guide-seen")==="1"}catch(e){}if(!seen)openGuide()}
+guide.addEventListener("close",()=>{try{localStorage.setItem("atlas-guide-seen","1")}catch(e){}});
+guide.addEventListener("click",e=>{if(e.target===guide)guide.close()});
+guide.querySelectorAll("[data-gclose]").forEach(b=>b.addEventListener("click",()=>guide.close()));
+guide.querySelector("[data-gtimeline]").addEventListener("click",()=>{guide.close();build("chrono");remember("chrono");scrollTo(0,0)});
+document.addEventListener("keydown",e=>{if(lb.open||guide.open)return;if(e.key!=="Escape")return;
   if(!document.getElementById("landing").hidden){closeLanding();applyView(VW.f,true);return}
   if(current==="map"){if(M.sel)mapSelect(null);return}
   if(state.sel||state.maker){state.sel=null;state.maker=null;apply()}});
@@ -1489,6 +1546,7 @@ function applyView(k,store){
   // Tabs show how much of each tree is in view, and a tree with nothing in view is hidden
   ORDER.forEach(t=>{const b=document.getElementById("tab-"+t),n=DATA[t].nodes.filter(x=>vis(x.id)).length;b.hidden=!n;b.querySelector("small").textContent=n});
   const at=document.getElementById("tab-aces");if(at){const n=ACES.filter(a=>vis(a.id)).length;at.hidden=!n;at.querySelector("small").textContent=n}
+  syncTabGroups();
   renderBar();renderTimeline();renderChrono();renderAces();
   if(current==="map"){mapSelect(null);renderMap()}
   else if(current&&DATA[current]){const k0=current;current=null;build(DATA[k0].nodes.some(n=>vis(n.id))?k0:"chrono")}
@@ -1497,13 +1555,15 @@ function applyView(k,store){
 }
 function renderBar(){
   const el=document.getElementById("viewbar"),f=VW.f&&FACX[VW.f];
-  if(!f){el.style.removeProperty("--fc");el.innerHTML=`<span><span class="vb-k">Viewing</span><b>The whole atlas</b></span><span class="vb-acts"><button type="button" class="vb-x" data-sum="">Summary</button><button type="button" class="vb-x" data-land>Choose a faction view</button></span>`}
+  const guideB=`<button type="button" class="vb-x" data-guide>Guide</button>`;
+  if(!f){el.style.removeProperty("--fc");el.innerHTML=`<span><span class="vb-k">Viewing</span><b>The whole atlas</b></span><span class="vb-acts">${guideB}<button type="button" class="vb-x" data-sum="">Summary</button><button type="button" class="vb-x" data-land>Choose a faction view</button></span>`}
   else{const c=cardOf(f);el.style.setProperty("--fc",`var(${facColour(f)})`);
-    el.innerHTML=`<span><span class="vb-k">Viewing as</span><b>${facName(f)}</b></span><span class="vb-acts"><button type="button" class="vb-x" data-sum="${f.k}">Summary</button><button type="button" class="vb-x" data-land>Change view</button></span>`}
+    el.innerHTML=`<span><span class="vb-k">Viewing as</span><b>${facName(f)}</b></span><span class="vb-acts">${guideB}<button type="button" class="vb-x" data-sum="${f.k}">Summary</button><button type="button" class="vb-x" data-land>Change view</button></span>`}
+  el.querySelectorAll("[data-guide]").forEach(b=>b.addEventListener("click",()=>openGuide()));
   el.querySelectorAll("[data-land]").forEach(b=>b.addEventListener("click",()=>openLanding()));
   el.querySelectorAll("[data-sum]").forEach(b=>b.addEventListener("click",()=>openSummary(b.dataset.sum)));
 }
-function closeLanding(){document.getElementById("landing").hidden=true;document.body.classList.remove("landing-open")}
+function closeLanding(){document.getElementById("landing").hidden=true;document.body.classList.remove("landing-open");maybeGuide()}
 // Landing screen: the whole atlas or one of the thirteen factions of 2327. Each card opens a summary; its Enter button goes straight in
 function openLanding(){
   const el=document.getElementById("landing"),s=SCENES.headline;
@@ -1595,6 +1655,7 @@ build(known(start)?start:"chrono");
 applyView(pickView,hView!=null);
 if(hTab==="successors"){remember("chrono");openLanding()}
 else if(hView==null&&sView==null)openLanding();
+else maybeGuide();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
 if("ResizeObserver" in window)new ResizeObserver(draw).observe(chart);
 addEventListener("resize",draw);
