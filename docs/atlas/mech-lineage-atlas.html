@@ -180,6 +180,55 @@ header p{margin:0;color:var(--ink-2)}
 .seg button{background:none;border:0;padding:6px 11px;font:500 12px var(--mono);color:var(--ink);cursor:pointer}
 .seg button+button{border-left:1px solid var(--ink)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+/* Landing cards: the card opens the faction's summary, the corner button enters the atlas directly */
+.lcw{position:relative;display:flex;min-width:0}
+.lcw>.lc{flex:1;padding-bottom:40px}
+.lcw>.lc.whole{padding-bottom:16px;padding-right:110px}
+.lc-go{position:absolute;right:10px;bottom:10px;background:var(--card);border:1px solid var(--ink);border-radius:3px;color:var(--ink);font:500 12px var(--mono);padding:4px 10px;cursor:pointer}
+.lc-go:hover{background:var(--ink);color:var(--paper)}
+.lcw>.lc.whole+.lc-go{top:50%;bottom:auto;transform:translateY(-50%)}
+.land-in>h2+p{margin-top:-8px}
+/* Summaries: a faction's (or the whole atlas's) key art, overview, examples and a way in */
+.sum{gap:14px}
+.sum>p{max-width:820px}
+.sum>.seed{color:var(--ink-2);font-size:14px}
+.sum h1 i{font-style:normal;color:var(--ink-2);font-weight:500}
+.sum .meta{margin-top:-6px}
+.sum-back{align-self:flex-start}
+.sum-art{margin:0;display:flex;flex-direction:column;gap:6px}
+.sum-art>button{padding:0;border:0;background:none;cursor:zoom-in;display:block}
+.sum-art figcaption{font-size:13px;color:var(--ink-2)}
+.sum-art .era{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--xfer)}
+.land-in.sum[style] .land-art{border-top:4px solid var(--fc)}
+.sum-heirs{display:flex;flex-direction:column;gap:6px;max-width:820px}
+.sum-heirs ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.sum-heirs li{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-top:1px solid var(--rule)}
+.sum-heirs b{font:600 15px var(--display)}
+.sum-heirs span{font-size:13.5px;color:var(--ink-2)}
+.land-in .sum-heirs h2,.land-in .sum-ax h2{margin-top:0}
+.sum-ax{border-bottom:1px solid var(--rule);max-width:820px}
+.sum-ax .axes{margin-bottom:6px}
+.sum-ax .hint{margin-bottom:12px}
+.sum-ex{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px;align-items:start}
+.sum-t{background:var(--card);border:1px solid var(--rule);border-top:4px solid var(--fc);border-radius:3px;padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.sum-t img{display:block;width:calc(100% + 28px);max-width:none;margin:-12px -14px 4px;aspect-ratio:16/9;object-fit:cover;background:var(--band);border-bottom:1px solid var(--rule)}
+.sum-tn{font:600 18px/1.2 var(--display)}
+.sum-tn i{font-style:normal;font-weight:500;color:var(--ink-2)}
+.sum-t p{margin:0;font-size:13.5px}
+.sum-t .sum-x{color:var(--ink-2);font-size:13px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.sum-t .go{margin-top:4px}
+.sum-act{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px}
+.sum-go{background:var(--ink);color:var(--paper);border:1px solid var(--ink);border-radius:3px;font:600 16px var(--display);padding:10px 18px;cursor:pointer}
+.sum-go:hover{background:var(--fc,var(--ink));border-color:var(--fc,var(--ink))}
+.sum-gens{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;max-width:900px}
+.sum-gens li{display:grid;grid-template-columns:170px minmax(0,1fr);gap:4px 18px;padding:10px 0;border-top:1px solid var(--rule)}
+.sum-gens li.nppl{border-top:2px solid var(--ink)}
+.sum-g{display:flex;flex-direction:column}
+.sum-g b{font:600 16px var(--display)}
+.sum-g span{font:12px var(--mono);color:var(--ink-2)}
+.sum-gt{display:block;font:600 15px/1.25 var(--display)}
+.sum-gp{display:block;font-size:13.5px;color:var(--ink-2);margin-top:2px}
+@media (max-width:620px){.sum-gens li{grid-template-columns:minmax(0,1fr)}.sum-g{flex-direction:row;gap:10px;align-items:baseline}}
 /* Faction profile on a tree: who runs what, one row per faction */
 .profile{display:flex;flex-direction:column;gap:10px}
 .profile h2{font-size:20px;font-weight:600}
@@ -213,7 +262,7 @@ body.landing-open{overflow:hidden}
 .lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,262px),1fr));gap:10px}
 .lc{display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--card);border:1px solid var(--rule);border-top:4px solid var(--fc,var(--ink));border-radius:3px;padding:12px 14px 14px;font:inherit;color:var(--ink);cursor:pointer;min-width:0}
 .lc:hover{border-color:var(--ink-2);border-top-color:var(--fc,var(--ink))}
-.lc:focus-visible,.vb-x:focus-visible,.vb-d summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.lc:focus-visible,.lc-go:focus-visible,.vb-x:focus-visible,.sum button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .lc-k{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
 .lc-h{font-size:13px;color:var(--ink-2)}
 .lc-n{font:600 18px/1.2 var(--display)}
@@ -221,19 +270,11 @@ body.landing-open{overflow:hidden}
 .lc-t{font-size:13px;line-height:1.45;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .lc.whole{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:4px 14px;font:600 22px/1.2 var(--display);padding:16px 18px}
 .lc.whole .lc-t{font:400 14px var(--body);-webkit-line-clamp:unset}
+.vb-acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.vb-acts .vb-x{margin-left:0}
 .viewbar{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px 14px;background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--fc,var(--ink));border-radius:3px;padding:8px 12px;font-size:14px}
 .viewbar b{font:600 15px var(--display)}
 .vb-k{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin-right:8px}
-.vb-d{flex:1 1 320px;min-width:0}
-.vb-d summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
-.vb-d summary::-webkit-details-marker{display:none}
-.vb-more{font:500 11px var(--mono);color:var(--ink-2);text-decoration:underline dotted;text-underline-offset:3px}
-.vb-d[open] .vb-more{color:var(--ink)}
-.vb-b{display:flex;flex-direction:column;gap:8px;padding:10px 0 4px;max-width:820px}
-.vb-b p{margin:0;font-size:13.5px}
-.vb-b .seed{color:var(--ink-2);font-size:13px}
-.vb-b h4{margin:2px 0 0;font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
-.vb-b ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:2px 16px}
 .vb-x{margin-left:auto;background:none;border:1px solid var(--ink);border-radius:3px;color:var(--ink);font:500 12px var(--mono);padding:4px 10px;cursor:pointer}
 #eras{grid-template-columns:repeat(10,minmax(0,1fr))}
 @media (max-width:620px){#eras{grid-template-columns:repeat(5,minmax(0,1fr))}}
@@ -322,15 +363,7 @@ svg.wide .lp2,svg.zin .lp2{display:inline}
 .cy{font:12px var(--mono);color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .go{align-self:flex-start;background:none;border:1px solid var(--ink);border-radius:3px;color:var(--ink);font:500 12px var(--mono);padding:5px 10px;cursor:pointer}
 .go:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-/* Successor powers: each bloc's heir, and the five No Peace Past Luna axes as five-position scales */
-.heirs{display:flex;flex-direction:column;gap:16px;border-top:2px solid var(--ink);padding-top:16px}
-.heirs h2{font-size:24px;font-weight:700;line-height:1.1}
-.heirs>p{margin:0;color:var(--ink-2);font-size:14px}
-.hmap{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));column-gap:32px}
-.hmap li{display:flex;flex-direction:column;gap:3px;padding:10px 0;border-top:1px solid var(--rule)}
-.hmap .hb{font:600 15px/1.25 var(--display)}
-.hmap .hb i{font-style:normal;font-weight:500;color:var(--ink-2);margin:0 6px}
-.hmap .hn{font-size:13px;color:var(--ink-2)}
+/* Power cards (used by the aces) and the five No Peace Past Luna axes as five-position scales */
 .powers{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
 .pcard{background:var(--card);border:1px solid var(--rule);border-top:4px solid var(--pc);border-radius:3px;padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .pcard h3{font-size:19px;font-weight:600;line-height:1.15}
@@ -531,21 +564,6 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
     </div>
   </section>
 
-  <section class="view" id="sucView" hidden aria-label="Successors">
-    <p class="intro">What the atlas's blocs and programs have become by 2327, in Gen 9: the Earth powers that come out of the war, and the space factions whose arguments start in this era. The Conflicts tab tells how they got there.</p>
-    <section class="heirs" aria-labelledby="heirs-h">
-      <h2 id="heirs-h">Where the blocs are heading</h2>
-      <p>None of the atlas's blocs comes through the war intact. These are the five Earth powers of No Peace Past Luna (2327) and the blocs each one grows from, followed by the institution that ends the war between them. Each scale runs from the first pole on the left to the second on the right. Values still undecided are marked TBD. Select a seed to open it in its tree, or a pilot to open their ace card.</p>
-      <ul class="hmap" id="hmap"></ul>
-      <div class="powers" id="powers"></div>
-    </section>
-    <section class="heirs" aria-labelledby="space-h">
-      <h2 id="space-h">Where the space factions begin</h2>
-      <p>Most of No Peace Past Luna's colonial and outer-system factions start here as arguments about what a person may become: what one bloc did to its pilots, and what someone else learned from watching. Some start somewhere colder, or worse. Space doesn't carry Earth's politics outward unchanged; it mutates them, and each colony keeps its sponsor's argument while changing what it means. The Constitutionalists are built in No Peace Past Luna's third generation, after the First Martian Crisis, to replace Colony One, but the charter they are built on is written here. The top colour shows the Earth power each faction descends from; grey means none. Select a seed to open it in its tree, or a pilot to open their ace card.</p>
-      <div class="powers" id="space"></div>
-    </section>
-  </section>
-
   <div class="view" id="treeView">
   <div class="lede"><p class="intro" id="intro"></p><figure class="plate" id="plate" hidden></figure></div>
   <div class="folds" id="folds" hidden>
@@ -605,7 +623,7 @@ new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===
 fetch("atlas-data.json").then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(init,()=>{
   document.getElementById("intro").textContent="The atlas data couldn't load. Reload the page to try again."});
 // Everything below runs once atlas-data.json has loaded
-function init({GROUPS,COLS,ART,VART,PLATES,SCENES,DATA,BLOC,MEMB,US_ALLIES,LEAGUE,ASSOC,OVR,FUTURE,FUTURE_SPHERE,FUTURE_FRONT,FUTURE_FIGHTING,CANADA_SPLIT,LOC,MINOR,MAPNOTE=[],SITES={moon:{},mars:{}},MOON=null,MARS=null,FUTURE_OVR=[],AXES,POWERS,HEIRS,UNEL,SPACE,TIMELINE,ACE_FACTIONS,ACE_ERAS,ACES,ORGMAP={},CHRONO=[],SOLAR={bodies:{},at:{}},FACTION_VIEWS={factions:[],makers:{},own:[]},GENS=[]}){
+function init({GROUPS,COLS,ART,VART,PLATES,SCENES,DATA,BLOC,MEMB,US_ALLIES,LEAGUE,ASSOC,OVR,FUTURE,FUTURE_SPHERE,FUTURE_FRONT,FUTURE_FIGHTING,CANADA_SPLIT,LOC,MINOR,MAPNOTE=[],SITES={moon:{},mars:{}},MOON=null,MARS=null,FUTURE_OVR=[],AXES,POWERS,HEIRS,UNEL,SPACE,TIMELINE,ACE_FACTIONS,ACE_ERAS,ACES,ORGMAP={},CHRONO=[],SOLAR={bodies:{},at:{}},FACTION_VIEWS={factions:[],makers:{},own:[]},GENS=[],GEN_NOTES=[]}){
 const FUT=new Set(Object.keys(FUTURE));
 // The Pact's halves after the Sealed Session, shown on the 2186 map in its place
 const SPLIT=new Set(["PB","PM","EUX"]);
@@ -647,11 +665,12 @@ Object.entries(DATA).forEach(([tk,t])=>{
 });
 MINOR.forEach(n=>TAGS[n.id]=n.fx||[]);
 const LANEI=Object.fromEntries(TIMELINE.map((l,i)=>[l.g,i]));
-// Everything a faction's view shows: tagged entries, its aces, its Successors seeds and its own Timeline lanes' entries
+// Everything a faction's view shows: tagged entries, its aces, its summary seeds and examples and its own Timeline lanes' entries
 function factionSet(k){
   const f=FACX[k],s=new Set(Object.keys(TAGS).filter(id=>TAGS[id].includes(k)));
   ACES.forEach(a=>{if(f.aces.includes(a.g))s.add(a.id)});
   const c=cardOf(f);((c&&c.from)||[]).forEach(id=>s.add(id));
+  Object.values((c&&c.ex)||{}).forEach(id=>s.add(id));
   TIMELINE.forEach(l=>{if(f.lanes.includes(l.g))l.ev.forEach(e=>{if(e[3])s.add(e[3])})});
   CHRONO.forEach(b=>{if(b.id&&b.f.some(i=>f.lanes.includes(TIMELINE[i].g)))s.add(b.id)});
   // A faction's people keep their family roots, whichever faction those ancestors served
@@ -689,15 +708,11 @@ ORDER.forEach(k=>{
     f.textContent="Factions";
     f.addEventListener("click",()=>{build("timeline");remember("timeline")});
     tabs.append(f);
-    const s=document.createElement("button");s.type="button";s.className="tab";s.role="tab";s.id="tab-successors";s.dataset.k="successors";
-    s.textContent="Successors";
-    s.addEventListener("click",()=>{build("successors");remember("successors")});
-    tabs.append(s);
   }
 });
-const chView=document.getElementById("chView"),treeView=document.getElementById("treeView"),mapView=document.getElementById("mapView"),tlView=document.getElementById("tlView"),sucView=document.getElementById("sucView"),aceView=document.getElementById("aceView");
+const chView=document.getElementById("chView"),treeView=document.getElementById("treeView"),mapView=document.getElementById("mapView"),tlView=document.getElementById("tlView"),aceView=document.getElementById("aceView");
 // Views that aren't lineage trees, by tab key
-const VIEWS={chrono:chView,map:mapView,timeline:tlView,successors:sucView,aces:aceView};
+const VIEWS={chrono:chView,map:mapView,timeline:tlView,aces:aceView};
 
 function build(key){
   if(current===key)return;
@@ -1023,28 +1038,6 @@ function politics(e){
 const MINORX=Object.fromEntries(MINOR.map(n=>[n.id,n]));
 const FIGHT=new Set(["WAR","CLH","PRX","IRR"]);
 const pos=(v,[,l,r])=>v===0?"Neutral":`${Math.abs(v)===2?"Strongly":"Weakly"} ${v<0?l:r}`;
-const pcard=(p,colour,extra="")=>`<article class="pcard" style="--pc:var(${colour})"><h3>${p.n}</h3><span class="meta">${p.home} · Faith: ${p.faith}</span><p>${p.id}</p>
-    <ul class="axes">${AXES.map((a,i)=>{const v=p.ax[i];return `<li title="${a[1]} ↔ ${a[2]}"><span class="an">${a[0]}</span><span class="dots" aria-hidden="true">${[-2,-1,0,1,2].map(x=>`<i${x===v?' class="on"':""}></i>`).join("")}</span><span>${v==null?"TBD":pos(v,a)}</span></li>`}).join("")}</ul>
-    <p class="seed">${p.seed}</p>${extra}</article>`;
-function renderHeirs(){
-  // In a faction view only that faction's card shows, with the bloc rows it descends from
-  const f=VW.f&&FACX[VW.f],mine=c=>!f||cardOf(f)===c;
-  const powersShown=POWERS.filter(mine),unelShown=mine(UNEL),spaceShown=SPACE.filter(mine);
-  document.getElementById("heirs-h").parentElement.hidden=!powersShown.length&&!unelShown;
-  document.getElementById("space-h").parentElement.hidden=!spaceShown.length;
-  document.getElementById("hmap").innerHTML=HEIRS.filter(([,to])=>!f||f.kind!=="power"||to.includes(f.card)||(f.card==="UNEL"&&to.includes(UNEL.n))).map(([from,to,note])=>`<li><span class="hb">${from}<i aria-label="becomes">→</i>${to.map(t=>BLOC[t]?BLOC[t][0]:t).join(" and ")}</span><span class="hn">${note}</span></li>`).join("");
-  const powers=document.getElementById("powers");
-  powers.innerHTML=powersShown.map(p=>pcard(p,BLOC[p.b][1],`${p.k?scene(p.k,p.n):""}<div class="seeds"><h4>Starts in this atlas</h4>${goList(p.from)}</div>`)).join("")+(unelShown?pcard(UNEL,"--m-ASC",`${scene("UNEL",UNEL.n)}<div class="seeds"><h4>Starts in this atlas</h4>${goList(UNEL.from)}</div>`):"");
-  powers.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
-  powers.querySelectorAll("[data-ace]").forEach(b=>b.addEventListener("click",()=>showAce(b.dataset.ace)));
-  bindArt(powers);
-  const space=document.getElementById("space");
-  space.innerHTML=spaceShown.map(p=>pcard(p,`--m-${GROUPS[p.b][2]}`,`${p.k?scene(p.k,p.n):""}<div class="seeds"><h4>Starts in this atlas</h4>${goList(p.from)}</div>`)).join("");
-  space.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
-  space.querySelectorAll("[data-ace]").forEach(b=>b.addEventListener("click",()=>showAce(b.dataset.ace)));
-  bindArt(space);
-}
-renderHeirs();
 // ---- The map: one generation at a time, Gen 0–9, seen four ways: Earth, the Moon, Mars and the inner system ----
 // Conflicts before Gen 6 belong to No Haven on Earth, from Gen 6 to No Peace Past Luna
 const SYS0=6;
@@ -1496,7 +1489,7 @@ function applyView(k,store){
   // Tabs show how much of each tree is in view, and a tree with nothing in view is hidden
   ORDER.forEach(t=>{const b=document.getElementById("tab-"+t),n=DATA[t].nodes.filter(x=>vis(x.id)).length;b.hidden=!n;b.querySelector("small").textContent=n});
   const at=document.getElementById("tab-aces");if(at){const n=ACES.filter(a=>vis(a.id)).length;at.hidden=!n;at.querySelector("small").textContent=n}
-  renderBar();renderHeirs();renderTimeline();renderChrono();renderAces();
+  renderBar();renderTimeline();renderChrono();renderAces();
   if(current==="map"){mapSelect(null);renderMap()}
   else if(current&&DATA[current]){const k0=current;current=null;build(DATA[k0].nodes.some(n=>vis(n.id))?k0:"chrono")}
   else if(current==="aces"&&!ACES.some(a=>vis(a.id))){current=null;build("chrono")}
@@ -1504,34 +1497,89 @@ function applyView(k,store){
 }
 function renderBar(){
   const el=document.getElementById("viewbar"),f=VW.f&&FACX[VW.f];
-  if(!f){el.style.removeProperty("--fc");el.innerHTML=`<span><span class="vb-k">Viewing</span><b>The whole atlas</b></span><button type="button" class="vb-x" data-land>Choose a faction view</button>`}
+  if(!f){el.style.removeProperty("--fc");el.innerHTML=`<span><span class="vb-k">Viewing</span><b>The whole atlas</b></span><span class="vb-acts"><button type="button" class="vb-x" data-sum="">Summary</button><button type="button" class="vb-x" data-land>Choose a faction view</button></span>`}
   else{const c=cardOf(f);el.style.setProperty("--fc",`var(${facColour(f)})`);
-    el.innerHTML=`<details class="vb-d"><summary><span class="vb-k">Viewing as</span><b>${facName(f)}</b><span class="vb-more">Briefing</span></summary><div class="vb-b"><p>${c.id}</p><p class="seed">${c.seed}</p><h4>Start here</h4>${goList(c.from)}</div></details><button type="button" class="vb-x" data-land>Change view</button>`}
-  el.querySelectorAll("[data-land]").forEach(b=>b.addEventListener("click",openLanding));
-  el.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
-  el.querySelectorAll("[data-ace]").forEach(b=>b.addEventListener("click",()=>showAce(b.dataset.ace)));
+    el.innerHTML=`<span><span class="vb-k">Viewing as</span><b>${facName(f)}</b></span><span class="vb-acts"><button type="button" class="vb-x" data-sum="${f.k}">Summary</button><button type="button" class="vb-x" data-land>Change view</button></span>`}
+  el.querySelectorAll("[data-land]").forEach(b=>b.addEventListener("click",()=>openLanding()));
+  el.querySelectorAll("[data-sum]").forEach(b=>b.addEventListener("click",()=>openSummary(b.dataset.sum)));
 }
 function closeLanding(){document.getElementById("landing").hidden=true;document.body.classList.remove("landing-open")}
+// Landing screen: the whole atlas or one of the thirteen factions of 2327. Each card opens a summary; its Enter button goes straight in
 function openLanding(){
   const el=document.getElementById("landing"),s=SCENES.headline;
-  const card=f=>`<button type="button" class="lc" data-v="${f.k}" aria-pressed="${VW.f===f.k}" style="--fc:var(${facColour(f)})"><span class="lc-k">${f.kind==="power"?"Earth power":"Space faction"}</span>${f.h?`<span class="lc-h">${f.h}</span><span class="lc-n"><i>→</i> ${f.n}</span>`:`<span class="lc-n">${f.n}</span>`}<span class="lc-t">${cardOf(f).id}</span></button>`;
+  const card=f=>`<div class="lcw"><button type="button" class="lc" data-sum="${f.k}" aria-pressed="${VW.f===f.k}" style="--fc:var(${facColour(f)})"><span class="lc-k">${f.kind==="power"?"Earth power":"Space faction"}</span>${f.h?`<span class="lc-h">${f.h}</span><span class="lc-n"><i>→</i> ${f.n}</span>`:`<span class="lc-n">${f.n}</span>`}<span class="lc-t">${cardOf(f).id}</span></button><button type="button" class="lc-go" data-v="${f.k}" aria-label="Enter the atlas as ${f.n}">Enter →</button></div>`;
   el.innerHTML=`<div class="land-in">${s?`<img class="land-art" src="art/${s.f}.jpg" alt="${s.c}">`:""}
     <span class="eyebrow">No Haven on Earth · No Peace Past Luna</span><h1>No Haven on Earth Atlas</h1>
-    <p>The 22nd century is running on empty. Two hundred years of warming have drowned the coasts and thinned the harvests, and what's left is being fought over by three great power blocs: the United States, the Continental Union and the Eurasian Pact. For years they only stared each other down. Then, in 2162, four Garrisons came down a ravine at Iron Gate and destroyed a tank column in eleven minutes. The frame had fired the first shot, and the silence was over.</p>
-    <p>This atlas follows everything that came after: the frames and the arms race behind them, the wars they fought, the pilots who made them famous, the road to the Third World War, and the century after it, out through the First Martian Crisis of 2312 to the Greater Solar Crisis of 2327.</p>
-    <h2>Choose your atlas</h2>
-    <p>Open everything, or pick one of the thirteen factions of 2327 to see only its story: its machines, wars, people and secrets, from its roots before the war to the Greater Solar Crisis. Earth powers are shown by both their names, before the war and after it. You can change your choice at any time from the bar under the title.</p>
-    <button type="button" class="lc whole" data-v="">The whole atlas<span class="lc-t">Every faction, every tree, unfiltered.</span></button>
-    <h2>Earth powers</h2><div class="lgrid">${FACS.filter(f=>f.kind==="power").map(card).join("")}</div>
-    <h2>Space factions</h2><div class="lgrid">${FACS.filter(f=>f.kind==="space").map(card).join("")}</div></div>`;
+    <p>Open the whole atlas, or pick one of the thirteen factions of 2327 to read its summary and then follow only its story: its machines, wars, people and secrets, from its roots before the war to the Greater Solar Crisis. Earth powers are shown by both their names, before the war and after it, and you can change your choice at any time from the bar under the title.</p>
+    <div class="lcw"><button type="button" class="lc whole" data-sum="">The whole atlas<span class="lc-t">The setting, the ten generations, and every faction and tree unfiltered.</span></button><button type="button" class="lc-go" data-v="" aria-label="Enter the whole atlas">Enter →</button></div>
+    <h2>Earth powers</h2><p>None of the old blocs comes through the war intact. These are the five Earth powers of No Peace Past Luna and the institution that ended the war between them, each under the name it had before the war and the one it has in 2327.</p>
+    <div class="lgrid">${FACS.filter(f=>f.kind==="power").map(card).join("")}</div>
+    <h2>Space factions</h2><p>Most of the colonial and outer-system factions start as arguments about what a person may become: what one bloc did to its pilots, and what someone else learned from watching. Each colony keeps its sponsor's argument while changing what it means. The colour along the top of a card shows the Earth power it descends from, and grey means none.</p>
+    <div class="lgrid">${FACS.filter(f=>f.kind==="space").map(card).join("")}</div></div>`;
+  showLanding(el);
+  el.querySelectorAll("[data-sum]").forEach(b=>b.addEventListener("click",()=>openSummary(b.dataset.sum)));
+  (el.querySelector(`[data-sum="${VW.f||""}"]`)||el.querySelector("[data-sum]")).focus({preventScroll:true});
+}
+function showLanding(el){
   el.hidden=false;document.body.classList.add("landing-open");el.scrollTop=0;
   el.querySelectorAll("[data-v]").forEach(b=>b.addEventListener("click",()=>{closeLanding();applyView(b.dataset.v||null,true);scrollTo(0,0)}));
-  el.querySelector("[data-v]").focus({preventScroll:true});
+  el.querySelectorAll("[data-back]").forEach(b=>b.addEventListener("click",openLanding));
+  bindArt(el);
+}
+// One example tile on a faction summary: a frame, a ship, or a key person (an ace or a person of interest)
+function exTile(kind,id){
+  const a=ACEX[id],n=IDX[id];if(!a&&!n)return "";
+  const tabName=k=>{const t=document.getElementById("tab-"+k);return t?t.firstChild.textContent:"the atlas"};
+  let img="",name,sub,body;
+  if(a){const [fid,,vn]=a.fr[0],stem=isOwn(fid,vn)?ART[fid]:VART[vn],sig=isOwn(fid,vn)?label(IDX[fid]):vn;
+    if(stem)img=`<img src="thumb/${stem}-scene.jpg" alt="${sig}" loading="lazy" decoding="async">`;
+    name=`${a.n}${a.cs?` <i>“${a.cs}”</i>`:""}`;sub=`${a.r?a.r+" · ":""}${a.y} · ${sig}`;
+    body=`<p class="rec"><b>RECORD</b>${a.k}</p><p class="sum-x">${a.x}</p>`;
+    return `<article class="sum-t">${img}<span class="lc-k">${kind}</span><b class="sum-tn">${name}</b><span class="meta">${sub}</span>${body}<button type="button" class="go" data-tace="${id}">Open ace card →</button></article>`}
+  const k=KEYOF[id],col=(DATA[k].cols[n.c]||[])[0];
+  if(ART[id])img=`<img src="thumb/${ART[id]}-scene.jpg" alt="${n.n}" loading="lazy" decoding="async">`;
+  else if(SCENES[id])img=`<img src="art/${SCENES[id].f}.jpg" alt="${n.n}" loading="lazy" decoding="async">`;
+  sub=[col,n.s].filter(Boolean).join(" · ");
+  return `<article class="sum-t">${img}<span class="lc-k">${kind}</span><b class="sum-tn">${label(n)}</b><span class="meta">${sub}</span><p>${n.t}</p><p class="sum-x">${n.x}</p><button type="button" class="go" data-tgo="${id}">Open in ${tabName(k)} →</button></article>`;
+}
+// A faction's summary (k), or the whole atlas's (k empty): key art, overview, and a way in
+function openSummary(k){
+  const el=document.getElementById("landing"),f=k&&FACX[k];
+  const acts=(go,label)=>`<div class="sum-act"><button type="button" class="sum-go" data-v="${go}">${label}</button><button type="button" class="x" data-back>Back to all factions</button></div>`;
+  const art=(s,name)=>s?`<figure class="sum-art"><button type="button" data-art="art/${s.f}.jpg" data-cap="${name} · ${s.h}"><img class="land-art" src="art/${s.f}.jpg" alt="${name}: ${s.h.toLowerCase()}"></button><figcaption><span class="era">Key art</span> ${s.h}</figcaption></figure>`:"";
+  if(!f){
+    const s=SCENES.headline,G=GENS.length?GENS:DATA.conflicts.cols;
+    el.innerHTML=`<div class="land-in sum"><button type="button" class="x sum-back" data-back>← All factions</button>${art(s,"No Haven on Earth")}
+      <span class="lc-k">The whole atlas</span><h1>No Haven on Earth Atlas</h1>
+      <p>The 22nd century is running on empty. Two hundred years of warming have drowned the coasts and thinned the harvests, and what's left is being fought over by three great power blocs: the United States, the Continental Union and the Eurasian Pact. For years they only stared each other down. Then, in 2162, four Garrisons came down a ravine at Iron Gate and destroyed a tank column in eleven minutes. The frame had fired the first shot, and the silence was over.</p>
+      <p>This atlas follows everything that came after: the frames and the arms race behind them, the wars they fought, the pilots who made them famous, the road to the Third World War, and the century after it, out through the First Martian Crisis of 2312 to the Greater Solar Crisis of 2327.</p>
+      <h2>The generations</h2>
+      <p>Every tree in the atlas is laid out by generation. Gens 0 to 5 are the world of No Haven on Earth, up to the end of the Third World War; Gens 6 to 9 run through the century after it to No Peace Past Luna.</p>
+      <ol class="sum-gens">${G.map(([g,y],i)=>`<li${i===6?' class="nppl"':""}><span class="sum-g"><b>${g}</b><span>${y}</span></span><span><b class="sum-gt">${(MAPNOTE[i]||[])[0]||""}</b><span class="sum-gp">${GEN_NOTES[i]||""}</span></span></li>`).join("")}</ol>
+      ${acts("","Enter the whole atlas")}</div>`;
+  }else{
+    const c=cardOf(f),colour=facColour(f);
+    const s=SCENES[c===UNEL?"UNEL":c.k];
+    const heirs=f.kind==="power"?HEIRS.filter(([,to])=>to.includes(f.card)||(c===UNEL&&to.includes(UNEL.n))):[];
+    el.innerHTML=`<div class="land-in sum" style="--fc:var(${colour});--pc:var(${colour})"><button type="button" class="x sum-back" data-back>← All factions</button>${art(s,f.n)}
+      <span class="lc-k">${f.kind==="power"?"Earth power":"Space faction"}</span><h1>${f.h?`${f.h} <i>→</i> `:""}${f.n}</h1>
+      <span class="meta">${c.home} · Faith: ${c.faith}</span>
+      <p>${c.id}</p><p class="seed">${c.seed}</p>
+      ${heirs.length?`<div class="sum-heirs"><h2>Grows from</h2><ul>${heirs.map(([from,,note])=>`<li><b>${from}</b><span>${note}</span></li>`).join("")}</ul></div>`:""}
+      <details class="fold sum-ax"><summary><h2>Where it stands</h2><span class="fold-n">· ${AXES.length} scales</span></summary><ul class="axes">${AXES.map((x,i)=>{const v=c.ax[i];return `<li title="${x[1]} ↔ ${x[2]}"><span class="an">${x[0]}</span><span class="dots" aria-hidden="true">${[-2,-1,0,1,2].map(d=>`<i${d===v?' class="on"':""}></i>`).join("")}</span><span>${v==null?"TBD":pos(v,x)}</span></li>`}).join("")}</ul><p class="hint">Each scale runs from the first pole on the left to the second on the right.</p></details>
+      <div class="sum-ex">${exTile("Frame",(c.ex||{}).frame)}${exTile("Ship",(c.ex||{}).ship)}${exTile("Key person",(c.ex||{}).person)}</div>
+      ${acts(f.k,`Enter the atlas as ${f.n}`)}</div>`;
+    const go=fn=>{closeLanding();applyView(f.k,true);fn()};
+    el.querySelectorAll("[data-tgo]").forEach(b=>b.addEventListener("click",()=>go(()=>{remember(KEYOF[b.dataset.tgo]);goTo(b.dataset.tgo)})));
+    el.querySelectorAll("[data-tace]").forEach(b=>b.addEventListener("click",()=>go(()=>showAce(b.dataset.tace))));
+  }
+  showLanding(el);
+  el.querySelector(".sum-back").focus({preventScroll:true});
 }
 // The link's tab and view win; otherwise the last tab, this session's view, and the landing screen on a new visit
 const [hTab,...hRest]=(location.hash||"").slice(1).split("&"),hView=new URLSearchParams(hRest.join("&")).get("view");
 // Carriers was folded into Fleets & Carriers and NPPL Conflicts into Conflicts (2026-11-10); old links and remembered tabs land there
-const MOVED={carriers:"fleets",nppl:"conflicts"};
+const MOVED={carriers:"fleets",nppl:"conflicts",successors:"chrono"};
 let start=MOVED[hTab]||hTab;
 const known=k=>!!DATA[k]||!!VIEWS[k];
 if(!known(start)){try{start=localStorage.getItem("atlas-tab")||""}catch(e){start=""}start=MOVED[start]||start}
@@ -1539,7 +1587,8 @@ let sView=null;try{sView=sessionStorage.getItem("atlas-view")}catch(e){}
 const pickView=hView!=null?hView:sView;
 build(known(start)?start:"chrono");
 applyView(pickView,hView!=null);
-if(hView==null&&sView==null)openLanding();
+if(hTab==="successors"){remember("chrono");openLanding()}
+else if(hView==null&&sView==null)openLanding();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
 if("ResizeObserver" in window)new ResizeObserver(draw).observe(chart);
 addEventListener("resize",draw);
