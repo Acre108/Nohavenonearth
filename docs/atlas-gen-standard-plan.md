@@ -189,7 +189,7 @@ Written 2026-11-09, after Power, Frames, Weapons and Doctrine were converted (at
 - **Step 8, Persons of Interest (version 121, 2026-11-10):**
   - 25 new people in Gen 8–9 (123 in all), about two per faction. They are descendants, successors and protégés of the 2312 cast; no player character is killed or changed.
   - Five new allegiance bands: the Eurasian Ascendancy, the African Commonwealth, Umoja, the Ashva Compact and the Communion. Their faction views now have bands. Their people start in Gen 8, tied to their aces of Gen 5–7 (Belov, Diallo, Osei, Rao, Vey) by link rather than by family line.
-  - New names awaiting your review: Callum MacDouglas, Taqqiq Silla, Paloma Garza, Jonah Vane, Lise Hart, Yarik Lubov, Nkem Olgabenro, Ingrid Viborg, Lin Yue, Sun Wukong 237/I, Makoa Stevens, Xiao An, Iona Morgan, Jan Furyk, Vera Belova, Mikhail Belov, Anand Kulkarni, Fatou Diallo, Halima Osman, Zawadi Osei, Baraka Osei, Meera Rao, Haruka Sakamoto, Tomas Vey, Marisol Quispe.
+  - New names awaiting your review: Callum MacDouglas, Taqqiq Silla, Paloma Garza, Jonah Vane, Lise Hart, Yarik Lubov, Nkem Olgabenro, Ingrid Viborg, Lin Yue, Sun Wukong 237/I, Makoa Stevens, Xiao An, Iona Morgan, Jan Furyk, Vera Belova, Mikhail Belov, Anand Kulkarni, Fatou Diallo, Halima Osman, Zawadi Osei, Baraka Osei, Meera Rao, Haruka Sakamoto, Tomas Vey, Sisa Quispe.
   - The turning points relabelled ("Haven Gen 3" → Gen 3–4, "The war" → Gen 5), and a Gen 9 turning point added.
 
 - **Step 10, final sweep (version 122, 2026-11-10):**
