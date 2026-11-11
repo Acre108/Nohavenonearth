@@ -434,6 +434,17 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .pl:hover{color:var(--ink)}
 .pl:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .pcard.ace.hit{box-shadow:0 0 0 2px var(--focus)}
+/* Compact ace cards: frame, record and name up front; the story, art and links open under "Story and links" */
+.ace-list .powers{grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));align-items:start}
+.pcard.ace .athumb img{aspect-ratio:2/1}
+.pcard.ace h3{font-size:17px}
+.ace-more>summary{cursor:pointer;list-style:none;align-self:flex-start;font:500 11.5px var(--mono);color:var(--ink-2);text-decoration:underline dotted;text-underline-offset:3px}
+.ace-more>summary::-webkit-details-marker{display:none}
+.ace-more>summary:hover,.ace-more[open]>summary{color:var(--ink)}
+.ace-more>summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.ace-more>div{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.ace-tools .fold{border-bottom:1px solid var(--rule)}
+.ace-tools .fold[open]>summary+*{margin-bottom:12px}
 /* Variant art: a scene + technical pair under each version on the detail sheet, and the signature frame's scene atop each ace card */
 .sheet ul.vers .art{width:100%;margin-top:3px}
 .athumb{display:block;margin:-12px -14px 0;width:calc(100% + 28px);padding:0;border:0;border-bottom:1px solid var(--rule);background:var(--band);cursor:zoom-in}
@@ -569,7 +580,7 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   <section class="view" id="aceView" hidden aria-label="Aces">
     <p class="intro">Famous pilots from the first mech combat to 2327, and the frames they made their names in. A frame is <b>Standard</b> as its maker built it, a <b>Variant</b> if it was a sub-model or field modification, or <b>Custom</b> if it was built for that one pilot. Records are as each pilot's own side credits them.</p>
     <div class="ace-tools">
-      <div class="legend-row" id="ace-fac" role="group" aria-label="Faction"></div>
+      <details class="fold" id="ace-fac-d"><summary><h2>Faction</h2><span class="fold-n" id="ace-fac-n"></span></summary><div class="legend-row" id="ace-fac" role="group" aria-label="Faction"></div></details>
       <div class="legend-row"><span class="legend-label">Signature frame</span><div class="seg" id="ace-bld" role="group" aria-label="Signature frame build"></div></div>
       <p class="ace-count" id="ace-count"></p>
     </div>
@@ -1415,7 +1426,7 @@ renderChrono();
 // Grouped by the era each pilot made their name in (the conflicts tree's columns); filters apply to faction and signature-frame build
 const FAC=Object.fromEntries(ACE_FACTIONS.map(([k,n,c])=>[k,{n,c:`var(--m-${c})`}]));
 const BUILD={S:"Standard",V:"Variant",C:"Custom"};
-const A={fac:null,bld:null};
+const A={fac:null,bld:null,open:new Set()};
 // Per frame: aces who flew it as built (ACED), and the named versions aces flew (VERS), shown on the Frames tree
 const isOwn=(id,vn)=>!vn||vn===label(IDX[id]);
 const VERS={},ACED={};
@@ -1428,7 +1439,8 @@ function renderAces(){
   const fac=document.getElementById("ace-fac");
   const pool=ACES.filter(a=>vis(a.id));
   if(A.fac&&!pool.some(a=>a.g===A.fac))A.fac=null;
-  fac.innerHTML=`<span class="legend-label">Faction</span>`+ACE_FACTIONS.filter(([k])=>pool.some(a=>a.g===k)).map(([k,n])=>`<button type="button" class="af" data-f="${k}" aria-pressed="${A.fac===k}" style="--mc:${FAC[k].c}"><i></i>${n}<small>${pool.filter(a=>a.g===k).length}</small></button>`).join("");
+  document.getElementById("ace-fac-n").textContent=`· ${new Set(pool.map(a=>a.g)).size}${A.fac?` · showing ${FAC[A.fac].n} only`:""}`;
+  fac.innerHTML=ACE_FACTIONS.filter(([k])=>pool.some(a=>a.g===k)).map(([k,n])=>`<button type="button" class="af" data-f="${k}" aria-pressed="${A.fac===k}" style="--mc:${FAC[k].c}"><i></i>${n}<small>${pool.filter(a=>a.g===k).length}</small></button>`).join("");
   document.getElementById("ace-bld").innerHTML=[[null,"All"],...Object.entries(BUILD)].map(([k,l])=>`<button type="button" data-b="${k||""}" aria-pressed="${A.bld===k}">${l}</button>`).join("");
   const shown=pool.filter(a=>(!A.fac||a.g===A.fac)&&(!A.bld||a.fr[0][1]===A.bld));
   document.getElementById("ace-count").textContent=`Showing ${shown.length} of ${pool.length} aces`;
@@ -1444,13 +1456,14 @@ function renderAces(){
     <h3>${a.n}${a.cs?` <i>“${a.cs}”</i>`:""}</h3><span class="sv">${a.sv}</span>
     <ul class="afr">${frame(a.fr[0])}</ul>
     <p class="rec"><b>RECORD</b>${a.k}</p>
+    <details class="ace-more" data-id="${a.id}"${A.open.has(a.id)?" open":""}><summary>Story and links</summary><div>
     <p>${a.x}</p>
     ${scene(a.id,a.n)}
     ${a.fr.length>1?`<div class="seeds"><h4>Also flew</h4><ul class="afr also">${a.fr.slice(1).map(frame).join("")}</ul></div>`:""}
     ${a.cf.length?`<div class="seeds"><h4>Fought in</h4>${goList(a.cf)}</div>`:""}
     ${a.ln&&a.ln.length?`<div class="seeds"><h4>See also</h4>${goList(a.ln)}</div>`:""}
     ${USED[a.id]&&USED[a.id].people?`<div class="seeds"><h4>Family and successors</h4>${goList(USED[a.id].people)}</div>`:""}
-    <p class="seed now"><b>NOW</b>${a.z}</p></article>`;
+    <p class="seed now"><b>NOW</b>${a.z}</p></div></details></article>`;
   document.getElementById("ace-list").innerHTML=ACE_ERAS.map(([e,blurb])=>{
     const list=shown.filter(a=>a.c===e);if(!list.length)return "";
     const [k,y]=(GENS.length?GENS:DATA.conflicts.cols)[e];
@@ -1458,6 +1471,7 @@ function renderAces(){
   }).join("")||`<p class="none">No aces match these filters.</p>`;
   fac.querySelectorAll("[data-f]").forEach(b=>b.addEventListener("click",()=>{A.fac=A.fac===b.dataset.f?null:b.dataset.f;renderAces()}));
   document.querySelectorAll("#ace-bld [data-b]").forEach(b=>b.addEventListener("click",()=>{A.bld=b.dataset.b||null;renderAces()}));
+  document.getElementById("ace-list").querySelectorAll(".ace-more").forEach(d=>d.addEventListener("toggle",()=>{d.open?A.open.add(d.dataset.id):A.open.delete(d.dataset.id)}));
   document.getElementById("ace-list").querySelectorAll("[data-art]").forEach(b=>b.addEventListener("click",()=>openArt(b.dataset.art,b.dataset.cap)));
   document.getElementById("ace-list").querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
 }
@@ -1467,6 +1481,7 @@ function showAce(id){
   build("aces");remember("aces");
   if(!document.getElementById("ace-"+id)){A.fac=null;A.bld=null;renderAces()}
   const c=document.getElementById("ace-"+id);
+  const d=c.querySelector(".ace-more");if(d)d.open=true;
   requestAnimationFrame(()=>c.scrollIntoView({block:"center",behavior:reduced?"auto":"smooth"}));
   c.classList.add("hit");setTimeout(()=>c.classList.remove("hit"),1600);
 }
