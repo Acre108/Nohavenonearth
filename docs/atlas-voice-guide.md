@@ -168,5 +168,6 @@ Work tab by tab. Status:
 | Organisations | v126 |
 | Mysteries | v127 |
 | Frames | v129 |
-| Weapons, Power, Doctrine, Vehicles, Fleets & Carriers, Supers | not yet |
+| Fleets & Carriers | v130 |
+| Weapons, Power, Doctrine, Supers, Vehicles | v131 |
 | ACES, CHRONO, POWERS/SPACE/UNEL, TIMELINE, SCENES/PLATES captions, MINOR | not yet |
