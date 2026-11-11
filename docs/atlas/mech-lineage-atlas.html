@@ -105,10 +105,11 @@ header p{margin:0;color:var(--ink-2)}
 .card.sel{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
 .top{display:flex;align-items:center;gap:7px;min-width:0}
 .chip{flex:none;font:500 10px/1 var(--mono);letter-spacing:.06em;padding:3px 5px;border-radius:2px;background:var(--mc);color:var(--chip-fg)}
-.desig{font:500 12px var(--mono);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.desig{flex:0 0 auto;max-width:100%;font:500 12px var(--mono);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .name{font:600 14.5px/1.2 var(--display)}
 .tag{font-size:12px;line-height:1.35;color:var(--ink-2)}
 .xtag{font:11px/1.3 var(--mono);color:var(--xfer)}
+.card .top{flex-wrap:wrap;row-gap:3px}
 .spec{margin-left:auto;font:11px var(--mono);color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .kit{font:11px/1.35 var(--mono);color:var(--ink)}
 .kit b{font-weight:500;color:var(--ink-2);letter-spacing:.06em;margin-right:2px}
@@ -438,17 +439,18 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .athumb{display:block;margin:-12px -14px 0;width:calc(100% + 28px);padding:0;border:0;border-bottom:1px solid var(--rule);background:var(--band);cursor:zoom-in}
 .athumb img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
 .athumb:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
-/* Scene plates: one standalone illustration below a tree's intro, banner-wide like the header art */
-.lede{display:flex;flex-direction:column;gap:20px}
-.plate{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+/* Scene plates: one standalone illustration beside a tree's intro, as a thumbnail that opens full size */
+.lede{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:24px;align-items:start}
+.lede:has(.plate[hidden]){grid-template-columns:minmax(0,1fr)}
+@media (max-width:760px){.lede{grid-template-columns:minmax(0,1fr)}.plate{max-width:240px}}
+.plate{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
 .plate>button{width:100%;padding:0;border:1px solid var(--rule);border-radius:3px;background:var(--band);cursor:zoom-in;overflow:hidden;display:block}
 .plate>button:hover{border-color:var(--ink-2)}
 .plate>button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.plate img{display:block;width:100%;aspect-ratio:16/5;object-fit:cover;object-position:50% 40%}
-@media (max-width:620px){.plate img{aspect-ratio:16/8}}
+.plate img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;object-position:50% 40%}
 .plate figcaption{display:flex;flex-direction:column;gap:4px}
 .plate .era{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--xfer)}
-.plate h2{font-size:18px;font-weight:600;line-height:1.2}
+.plate h2{font-size:15px;font-weight:600;line-height:1.2}
 .plate p{margin:0;font-size:13.5px;color:var(--ink-2)}
 .plate .seeds ul{flex-direction:row;flex-wrap:wrap;gap:2px 16px}
 /* Key art: one standalone scene on an entry's sheet or card, and the setting headline in the header */
@@ -481,15 +483,12 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   <header>
     <span class="eyebrow">Lineage atlas · Gen 0 to Gen 9 · from the first frames to 2327</span>
     <h1>No Haven on Earth Atlas</h1>
-    <p>The 22nd century is running on empty. Two hundred years of warming have drowned the coasts and thinned the harvests, and what's left is being fought over by three great power blocs: the United States, the Continental Union and the Eurasian Pact. For years they only stared each other down. Then, in 2162, four Garrisons came down a ravine at Iron Gate and destroyed a tank column in eleven minutes. The frame had fired the first shot, and the silence was over.</p>
-    <p>This atlas follows everything that came after: the frames and the arms race behind them, the wars they fought, the pilots who made them famous, the road to the Third World War, and the century after it, out through the First Martian Crisis of 2312 to the Greater Solar Crisis of 2327.</p>
-    <figure class="hero" id="hero" hidden></figure>
     <div class="viewbar" id="viewbar"></div>
     <nav class="tabs" role="tablist" id="tabs"></nav>
   </header>
 
   <section class="view" id="chView" hidden aria-label="Timeline">
-    <p class="intro">The whole story in order, from the Ares mission through the war and the First Martian Crisis of 2312 to No Peace Past Luna in 2327. Dates marked c. are estimates, and play can start in any generation. The war runs c. 2187–2190. After it come Gen 6, the century of the Mandate; Gen 7, the First Martian Crisis of 2312; Gen 8, its aftermath; and Gen 9, 2327. Pick a faction to follow its story alone, from its first frame to what it becomes. Select any entry to open it in its tree.</p>
+    <p class="intro">The whole story in order, from the Ares mission to No Peace Past Luna in 2327. Dates marked c. are estimates. Pick a faction below to follow its story alone.</p>
     <div class="chr-tools">
       <div class="legend-row" id="chr-fac" role="group" aria-label="Follow a faction"></div>
       <p class="chr-arc" id="chr-arc"></p>
@@ -498,7 +497,7 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   </section>
 
   <section class="view" id="mapView" hidden aria-label="Map">
-    <p class="intro">Where the powers stand and where they have fought, generation by generation, from before the first mechs to the Greater Solar Crisis of 2327. Pick a generation, then a view: Earth, the Moon, Mars or the inner system. Each button counts that view's conflicts in the generation, numbered in the order they happened. Select a pin or a list entry for the full account, then follow it into the Conflicts tree. Gen 5 is the war itself: where its fronts ran, and the powers that came out of it. The planets on the inner-system view are in their order from the sun but not to scale, and the last generation is projected.</p>
+    <p class="intro">Where the powers stand and where they have fought, generation by generation. Pick a generation, then a view. The inner-system planets are in order from the sun but not to scale.</p>
     <div class="eras" id="eras" role="group" aria-label="Generation"></div>
     <div class="seg map-views" id="map-views" role="group" aria-label="Map view"></div>
     <p class="hint map-none" id="map-none" hidden></p>
@@ -541,14 +540,16 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   <div class="folds" id="folds" hidden>
     <details class="fold" id="turns-d" data-sec="turns" hidden><summary><h2>Turning points</h2><span class="fold-n" id="turns-n"></span></summary><section class="turns" aria-label="Turning points" id="turns"></section></details>
     <details class="fold" id="profile-d" data-sec="profile" hidden><summary><h2 id="profile-h">Who runs what</h2><span class="fold-n" id="profile-n"></span></summary><section class="profile" id="profile"></section></details>
+    <details class="fold" id="key-d" data-sec="key"><summary><h2 id="key-h">Makers and key</h2><span class="fold-n" id="key-n"></span></summary><section class="legend" aria-label="Legend">
+      <div class="legend-row" id="makers"></div>
+      <div class="legend-row" id="lines"></div>
+      <p class="hint" id="hint"></p>
+    </section></details>
   </div>
 
-  <section class="legend" aria-label="Legend">
-    <div class="legend-row" id="lines"></div>
+  <section class="legend" aria-label="Filters">
     <div class="legend-row" id="gens" role="group" aria-label="Generations shown" hidden></div>
     <div class="legend-row" id="famsel" role="group" aria-label="Types shown" hidden></div>
-    <div class="legend-row" id="makers"></div>
-    <p class="hint" id="hint"></p>
   </section>
 
   <div>
@@ -558,7 +559,7 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   </div>
 
   <section class="view" id="tlView" hidden aria-label="Factions timeline">
-    <p class="intro">What happens to each faction from before the first mechs, through the war and the century after it, to what it has become by 2327. The Eurasian Pact gets two lanes, Beijing and Moscow with Delhi, because that is where it ends. The space factions get lanes of their own, which trace their roots back into the Haven era. Select an entry to open it in its tree.</p>
+    <p class="intro">What happens to each faction from before the first mechs to 2327. The Eurasian Pact gets two lanes, Beijing and Moscow with Delhi, because that is where it ends.</p>
     <div>
       <p class="scroll-note">Scroll sideways to see every era →</p>
       <div class="scroller"><div class="tl" id="tl"></div></div>
@@ -566,7 +567,7 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   </section>
 
   <section class="view" id="aceView" hidden aria-label="Aces">
-    <p class="intro">Famous pilots from the first mech combat to 2327, and the frames they made their names in. A few of the later ones also appear among the Persons of Interest. Each frame is marked <b>Standard</b> if it was flown as its maker built it, <b>Variant</b> if it was an official sub-model or a unit's field modification, and <b>Custom</b> if it was built or rebuilt for that one pilot. Variants and custom frames are named here; the Frames tree lists every version on its base frame's card, with what changed. Records are as each pilot's own side credits them. Select a frame, conflict or entry to open it in its tree.</p>
+    <p class="intro">Famous pilots from the first mech combat to 2327, and the frames they made their names in. A frame is <b>Standard</b> as its maker built it, a <b>Variant</b> if it was a sub-model or field modification, or <b>Custom</b> if it was built for that one pilot. Records are as each pilot's own side credits them.</p>
     <div class="ace-tools">
       <div class="legend-row" id="ace-fac" role="group" aria-label="Faction"></div>
       <div class="legend-row"><span class="legend-label">Signature frame</span><div class="seg" id="ace-bld" role="group" aria-label="Signature frame build"></div></div>
@@ -702,6 +703,8 @@ function build(key){
   document.getElementById("intro").textContent=ds.intro;
   renderPlate(PLATES[key]);
   foldOpen(document.getElementById("turns-d"),false);
+  foldOpen(document.getElementById("key-d"),false);
+  document.getElementById("key-h").textContent=`${ds.groupLabel} and key`;
   loadGens(key);loadFams(key);
   const R=ds.rel;
   document.getElementById("lines").innerHTML=`<span class="legend-label">Lines</span>
@@ -725,7 +728,7 @@ function build(key){
   Object.keys(GROUPS).filter(c=>used.includes(c)).forEach(code=>{
     const [nm,sub]=GROUPS[code];
     const b=document.createElement("button");b.type="button";b.className="mk";b.dataset.m=code;b.setAttribute("aria-pressed","false");
-    b.innerHTML=`<span class="chip" style="--mc:${col(code)}">${chipText(code)}</span>${nm} <small>${sub}</small>`;
+    b.title=sub;b.innerHTML=`<span class="chip" style="--mc:${col(code)}">${chipText(code)}</span>${nm}`;
     b.addEventListener("click",()=>{state.maker=state.maker===code?null:code;state.sel=null;apply()});
     mk.append(b);
   });
@@ -753,7 +756,7 @@ function build(key){
       const cross=n.p.filter(([pid])=>byId[pid].f!==n.f&&vis(pid)).map(([pid])=>short(byId[pid]));
       const kit=(lbl,ids)=>ids&&ids.length?`<span class="kit"><b>${lbl}</b> ${ids.map(ref).join(" · ")}</span>`:"";
       b.innerHTML=`${ART[n.id]?`<img class="thumb" src="thumb/${ART[n.id]}-scene.jpg" alt="" loading="lazy" decoding="async">`:""}<span class="top"><span class="chip">${chipText(n.m)}</span>${n.d?`<span class="desig">${n.d}</span>`:""}${n.s?`<span class="spec">${n.s}</span>`:""}</span>
-        <span class="name">${n.n}</span><span class="tag">${n.t}</span>${kit("BASE",n.fr)}${key==="frames"&&VERS[n.id]?`<span class="kit"><b>VERSIONS</b> ${VERS[n.id].map(v=>v.vn).join(" · ")}</span>`:""}${kit("MECHS",n.mx)}${kit("PWR",n.pw)}${kit("ARM",n.wp)}${cross.length?`<span class="xtag">${ds.xword} ${cross.join(", ")}</span>`:""}${n.z?`<span class="fate"><b>END</b> ${n.z}</span>`:""}`;
+        <span class="name">${n.n}</span><span class="tag">${n.t}</span>${kit("BASE",n.fr)}${key==="frames"&&VERS[n.id]?`<span class="kit"><b>+${VERS[n.id].length}</b> ${VERS[n.id].length===1?"version":"versions"}</span>`:""}${kit("MECHS",n.mx)}${cross.length?`<span class="xtag">${ds.xword} ${cross.join(", ")}</span>`:""}${n.z?`<span class="fate"><b>END</b> ${n.z}</span>`:""}`;
       b.addEventListener("click",()=>select(state.sel===n.id?null:n.id));
       cards[n.id]=b;grid.append(b);
     });
@@ -784,7 +787,10 @@ document.querySelectorAll(".fold").forEach(d=>d.addEventListener("toggle",()=>{
   try{localStorage.setItem(foldKey(d),d.open?"1":"0")}catch(e){}
 }));
 // The panel group's rule lines go when neither panel has anything to show
-function syncFolds(){document.getElementById("folds").hidden=document.getElementById("turns-d").hidden&&document.getElementById("profile-d").hidden}
+function syncFolds(){document.getElementById("folds").hidden=["turns-d","profile-d","key-d"].every(id=>document.getElementById(id).hidden)}
+// The key panel's summary counts the makers, and names the one the tree is filtered to while the panel is closed
+function keyCount(){const n=document.querySelectorAll("#makers .mk").length,m=state.maker&&GROUPS[state.maker];
+  document.getElementById("key-n").textContent=`· ${n}${m?` · showing ${m[0]} only`:""}`}
 
 function draw(){
   if(!svg)return;
@@ -899,9 +905,12 @@ function apply(){
     e.path.classList.toggle("show",on);
   });
   document.querySelectorAll(".mk").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.m===state.maker)));
+  keyCount();
   draw();
   renderSheet();
 }
+// Sheets leave out any heading whose list came back empty ("Nothing yet.", "None.")
+const noEmpty=h=>h.replace(/<h4>[^<]*<\/h4>\s*<p class="none">[^<]*<\/p>/g,"");
 function relList(list){
   list=list.filter(([o])=>vis(o));
   if(!list.length)return `<p class="none">Nothing yet.</p>`;
@@ -917,14 +926,12 @@ const artPair=(stem,lbl)=>`<div class="art">${[["scene","Scene"],["tech","Techni
 // Key art: one standalone scene for an entry, ace, faction or the setting itself (SCENES), opening full size
 const scene=(id,name)=>{const s=SCENES[id];return s?`<figure class="scene"><button type="button" data-art="art/${s.f}.jpg" data-cap="${name} · ${s.h}"><img${s.t?' class="tall"':""} src="art/${s.f}.jpg" alt="${name}: ${s.h.toLowerCase()}" loading="lazy" decoding="async"></button><figcaption><span class="era">Key art</span><b>${s.h}</b><p>${s.c}</p></figcaption></figure>`:""};
 const bindArt=el=>el.querySelectorAll("[data-art]").forEach(b=>b.addEventListener("click",()=>openArt(b.dataset.art,b.dataset.cap)));
-if(SCENES.headline){const s=SCENES.headline,hero=document.getElementById("hero");hero.hidden=false;
-  hero.innerHTML=`<button type="button" data-art="art/${s.f}.jpg" data-cap="${s.h} · ${s.c}"><img src="art/${s.f}.jpg" alt="${s.c}" decoding="async"></button>`;bindArt(hero)}
 // A tree's scene plate sits below its intro; trees without one show the intro alone
 function renderPlate(p){
   const el=document.getElementById("plate");el.hidden=!p;if(!p){el.innerHTML="";return}
   const names=p.go.map(id=>label(IDX[id])).join(" · ");
-  el.innerHTML=`<button type="button" data-art="art/${p.f}.jpg" data-cap="${names} · ${p.h}"><img src="art/${p.f}.jpg" alt="${names}: ${p.h.toLowerCase()}" loading="lazy" decoding="async"></button>
-    <figcaption><span class="era">Scene · ${names}</span><h2>${p.h}</h2><p>${p.c}</p><div class="seeds">${goList(p.go)}</div></figcaption>`;
+  el.innerHTML=`<button type="button" data-art="art/${p.f}.jpg" data-cap="${names} · ${p.h} · ${p.c}"><img src="art/${p.f}.jpg" alt="${names}: ${p.h.toLowerCase()}" loading="lazy" decoding="async"></button>
+    <figcaption><span class="era">Scene</span><h2>${p.h}</h2><div class="seeds">${goList(p.go)}</div></figcaption>`;
   el.querySelector("[data-art]").addEventListener("click",e=>openArt(e.currentTarget.dataset.art,e.currentTarget.dataset.cap));
   el.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
 }
@@ -942,7 +949,7 @@ function renderSheet(){
   else links=`${n.pw?`<h4>Power plant</h4>${goList(n.pw)}`:""}${n.dc?`<h4>Doctrine</h4>${goList(n.dc)}`:""}`;
   if(USED[n.id])links+=Object.entries(USED[n.id]).map(([k,ids])=>`<h4>${SRC[k]}</h4>${goList(ids)}`).join("");
   if(current==="frames"&&(VERS[n.id]||ACED[n.id]))links=`${VERS[n.id]?`<h4>Other versions</h4><ul class="vers">${VERS[n.id].map(v=>`<li><span class="vn"><span class="bd ${v.b}">${BUILD[v.b].toUpperCase()}</span>${v.vn}</span>${VART[v.vn]?artPair(VART[v.vn],v.vn):""}<span class="fn">${v.note}</span><span class="who">Flown by ${pilots(v.who)}</span></li>`).join("")}</ul>`:""}${ACED[n.id]?`<h4>Aces who flew it as built</h4><p class="who">${pilots(ACED[n.id])}</p>`:""}`+links;
-  sheet.innerHTML=`<div class="sheet-h"><div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+  sheet.innerHTML=noEmpty(`<div class="sheet-h"><div style="display:flex;flex-direction:column;gap:6px;min-width:0">
       <span class="top"><span class="chip" style="--mc:${col(n.m)}">${chipText(n.m)}</span>${n.d?`<span class="desig">${n.d}</span>`:""}</span>
       <h3>${n.n}</h3><span class="meta">${mn} · ${sub} · ${(ds.cols||COLS)[n.c][0]} (${(ds.cols||COLS)[n.c][1]})${n.s&&n.s!=="varies"?` · ${n.s}`:""}</span></div>
       <button type="button" class="x" id="close">Close</button></div>
@@ -953,7 +960,7 @@ function renderSheet(){
     ${n.z?`<p class="meta">Line ended ${n.z}</p>`:""}
     <h4>Came from</h4>${relList(n.p)}
     <h4>Led to</h4>${relList(n.k)}
-    ${links}`;
+    ${links}`);
   sheet.hidden=false;document.body.classList.add("has-sheet");
   sheet.querySelector("#close").addEventListener("click",()=>select(null));
   sheet.querySelectorAll("[data-art]").forEach(b=>b.addEventListener("click",()=>openArt(b.dataset.art,b.dataset.cap)));
@@ -1332,7 +1339,7 @@ function mapSelect(id){
   document.querySelectorAll("#map-box [data-pin]").forEach(g=>g.classList.toggle("sel",g.dataset.pin===id));
   if(!id){sheet.hidden=true;document.body.classList.remove("has-sheet");return}
   const n=IDX[id]||MINORX[id],[mn,sub]=GROUPS[n.m],minor=!IDX[id],tree=minor?"conflicts":KEYOF[id],c=DATA[tree].cols[n.c];
-  sheet.innerHTML=`<div class="sheet-h"><div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+  sheet.innerHTML=noEmpty(`<div class="sheet-h"><div style="display:flex;flex-direction:column;gap:6px;min-width:0">
       <span class="top"><span class="chip" style="--mc:${col(n.m)}">${n.m}</span>${n.d?`<span class="desig">${n.d}</span>`:""}</span>
       <h3>${n.n}</h3><span class="meta">${mn} · ${placeOf(id)} · ${c[0]}</span></div>
       <button type="button" class="x" id="close">Close</button></div>
@@ -1340,7 +1347,7 @@ function mapSelect(id){
     ${scene(id,n.n)}
     <p><b>${n.t}.</b> ${n.x}</p>
     ${minor?`<span class="meta">Smaller incident · map only</span>`:`<button type="button" class="go" data-go="${id}">Open in the ${DATA[tree].label} tree →</button>`}${n.ln?`<h4>In the atlas</h4>${goList(n.ln)}`:""}
-    ${n.mx?`<h4>Machines involved</h4>${goList(n.mx)}`:""}${n.pw?`<h4>Power</h4>${goList(n.pw)}`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`;
+    ${n.mx?`<h4>Machines involved</h4>${goList(n.mx)}`:""}${n.pw?`<h4>Power</h4>${goList(n.pw)}`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`);
   sheet.hidden=false;document.body.classList.add("has-sheet");
   sheet.querySelector("#close").addEventListener("click",()=>mapSelect(null));
   bindArt(sheet);
@@ -1494,7 +1501,10 @@ function openLanding(){
   const el=document.getElementById("landing"),s=SCENES.headline;
   const card=f=>`<button type="button" class="lc" data-v="${f.k}" aria-pressed="${VW.f===f.k}" style="--fc:var(${facColour(f)})"><span class="lc-k">${f.kind==="power"?"Earth power":"Space faction"}</span>${f.h?`<span class="lc-h">${f.h}</span><span class="lc-n"><i>→</i> ${f.n}</span>`:`<span class="lc-n">${f.n}</span>`}<span class="lc-t">${cardOf(f).id}</span></button>`;
   el.innerHTML=`<div class="land-in">${s?`<img class="land-art" src="art/${s.f}.jpg" alt="${s.c}">`:""}
-    <span class="eyebrow">No Haven on Earth · No Peace Past Luna</span><h1>Choose your atlas</h1>
+    <span class="eyebrow">No Haven on Earth · No Peace Past Luna</span><h1>No Haven on Earth Atlas</h1>
+    <p>The 22nd century is running on empty. Two hundred years of warming have drowned the coasts and thinned the harvests, and what's left is being fought over by three great power blocs: the United States, the Continental Union and the Eurasian Pact. For years they only stared each other down. Then, in 2162, four Garrisons came down a ravine at Iron Gate and destroyed a tank column in eleven minutes. The frame had fired the first shot, and the silence was over.</p>
+    <p>This atlas follows everything that came after: the frames and the arms race behind them, the wars they fought, the pilots who made them famous, the road to the Third World War, and the century after it, out through the First Martian Crisis of 2312 to the Greater Solar Crisis of 2327.</p>
+    <h2>Choose your atlas</h2>
     <p>Open everything, or pick one of the thirteen factions of 2327 to see only its story: its machines, wars, people and secrets, from its roots before the war to the Greater Solar Crisis. Earth powers are shown by both their names, before the war and after it. You can change your choice at any time from the bar under the title.</p>
     <button type="button" class="lc whole" data-v="">The whole atlas<span class="lc-t">Every faction, every tree, unfiltered.</span></button>
     <h2>Earth powers</h2><div class="lgrid">${FACS.filter(f=>f.kind==="power").map(card).join("")}</div>
