@@ -165,5 +165,6 @@ Work tab by tab. Status:
 |---|---|
 | Persons of Interest | v125 |
 | Conflicts | v125 |
-| Organisations, Mysteries, Frames, Weapons, Power, Doctrine, Vehicles, Fleets & Carriers, Supers | not yet |
+| Organisations | v126 |
+| Mysteries, Frames, Weapons, Power, Doctrine, Vehicles, Fleets & Carriers, Supers | not yet |
 | ACES, CHRONO, POWERS/SPACE/UNEL, TIMELINE, SCENES/PLATES captions, MINOR | not yet |
