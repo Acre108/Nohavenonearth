@@ -141,7 +141,7 @@ Keep the tone light. It should colour the card, not turn it into pastiche. Someo
 - **`t` taglines:** short sentence-case phrases, no full stop ("Licensed Garrison, lightened for air drops"). Keep them literal.
 - **`z` line-end notes:** "When · what happens" ("War's end · the Lunar Mandate bans reactor-lifted ships from Earth's sky"). They are notes, so no kickers.
 - **`x` text:** the main card. Everything above applies.
-- **Mysteries:** end on a real question. That question is the one place a deliberate closing beat always belongs. Keep them unanswered.
+- **Mysteries:** end on the open question, either asked outright ("Who was buying the scrap?") or left hanging on a detail ("people at Arsia have learned not to ask her about her family"). Mix the two across the tab. Don't close on a declarative verdict ("Somebody has a working orbital economy"). Keep them unanswered.
 - **Redacted cards:** never change, move or add █ bars in a voice pass (the apply script checks this). Text around the bars may be rewritten.
 - **People:** fictional characters keep their established pronouns. Never kill or change a 2312 player character.
 - **ACES notes, CHRONO beats, Successors seeds, SCENES captions:** same rules. Captions stay short.
@@ -166,5 +166,6 @@ Work tab by tab. Status:
 | Persons of Interest | v125 |
 | Conflicts | v125 |
 | Organisations | v126 |
-| Mysteries, Frames, Weapons, Power, Doctrine, Vehicles, Fleets & Carriers, Supers | not yet |
+| Mysteries | v127 |
+| Frames, Weapons, Power, Doctrine, Vehicles, Fleets & Carriers, Supers | not yet |
 | ACES, CHRONO, POWERS/SPACE/UNEL, TIMELINE, SCENES/PLATES captions, MINOR | not yet |
