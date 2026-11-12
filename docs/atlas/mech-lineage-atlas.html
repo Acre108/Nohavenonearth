@@ -10,7 +10,7 @@
 :root{
   --paper:#ECEFEA; --card:#FAFBF8; --ink:#1B211F; --ink-2:#56605B; --rule:#C6CCC6;
   --line:#8A938E; --xfer:#B5471B; --focus:#2E5DA6; --chip-fg:#FFFFFF; --band:#E3E7E1;
-  --sea:#D9E1DF; --land:#F4F5F1;
+  --sea:#D9E1DF; --land:#F4F5F1; --ice:#FFFFFF;
   --m-PRE:#6F7773; --m-HAL:#2E5DA6; --m-BHH:#6A6E22; --m-VEK:#2A7D7A; --m-CAS:#B3263A;
   --m-TSM:#A3561C; --m-OKB:#694B92; --m-MHI:#AE3A7D; --m-QAC:#86663A; --m-ASC:#9C7A00;
   --m-BOR:#3C7F4C; --m-NSK:#1B7AA6; --m-UNO:#4B5FC4; --m-LUN:#5E7387; --m-FNK:#C2185B; --m-KHM:#689F38; --m-EUX:#865057;
@@ -21,7 +21,7 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --paper:#131715; --card:#1B201E; --ink:#E2E7E3; --ink-2:#9BA49F; --rule:#323A36;
   --line:#5F6964; --xfer:#F0834E; --focus:#7FA8EE; --chip-fg:#111412; --band:#181D1B;
-  --sea:#0D1110; --land:#262C2A;
+  --sea:#0D1110; --land:#262C2A; --ice:#3B4441;
   --m-PRE:#9BA49F; --m-HAL:#76A0EA; --m-BHH:#AEB25A; --m-VEK:#5FC0BA; --m-CAS:#EF6879;
   --m-TSM:#E38E4E; --m-OKB:#AA8CD8; --m-MHI:#E67DB9; --m-QAC:#CBA571; --m-ASC:#E3BD30;
   --m-BOR:#7CC48C; --m-NSK:#5CB6E0; --m-UNO:#9AA6F2; --m-LUN:#A9BCCF; --m-FNK:#F27BAA; --m-KHM:#AED581; --m-EUX:#C68D93;
@@ -29,7 +29,7 @@
 :root[data-theme="dark"]{
   --paper:#131715; --card:#1B201E; --ink:#E2E7E3; --ink-2:#9BA49F; --rule:#323A36;
   --line:#5F6964; --xfer:#F0834E; --focus:#7FA8EE; --chip-fg:#111412; --band:#181D1B;
-  --sea:#0D1110; --land:#262C2A;
+  --sea:#0D1110; --land:#262C2A; --ice:#3B4441;
   --m-PRE:#9BA49F; --m-HAL:#76A0EA; --m-BHH:#AEB25A; --m-VEK:#5FC0BA; --m-CAS:#EF6879;
   --m-TSM:#E38E4E; --m-OKB:#AA8CD8; --m-MHI:#E67DB9; --m-QAC:#CBA571; --m-ASC:#E3BD30;
   --m-BOR:#7CC48C; --m-NSK:#5CB6E0; --m-UNO:#9AA6F2; --m-LUN:#A9BCCF; --m-FNK:#F27BAA; --m-KHM:#AED581; --m-EUX:#C68D93;
@@ -46,7 +46,31 @@ header{display:flex;flex-direction:column;gap:10px}
 h1{font-size:clamp(32px,5vw,52px);line-height:1;font-weight:700;letter-spacing:-.01em}
 header p{margin:0;color:var(--ink-2)}
 
-.tabs{display:flex;gap:0;border-bottom:2px solid var(--ink);margin-top:10px;flex-wrap:wrap}
+/* Tabs sit in four labelled groups: Story, People, Machines, World */
+.tabs{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 18px;border-bottom:2px solid var(--ink);margin-top:10px}
+.tg{display:flex;flex-direction:column;gap:1px;min-width:0}
+.tg-l{font:500 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);padding-left:9px}
+.tg-t{display:flex;flex-wrap:wrap}
+/* The guide: how to use the atlas, shown on a first visit and from the Guide button */
+.guide{border:1px solid var(--rule);border-radius:4px;padding:0;background:var(--paper);color:var(--ink);width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+.guide::backdrop{background:rgba(10,12,11,.6)}
+.guide-in{padding:22px 24px 20px;display:flex;flex-direction:column;gap:14px}
+.guide h2{font-size:26px;font-weight:700}
+.guide h3{font-size:17px;font-weight:600;margin-top:4px}
+.guide p{margin:0;font-size:14.5px;line-height:1.5}
+.guide ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14.5px;line-height:1.45}
+.guide li b{font-family:var(--display)}
+.gd-groups li{display:grid;grid-template-columns:92px 1fr;gap:10px;border-top:1px solid var(--rule);padding-top:6px}
+.gd-groups li>span:first-child{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);padding-top:2px}
+.gd-tree{display:grid;grid-template-columns:minmax(0,340px) 1fr;gap:16px;align-items:start}
+.gd-tree svg{width:100%;height:auto;display:block}
+.gd-band{fill:var(--band)}.gd-card{fill:var(--card);stroke:var(--ink-2);stroke-width:1}
+.gd-ln{stroke:var(--line);stroke-width:2;fill:none}.gd-ln.x{stroke-dasharray:4 3}
+.gd-h{fill:var(--ink-2);font:500 10px var(--mono);letter-spacing:.08em}.gd-c{fill:var(--ink);font:600 11px var(--display)}
+.guide-act{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;border-top:1px solid var(--rule);padding-top:14px}
+.guide .sum-go{font-size:15px;padding:8px 16px}
+.guide button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+@media (max-width:560px){.gd-tree{grid-template-columns:1fr}.gd-groups li{grid-template-columns:1fr;gap:2px}.guide-in{padding:18px 16px}}
 .tab{background:none;border:1px solid transparent;border-bottom:0;border-radius:3px 3px 0 0;padding:9px 9px 8px;font:600 15px var(--display);color:var(--ink-2);cursor:pointer;margin-bottom:-2px}
 .tab:hover{color:var(--ink)}
 .tab[aria-selected="true"]{color:var(--paper);background:var(--ink);border-color:var(--ink)}
@@ -69,6 +93,14 @@ header p{margin:0;color:var(--ink-2)}
 .mk[aria-pressed="true"]{border-color:var(--ink);background:var(--card)}
 .mk small{color:var(--ink-2);font-size:12px}
 .hint{font-size:13px;color:var(--ink-2);margin:0}
+/* Generation picker: on wide trees, choose which columns to show */
+.gn{background:none;border:1px solid var(--rule);border-radius:3px;padding:4px 8px;font:500 12px var(--mono);color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.gn:hover{border-color:var(--ink-2);color:var(--ink)}
+.gn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.gn.pre{border-style:dashed;color:var(--ink)}
+.gn.pre[aria-pressed="true"]{color:var(--paper)}
+.gn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.gn-sep{width:1px;align-self:stretch;background:var(--rule);margin:0 2px}
 
 .scroller{overflow-x:auto;border-top:2px solid var(--ink);-webkit-overflow-scrolling:touch}
 .scroll-note{display:none;font:12px var(--mono);color:var(--ink-2);margin:0 0 6px}
@@ -97,10 +129,11 @@ header p{margin:0;color:var(--ink-2)}
 .card.sel{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
 .top{display:flex;align-items:center;gap:7px;min-width:0}
 .chip{flex:none;font:500 10px/1 var(--mono);letter-spacing:.06em;padding:3px 5px;border-radius:2px;background:var(--mc);color:var(--chip-fg)}
-.desig{font:500 12px var(--mono);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.desig{flex:0 0 auto;max-width:100%;font:500 12px var(--mono);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .name{font:600 14.5px/1.2 var(--display)}
 .tag{font-size:12px;line-height:1.35;color:var(--ink-2)}
 .xtag{font:11px/1.3 var(--mono);color:var(--xfer)}
+.card .top{flex-wrap:wrap;row-gap:3px}
 .spec{margin-left:auto;font:11px var(--mono);color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .kit{font:11px/1.35 var(--mono);color:var(--ink)}
 .kit b{font-weight:500;color:var(--ink-2);letter-spacing:.06em;margin-right:2px}
@@ -171,6 +204,146 @@ header p{margin:0;color:var(--ink-2)}
 .seg button{background:none;border:0;padding:6px 11px;font:500 12px var(--mono);color:var(--ink);cursor:pointer}
 .seg button+button{border-left:1px solid var(--ink)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+/* Landing cards: the card opens the faction's summary, the corner button enters the atlas directly */
+.lcw{position:relative;display:flex;min-width:0}
+.lcw>.lc{flex:1;padding-bottom:40px}
+.lcw>.lc.whole{padding-bottom:16px;padding-right:110px}
+.lc-go{position:absolute;right:10px;bottom:10px;background:var(--card);border:1px solid var(--ink);border-radius:3px;color:var(--ink);font:500 12px var(--mono);padding:4px 10px;cursor:pointer}
+.lc-go:hover{background:var(--ink);color:var(--paper)}
+.lcw>.lc.whole+.lc-go{top:50%;bottom:auto;transform:translateY(-50%)}
+.land-in>h2+p{margin-top:-8px}
+/* Summaries: a faction's (or the whole atlas's) key art, overview, examples and a way in */
+.sum{gap:14px}
+.sum>p{max-width:none}
+.sum>.seed{color:var(--ink-2);font-size:14px}
+.sum h1 i{font-style:normal;color:var(--ink-2);font-weight:500}
+.sum .meta{margin-top:-6px}
+.sum-back{align-self:flex-start}
+.sum-art{margin:0;display:flex;flex-direction:column;gap:6px}
+.sum-art>button{padding:0;border:0;background:none;cursor:zoom-in;display:block}
+.sum-art figcaption{font-size:13px;color:var(--ink-2)}
+.sum-art .era{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--xfer)}
+.land-in.sum[style] .land-art{border-top:4px solid var(--fc)}
+.sum-heirs{display:flex;flex-direction:column;gap:6px}
+.sum-heirs ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.sum-heirs li{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-top:1px solid var(--rule)}
+.sum-heirs b{font:600 15px var(--display)}
+.sum-heirs span{font-size:13.5px;color:var(--ink-2)}
+.land-in .sum-heirs h2,.land-in .sum-ax h2{margin-top:0}
+.sum-ax{border-bottom:1px solid var(--rule)}
+.sum-ax .axes{margin-bottom:6px}
+.sum-ax .hint{margin-bottom:12px}
+.sum-ex{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px;align-items:start}
+.sum-t{background:var(--card);border:1px solid var(--rule);border-top:4px solid var(--fc);border-radius:3px;padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.sum-t img{display:block;width:calc(100% + 28px);max-width:none;margin:-12px -14px 4px;aspect-ratio:16/9;object-fit:cover;background:var(--band);border-bottom:1px solid var(--rule)}
+.sum-tn{font:600 18px/1.2 var(--display)}
+.sum-tn i{font-style:normal;font-weight:500;color:var(--ink-2)}
+.sum-t p{margin:0;font-size:13.5px}
+.sum-t .sum-x{color:var(--ink-2);font-size:13px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.sum-t .go{margin-top:4px}
+.sum-act{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px}
+.sum-go{background:var(--ink);color:var(--paper);border:1px solid var(--ink);border-radius:3px;font:600 16px var(--display);padding:10px 18px;cursor:pointer}
+.sum-go:hover{background:var(--fc,var(--ink));border-color:var(--fc,var(--ink))}
+.sum-gens{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.sum-gens li{display:grid;grid-template-columns:170px minmax(0,1fr);gap:4px 18px;padding:10px 0;border-top:1px solid var(--rule)}
+.sum-gens li.nppl{border-top:2px solid var(--ink)}
+.sum-g{display:flex;flex-direction:column}
+.sum-g b{font:600 16px var(--display)}
+.sum-g span{font:12px var(--mono);color:var(--ink-2)}
+.sum-gt{display:block;font:600 15px/1.25 var(--display)}
+.sum-gp{display:block;font-size:13.5px;color:var(--ink-2);margin-top:2px}
+@media (max-width:620px){.sum-gens li{grid-template-columns:minmax(0,1fr)}.sum-g{flex-direction:row;gap:10px;align-items:baseline}}
+/* Faction profile on a tree: who runs what, one row per faction */
+.profile{display:flex;flex-direction:column;gap:10px}
+.profile h2{font-size:20px;font-weight:600}
+.pf{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.pf-r{background:var(--paper);border-left:4px solid var(--fc);padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.pf-r b{font:600 14.5px/1.25 var(--display)}
+.pf-r p{margin:0;font-size:13px;color:var(--ink-2)}
+.pf-l{display:flex;flex-wrap:wrap;gap:2px 12px}
+.pf-l .lk{font-size:12.5px}
+/* Collapsible panels above a tree (turning points, the faction panel): closed by default, count in the summary */
+.folds{display:flex;flex-direction:column;border-bottom:1px solid var(--rule)}
+.fold{border-top:1px solid var(--rule);min-width:0}
+.fold>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:11px 4px;cursor:pointer;list-style:none;color:var(--ink)}
+.fold>summary::-webkit-details-marker{display:none}
+.fold>summary::before{content:"";flex:none;align-self:center;width:7px;height:7px;margin:0 3px 0 1px;border-right:1.6px solid var(--ink-2);border-bottom:1.6px solid var(--ink-2);transform:rotate(-45deg);transition:transform .15s}
+.fold[open]>summary::before{transform:rotate(45deg)}
+.fold>summary h2{font-size:20px;font-weight:600;min-width:0}
+.fold>summary:hover h2{text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:4px}
+.fold>summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.fold-n{font:500 12px var(--mono);letter-spacing:.06em;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.fold[open]>summary+*{margin-bottom:18px}
+/* Landing screen: the whole atlas or one of the thirteen faction views, then a bar under the title showing the choice */
+body.landing-open{overflow:hidden}
+.landing{position:fixed;inset:0;z-index:30;overflow:auto;background:var(--paper);padding:32px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+.land-in{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.land-in h1{font-size:clamp(30px,5vw,48px);line-height:1.05}
+.land-in h2{font-size:20px;font-weight:600;margin-top:12px}
+.land-in>p{margin:0;color:var(--ink-2)}
+.land-art{display:block;width:100%;aspect-ratio:16/5;object-fit:cover;object-position:50% 45%;border:1px solid var(--rule);border-radius:3px;background:var(--band)}
+@media (max-width:620px){.land-art{aspect-ratio:16/8}}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,262px),1fr));gap:10px}
+.lc{display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--card);border:1px solid var(--rule);border-top:4px solid var(--fc,var(--ink));border-radius:3px;padding:12px 14px 14px;font:inherit;color:var(--ink);cursor:pointer;min-width:0}
+.lc:hover{border-color:var(--ink-2);border-top-color:var(--fc,var(--ink))}
+.lc:focus-visible,.lc-go:focus-visible,.vb-x:focus-visible,.sum button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.lc-k{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.lc-h{font-size:13px;color:var(--ink-2)}
+.lc-n{font:600 18px/1.2 var(--display)}
+.lc-n i{font-style:normal;color:var(--ink-2);font-weight:500}
+.lc-t{font-size:13px;line-height:1.45;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.lc.whole{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:4px 14px;font:600 22px/1.2 var(--display);padding:16px 18px}
+.lc.whole .lc-t{font:400 14px var(--body);-webkit-line-clamp:unset}
+.vb-acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.vb-acts .vb-x{margin-left:0}
+.viewbar{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px 14px;background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--fc,var(--ink));border-radius:3px;padding:8px 12px;font-size:14px}
+.viewbar b{font:600 15px var(--display)}
+.vb-k{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin-right:8px}
+.vb-x{margin-left:auto;background:none;border:1px solid var(--ink);border-radius:3px;color:var(--ink);font:500 12px var(--mono);padding:4px 10px;cursor:pointer}
+#eras{grid-template-columns:repeat(10,minmax(0,1fr))}
+@media (max-width:620px){#eras{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.map-views{width:max-content;max-width:100%}
+.map-views button{padding:8px 14px;font-size:13px}
+.map-views button.none{color:var(--ink-2)}
+.map-views button.none[aria-pressed="true"]{color:var(--paper)}
+@media (max-width:620px){.map-views{display:grid;grid-template-columns:1fr 1fr;width:100%}.map-views button+button{border-left:0}.map-views button:nth-child(odd){border-right:1px solid var(--ink)}.map-views button:nth-child(-n+2){border-bottom:1px solid var(--ink)}}
+.map-none{margin:0}
+.pin .ldr{stroke:var(--ink-2)}
+.pin .sdot{fill:var(--ink)}
+.bd-disc{fill:var(--land);stroke:var(--rule);stroke-width:1.2;vector-effect:non-scaling-stroke}
+.bd-mare,.bd-low{fill:color-mix(in srgb,var(--sea) 62%,var(--land));stroke:none}
+.bd-up{fill:var(--land)}
+.bd-ring{fill:none;stroke:color-mix(in srgb,var(--ink-2) 45%,var(--land));stroke-width:.9;vector-effect:non-scaling-stroke}
+.bd-ring.dash{stroke-dasharray:4 4}
+.bd-grat{fill:none;stroke:var(--rule);stroke-width:.6;vector-effect:non-scaling-stroke}
+.bd-cut{fill:none;stroke:var(--ink-2);stroke-width:1;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}
+.bd-cap{fill:var(--ice);stroke:var(--rule);stroke-width:.8;vector-effect:non-scaling-stroke}
+.bd-rise{fill:none;stroke:var(--ink-2);stroke-width:1;stroke-dasharray:2 5;opacity:.7;vector-effect:non-scaling-stroke}
+.bd-canyon{fill:none;stroke:color-mix(in srgb,var(--ink-2) 70%,var(--land));stroke-linecap:round;stroke-linejoin:round}
+.bd-volc{fill:none;stroke:color-mix(in srgb,var(--ink-2) 60%,var(--land));stroke-width:1;vector-effect:non-scaling-stroke}
+.bd-loc{fill:none;stroke:var(--xfer);stroke-width:1.6;stroke-dasharray:7 5;vector-effect:non-scaling-stroke}
+.bd-wall{fill:none;stroke:var(--xfer);stroke-width:2.6;vector-effect:non-scaling-stroke}
+.bd-moon{fill:var(--ink-2);stroke:var(--sea);stroke-width:1}
+.bl{pointer-events:none;fill:var(--ink-2)}
+.bl.sea,.bl.area{font-family:var(--body);font-style:italic}
+.bl.crater,.bl.feat{font-family:var(--body)}
+.bl.region{font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;opacity:.85}
+.bl.ptitle{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em}
+.bl.lname{font-family:var(--mono);fill:var(--xfer);letter-spacing:.06em}
+.lp2,svg:not(.wide):not(.zin) .town.tl text,svg:not(.wide):not(.zin) .lab:not(.lt){display:none}
+svg.wide .lp2,svg.zin .lp2{display:inline}
+.town{pointer-events:none}
+.town circle{fill:var(--card);stroke:var(--ink)}
+.town text{font-family:var(--display);font-weight:600;fill:var(--ink);paint-order:stroke;stroke:var(--land);stroke-linejoin:round}
+.sw-line{width:24px;height:0;border-top:2px dashed var(--xfer)}
+.sw-wall{width:24px;height:0;border-top:3px solid var(--xfer)}
+.sw-town{width:9px;height:9px;border-radius:50%;background:var(--card);border:1.5px solid var(--ink)}
+.sys-orbit{fill:none;stroke:var(--rule);stroke-width:1;vector-effect:non-scaling-stroke}
+.sys-belt{fill:none;stroke:var(--land);opacity:.75}
+.sys-body{fill:var(--ink-2);stroke:var(--sea);stroke-width:1;vector-effect:non-scaling-stroke}
+.sys-giant{fill:var(--land);stroke:var(--rule);stroke-width:1.2;vector-effect:non-scaling-stroke}
+.sys-sun{fill:var(--xfer)}
+.sys-lbl{font-family:var(--mono);fill:var(--ink-2);letter-spacing:.06em;pointer-events:none}
 .chk{display:flex;gap:7px;align-items:center;font-size:13px;color:var(--ink);cursor:pointer}
 .chk input{accent-color:var(--ink);margin:0}
 .map-fig{margin:0;border-top:2px solid var(--ink);display:flex;flex-direction:column;gap:14px;padding-top:14px}
@@ -214,15 +387,7 @@ header p{margin:0;color:var(--ink-2)}
 .cy{font:12px var(--mono);color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .go{align-self:flex-start;background:none;border:1px solid var(--ink);border-radius:3px;color:var(--ink);font:500 12px var(--mono);padding:5px 10px;cursor:pointer}
 .go:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-/* Successor powers: each bloc's heir, and the five No Peace Past Luna axes as five-position scales */
-.heirs{display:flex;flex-direction:column;gap:16px;border-top:2px solid var(--ink);padding-top:16px}
-.heirs h2{font-size:24px;font-weight:700;line-height:1.1}
-.heirs>p{margin:0;color:var(--ink-2);font-size:14px}
-.hmap{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));column-gap:32px}
-.hmap li{display:flex;flex-direction:column;gap:3px;padding:10px 0;border-top:1px solid var(--rule)}
-.hmap .hb{font:600 15px/1.25 var(--display)}
-.hmap .hb i{font-style:normal;font-weight:500;color:var(--ink-2);margin:0 6px}
-.hmap .hn{font-size:13px;color:var(--ink-2)}
+/* Power cards (used by the aces) and the five No Peace Past Luna axes as five-position scales */
 .powers{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
 .pcard{background:var(--card);border:1px solid var(--rule);border-top:4px solid var(--pc);border-radius:3px;padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .pcard h3{font-size:19px;font-weight:600;line-height:1.15}
@@ -263,8 +428,8 @@ button.beat:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .chr-now{margin:4px 0 0;padding:10px 12px;border:1.5px solid var(--xfer);border-radius:3px;color:var(--xfer);font:600 13px/1.4 var(--mono);letter-spacing:.02em}
 @media (max-width:620px){.beat{grid-template-columns:minmax(0,1fr) auto}.beat .by{grid-column:1/-1;padding:0}}
 /* Factions timeline: one lane per faction across the map's eras, ending in its 2327 successor */
-.tl{min-width:1100px}
-.tl-cols,.tl-row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));column-gap:16px}
+.tl{min-width:calc(var(--tlc,7)*150px)}
+.tl-cols,.tl-row{display:grid;grid-template-columns:repeat(var(--tlc,7),minmax(0,1fr));column-gap:16px}
 .tl-cols{padding:12px 0 10px;border-bottom:1px solid var(--rule)}
 .tl-cols div{display:flex;flex-direction:column;gap:1px}
 .tl-cols b{font:600 15px var(--display)}
@@ -326,22 +491,34 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .pl:hover{color:var(--ink)}
 .pl:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .pcard.ace.hit{box-shadow:0 0 0 2px var(--focus)}
+/* Compact ace cards: frame, record and name up front; the story, art and links open under "Story and links" */
+.ace-list .powers{grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));align-items:start}
+.pcard.ace .athumb img{aspect-ratio:2/1}
+.pcard.ace h3{font-size:17px}
+.ace-more>summary{cursor:pointer;list-style:none;align-self:flex-start;font:500 11.5px var(--mono);color:var(--ink-2);text-decoration:underline dotted;text-underline-offset:3px}
+.ace-more>summary::-webkit-details-marker{display:none}
+.ace-more>summary:hover,.ace-more[open]>summary{color:var(--ink)}
+.ace-more>summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.ace-more>div{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.ace-tools .fold{border-bottom:1px solid var(--rule)}
+.ace-tools .fold[open]>summary+*{margin-bottom:12px}
 /* Variant art: a scene + technical pair under each version on the detail sheet, and the signature frame's scene atop each ace card */
 .sheet ul.vers .art{width:100%;margin-top:3px}
 .athumb{display:block;margin:-12px -14px 0;width:calc(100% + 28px);padding:0;border:0;border-bottom:1px solid var(--rule);background:var(--band);cursor:zoom-in}
 .athumb img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
 .athumb:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
-/* Scene plates: one standalone illustration below a tree's intro, banner-wide like the header art */
-.lede{display:flex;flex-direction:column;gap:20px}
-.plate{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+/* Scene plates: one standalone illustration beside a tree's intro, as a thumbnail that opens full size */
+.lede{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:24px;align-items:start}
+.lede:has(.plate[hidden]){grid-template-columns:minmax(0,1fr)}
+@media (max-width:760px){.lede{grid-template-columns:minmax(0,1fr)}.plate{max-width:240px}}
+.plate{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
 .plate>button{width:100%;padding:0;border:1px solid var(--rule);border-radius:3px;background:var(--band);cursor:zoom-in;overflow:hidden;display:block}
 .plate>button:hover{border-color:var(--ink-2)}
 .plate>button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.plate img{display:block;width:100%;aspect-ratio:16/5;object-fit:cover;object-position:50% 40%}
-@media (max-width:620px){.plate img{aspect-ratio:16/8}}
+.plate img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;object-position:50% 40%}
 .plate figcaption{display:flex;flex-direction:column;gap:4px}
 .plate .era{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--xfer)}
-.plate h2{font-size:18px;font-weight:600;line-height:1.2}
+.plate h2{font-size:15px;font-weight:600;line-height:1.2}
 .plate p{margin:0;font-size:13.5px;color:var(--ink-2)}
 .plate .seeds ul{flex-direction:row;flex-wrap:wrap;gap:2px 16px}
 /* Key art: one standalone scene on an entry's sheet or card, and the setting headline in the header */
@@ -350,6 +527,8 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .scene>button:hover,.hero>button:hover,.tl-art:hover{border-color:var(--ink-2)}
 .scene>button:focus-visible,.hero>button:focus-visible,.tl-art:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .scene img,.tl-art img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+/* Portrait key art keeps the 16:9 frame but is shown whole, on the band colour */
+.scene img.tall{object-fit:contain}
 .scene figcaption{display:flex;flex-direction:column;gap:2px}
 .scene .era{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--xfer)}
 .scene b{font:600 15px var(--display);line-height:1.2}
@@ -370,16 +549,14 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
 <div class="wrap">
   <header>
-    <span class="eyebrow">Lineage atlas · Gen 0 to Gen 4 · to 2186</span>
+    <span class="eyebrow">Lineage atlas · Gen 0 to Gen 9 · from the first frames to 2327</span>
     <h1>No Haven on Earth Atlas</h1>
-    <p>The 22nd century is running on empty. Two hundred years of warming have drowned the coasts and thinned the harvests, and what's left is being fought over by three great power blocs: the United States, the Continental Union and the Eurasian Pact. For years they only stared each other down. Then, in 2162, four Garrisons came down a ravine at Iron Gate and destroyed a tank column in eleven minutes. The frame had fired the first shot, and the silence was over.</p>
-    <p>This atlas follows everything that came after: the frames and the arms race behind them, the wars they fought, the pilots who made them famous, and the road to the Third World War.</p>
-    <figure class="hero" id="hero" hidden></figure>
+    <div class="viewbar" id="viewbar"></div>
     <nav class="tabs" role="tablist" id="tabs"></nav>
   </header>
 
   <section class="view" id="chView" hidden aria-label="Timeline">
-    <p class="intro">The whole story in order, from the Ares mission to No Peace Past Luna in 2327. Dates marked c. are estimates, and play can start in any generation. The war has no dates, only early, middle and late. Pick a faction to follow its story alone, from its first frame to what it becomes. Select any entry to open it in its tree.</p>
+    <p class="intro">The whole story in order, from the Ares mission to No Peace Past Luna in 2327. Dates marked c. are estimates. Pick a faction below to follow its story alone.</p>
     <div class="chr-tools">
       <div class="legend-row" id="chr-fac" role="group" aria-label="Follow a faction"></div>
       <p class="chr-arc" id="chr-arc"></p>
@@ -387,14 +564,16 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
     <div class="ace-list" id="chr-list"></div>
   </section>
 
-  <section class="view" id="mapView" hidden aria-label="World map">
-    <p class="intro">Where the power blocs stand and where they have fought, era by era. Pick an era to redraw the map with that era's conflicts, numbered in the order they happened. Events in orbit and on Mars sit in the band above the map. Select a pin or a list entry for the full account, then follow it into the Conflicts tree. The last era is projected: where the war's fronts are expected to run, and the powers that come out of it. The Successors tab describes those powers in full.</p>
-    <div class="eras" id="eras" role="group" aria-label="Era"></div>
+  <section class="view" id="mapView" hidden aria-label="Map">
+    <p class="intro">Where the powers stand and where they have fought, generation by generation. Pick a generation, then a view. The inner-system planets are in order from the sun but not to scale.</p>
+    <div class="eras" id="eras" role="group" aria-label="Generation"></div>
+    <div class="seg map-views" id="map-views" role="group" aria-label="Map view"></div>
+    <p class="hint map-none" id="map-none" hidden></p>
     <div class="era-head">
       <div><span class="era" id="era-k"></span><h2 id="era-h"></h2><p id="era-p"></p></div>
       <div class="map-tools">
         <div class="seg" role="group" aria-label="Map zoom"><button type="button" id="z-in" aria-label="Zoom in">+</button><button type="button" id="z-out" aria-label="Zoom out">−</button><button type="button" id="z-reset">Reset</button></div>
-        <label class="chk"><input type="checkbox" id="org-on" checked> Organisations</label>
+        <label class="chk" id="org-lbl"><input type="checkbox" id="org-on" checked> Organisations</label>
         <p class="hint">Drag to pan. Pinch, Ctrl + scroll or the buttons to zoom.</p>
       </div>
     </div>
@@ -403,35 +582,27 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
       <figcaption class="map-legend" id="map-legend"></figcaption>
     </figure>
     <div class="map-lists">
-      <div><h3 id="list-h">Conflicts this era</h3><ol class="clist" id="clist"></ol></div>
-      <div><h3 id="mlist-h">Smaller incidents</h3><ol class="clist" id="mlist"></ol></div>
-      <div><h3 id="olist-h">Organisations this era</h3><p class="hint" style="margin:0 0 8px">Companies, laboratories, cooperatives and private forces, but not governments. Where the atlas names no city, the pin sits in the home country.</p><ol class="clist" id="olist"></ol></div>
+      <div><h3 id="list-h">Conflicts</h3><ol class="clist" id="clist"></ol></div>
+      <div id="mlist-box"><h3 id="mlist-h">Smaller incidents</h3><ol class="clist" id="mlist"></ol></div>
+      <div id="olist-box"><h3 id="olist-h">Organisations</h3><p class="hint" style="margin:0 0 8px">Companies, laboratories, cooperatives and private forces, but not governments. Where the atlas names no city, the pin sits in the home country.</p><ol class="clist" id="olist"></ol></div>
     </div>
-  </section>
-
-  <section class="view" id="sucView" hidden aria-label="Successors">
-    <p class="intro">What the atlas's blocs and programs have become by 2327, in No Peace Past Luna: the Earth powers that come out of the war, and the space factions whose arguments start in this era.</p>
-    <section class="heirs" aria-labelledby="heirs-h">
-      <h2 id="heirs-h">Where the blocs are heading</h2>
-      <p>None of the atlas's blocs comes through the war intact. These are the five Earth powers of No Peace Past Luna (2327) and the blocs each one grows from, followed by the institution that ends the war between them. Each scale runs from the first pole on the left to the second on the right. Values still undecided are marked TBD. Select a seed to open it in its tree, or a pilot to open their ace card.</p>
-      <ul class="hmap" id="hmap"></ul>
-      <div class="powers" id="powers"></div>
-    </section>
-    <section class="heirs" aria-labelledby="space-h">
-      <h2 id="space-h">Where the space factions begin</h2>
-      <p>Most of No Peace Past Luna's colonial and outer-system factions start here as arguments about what a person may become: what one bloc did to its pilots, and what someone else learned from watching. Some start somewhere colder, or worse. Space doesn't carry Earth's politics outward unchanged; it mutates them, and each colony keeps its sponsor's argument while changing what it means. The Constitutionalists are built later, to replace Colony One, but the charter they are built on is written here. The top colour shows the Earth power each faction descends from; grey means none. Select a seed to open it in its tree, or a pilot to open their ace card.</p>
-      <div class="powers" id="space"></div>
-    </section>
   </section>
 
   <div class="view" id="treeView">
   <div class="lede"><p class="intro" id="intro"></p><figure class="plate" id="plate" hidden></figure></div>
-  <section class="turns" aria-label="Turning points" id="turns"></section>
+  <div class="folds" id="folds" hidden>
+    <details class="fold" id="turns-d" data-sec="turns" hidden><summary><h2>Turning points</h2><span class="fold-n" id="turns-n"></span></summary><section class="turns" aria-label="Turning points" id="turns"></section></details>
+    <details class="fold" id="profile-d" data-sec="profile" hidden><summary><h2 id="profile-h">Who runs what</h2><span class="fold-n" id="profile-n"></span></summary><section class="profile" id="profile"></section></details>
+    <details class="fold" id="key-d" data-sec="key"><summary><h2 id="key-h">Makers and key</h2><span class="fold-n" id="key-n"></span></summary><section class="legend" aria-label="Legend">
+      <div class="legend-row" id="makers"></div>
+      <div class="legend-row" id="lines"></div>
+      <p class="hint" id="hint"></p>
+    </section></details>
+  </div>
 
-  <section class="legend" aria-label="Legend">
-    <div class="legend-row" id="lines"></div>
-    <div class="legend-row" id="makers"></div>
-    <p class="hint" id="hint"></p>
+  <section class="legend" aria-label="Filters">
+    <div class="legend-row" id="gens" role="group" aria-label="Generations shown" hidden></div>
+    <div class="legend-row" id="famsel" role="group" aria-label="Types shown" hidden></div>
   </section>
 
   <div>
@@ -441,7 +612,7 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   </div>
 
   <section class="view" id="tlView" hidden aria-label="Factions timeline">
-    <p class="intro">What happens to each faction from before the first mechs through the war, and what it has become by 2327. The Eurasian Pact gets two lanes, Beijing and Moscow with Delhi, because that is where it ends. Dashed entries are projected. Select an entry to open it in its tree.</p>
+    <p class="intro">What happens to each faction from before the first mechs to 2327. The Eurasian Pact gets two lanes, Beijing and Moscow with Delhi, because that is where it ends.</p>
     <div>
       <p class="scroll-note">Scroll sideways to see every era →</p>
       <div class="scroller"><div class="tl" id="tl"></div></div>
@@ -449,9 +620,9 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   </section>
 
   <section class="view" id="aceView" hidden aria-label="Aces">
-    <p class="intro">Famous pilots from the first mech combat to 2186, and the frames they made their names in. Each frame is marked <b>Standard</b> if it was flown as its maker built it, <b>Variant</b> if it was an official sub-model or a unit's field modification, and <b>Custom</b> if it was built or rebuilt for that one pilot. Variants and custom frames are named here; the Frames tree lists every version on its base frame's card, with what changed. Records are as each pilot's own side credits them. Select a frame, conflict or entry to open it in its tree.</p>
+    <p class="intro">Famous pilots from the first mech combat to 2327, and the frames they made their names in. A frame is <b>Standard</b> as its maker built it, a <b>Variant</b> if it was a sub-model or field modification, or <b>Custom</b> if it was built for that one pilot. Records are as each pilot's own side credits them.</p>
     <div class="ace-tools">
-      <div class="legend-row" id="ace-fac" role="group" aria-label="Faction"></div>
+      <details class="fold" id="ace-fac-d"><summary><h2>Faction</h2><span class="fold-n" id="ace-fac-n"></span></summary><div class="legend-row" id="ace-fac" role="group" aria-label="Faction"></div></details>
       <div class="legend-row"><span class="legend-label">Signature frame</span><div class="seg" id="ace-bld" role="group" aria-label="Signature frame build"></div></div>
       <p class="ace-count" id="ace-count"></p>
     </div>
@@ -459,7 +630,42 @@ button.tl-ev:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   </section>
 </div>
 
+<section class="landing" id="landing" hidden aria-label="Choose a view of the atlas"></section>
 <aside class="sheet" id="sheet" hidden aria-live="polite"></aside>
+<dialog class="guide" id="guide" aria-labelledby="guide-h"><div class="guide-in">
+  <span class="eyebrow">Getting around</span><h2 id="guide-h" tabindex="-1" autofocus style="outline:none">How to use the atlas</h2>
+  <h3>Where to start</h3>
+  <p>New to the setting? The <b>Timeline</b> tells the whole story in order, from before the first mechs to 2327. Or open a faction's <b>Summary</b> from the bar under the title, and follow just its story through every tab.</p>
+  <h3>What's in each tab</h3>
+  <ul class="gd-groups">
+    <li><span>Story</span><span><b>Timeline, Conflicts, Map and Factions</b>: what happened, where, and what became of each power.</span></li>
+    <li><span>People</span><span><b>Persons of Interest and Aces</b>: the families and the famous pilots behind events.</span></li>
+    <li><span>Machines</span><span><b>Frames, Supers, Vehicles, Fleets &amp; Carriers, Weapons and Power</b>: what everyone fights with, and where each design came from.</span></li>
+    <li><span>World</span><span><b>Organisations, Doctrine and Mysteries</b>: who builds and decides, how each side fights, and the stories nobody has told yet.</span></li>
+  </ul>
+  <h3>Reading a tree</h3>
+  <div class="gd-tree">
+    <svg viewBox="0 0 340 168" role="img" aria-label="A small example tree: generations as columns, families as rows, and lines joining each entry to what it grew from">
+      <text class="gd-h" x="60" y="12" text-anchor="middle">GEN 2</text><text class="gd-h" x="170" y="12" text-anchor="middle">GEN 3</text><text class="gd-h" x="280" y="12" text-anchor="middle">GEN 4</text>
+      <rect class="gd-band" x="0" y="20" width="340" height="68"/><rect class="gd-band" x="0" y="96" width="340" height="68"/>
+      <text class="gd-h" x="6" y="32">ONE MAKER</text><text class="gd-h" x="6" y="108">ANOTHER MAKER</text>
+      <path class="gd-ln" d="M102 58 H128"/><path class="gd-ln" d="M212 58 H238"/><path class="gd-ln x" d="M212 58 C226 58 222 134 238 134"/>
+      <rect class="gd-card" x="18" y="42" width="84" height="32" rx="3"/><text class="gd-c" x="60" y="62" text-anchor="middle">First frame</text>
+      <rect class="gd-card" x="128" y="42" width="84" height="32" rx="3"/><text class="gd-c" x="170" y="62" text-anchor="middle">Its successor</text>
+      <rect class="gd-card" x="238" y="42" width="84" height="32" rx="3"/><text class="gd-c" x="280" y="62" text-anchor="middle">Next in line</text>
+      <rect class="gd-card" x="238" y="118" width="84" height="32" rx="3"/><text class="gd-c" x="280" y="138" text-anchor="middle">A copy</text>
+    </svg>
+    <ul>
+      <li><b>Columns are generations</b>, from Gen 0 before the first mechs to Gen 9 in 2327.</li>
+      <li><b>Rows are families</b>: one maker, nation or line in each band.</li>
+      <li><b>Lines</b> join each entry to what it grew from. The key above each tree explains the line styles.</li>
+      <li><b>Click any card</b> to open its full entry, with links onward.</li>
+    </ul>
+  </div>
+  <h3>Faction views</h3>
+  <p><b>Change view</b>, in the bar under the title, filters every tab to one faction's story; the whole atlas shows everything. You can reopen this guide at any time from the <b>Guide</b> button in the same bar.</p>
+  <div class="guide-act"><button type="button" class="x" data-gclose>Close</button><button type="button" class="sum-go" data-gtimeline>Start with the Timeline</button></div>
+</div></dialog>
 <dialog class="lb" id="lb" aria-label="Concept art"><figure><img id="lb-img" alt=""><figcaption><span id="lb-cap"></span><button type="button" class="lb-x" id="lb-x">Close</button></figcaption></figure></dialog>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -475,7 +681,7 @@ new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===
 fetch("atlas-data.json").then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(init,()=>{
   document.getElementById("intro").textContent="The atlas data couldn't load. Reload the page to try again."});
 // Everything below runs once atlas-data.json has loaded
-function init({GROUPS,COLS,ART,VART,PLATES,SCENES,DATA,BLOC,MEMB,US_ALLIES,LEAGUE,ASSOC,OVR,FUTURE,FUTURE_SPHERE,FUTURE_FRONT,FUTURE_FIGHTING,CANADA_SPLIT,LOC,MINOR,ORBIT,ERA_NOTE,AXES,POWERS,HEIRS,UNEL,SPACE,TIMELINE,ACE_FACTIONS,ACE_ERAS,ACES,ORGMAP={},CHRONO=[]}){
+function init({GROUPS,COLS,ART,VART,PLATES,SCENES,DATA,BLOC,MEMB,US_ALLIES,LEAGUE,ASSOC,OVR,FUTURE,FUTURE_SPHERE,FUTURE_FRONT,FUTURE_FIGHTING,CANADA_SPLIT,LOC,MINOR,MAPNOTE=[],SITES={moon:{},mars:{}},MOON=null,MARS=null,FUTURE_OVR=[],AXES,POWERS,HEIRS,UNEL,SPACE,TIMELINE,ACE_FACTIONS,ACE_ERAS,ACES,ORGMAP={},CHRONO=[],SOLAR={bodies:{},at:{}},FACTION_VIEWS={factions:[],makers:{},own:[]},GENS=[],GEN_NOTES=[]}){
 const FUT=new Set(Object.keys(FUTURE));
 // The Pact's halves after the Sealed Session, shown on the 2186 map in its place
 const SPLIT=new Set(["PB","PM","EUX"]);
@@ -490,50 +696,72 @@ const label=n=>n.d&&!/^(Now|War|\d{4})$/.test(n.d)?`${n.d} ${n.n}`:n.n;
 const short=n=>ds.desig&&n.d&&!/^(Now|War|\d{4})$/.test(n.d)?n.d:n.n;
 
 // cross-tree index
-const ORDER=["frames","supers","conflicts","weapons","power","doctrine","vehicles","carriers","fleets","orgs"];
-const SRC={frames:"Frames using it",supers:"Super programs using it",conflicts:"Seen in conflicts",vehicles:"Vehicle lines linked",carriers:"Carriers linked",fleets:"Space fleets linked",orgs:"Organisations linked"};
+const ORDER=["frames","supers","conflicts","people","mysteries","weapons","power","doctrine","vehicles","fleets","orgs"].filter(k=>DATA[k]);
+const SRC={frames:"Frames using it",supers:"Super programs using it",conflicts:"Seen in conflicts",people:"Persons of interest",mysteries:"Mysteries",vehicles:"Vehicle lines linked",fleets:"Fleets and carriers linked",orgs:"Organisations linked"};
 const IDX={},KEYOF={},USED={};
 const ACEX=Object.fromEntries(ACES.map(a=>[a.id,a])),ACEC=Object.fromEntries(ACE_FACTIONS.map(([k,,c])=>[k,c]));
 ORDER.forEach(k=>DATA[k].nodes.forEach(n=>{IDX[n.id]=n;KEYOF[n.id]=k}));
-["frames","supers","conflicts","vehicles","carriers","fleets","orgs"].forEach(k=>DATA[k].nodes.forEach(f=>[...(f.ln||[]),...(f.fr||[]),...(f.mx||[]),...(f.pw||[]),...(f.wp||[]),...(f.dc||[])].forEach(id=>{const u=USED[id]=USED[id]||{};(u[k]=u[k]||[]).push(f.id)})));
+["frames","supers","conflicts","people","mysteries","vehicles","fleets","orgs"].filter(k=>DATA[k]).forEach(k=>DATA[k].nodes.forEach(f=>[...(f.ln||[]),...(f.fr||[]),...(f.mx||[]),...(f.pw||[]),...(f.wp||[]),...(f.dc||[])].forEach(id=>{const u=USED[id]=USED[id]||{};(u[k]=u[k]||[]).push(f.id)})));
 const ref=id=>{const n=IDX[id];return n.d||n.n};
-function remember(k){try{history.replaceState(null,"","#"+k)}catch(e){}try{localStorage.setItem("atlas-tab",k)}catch(e){}}
+
+// ---- Faction views: a hidden filter that shows one of the thirteen factions of 2327 and its roots ----
+const FACS=FACTION_VIEWS.factions,FACX=Object.fromEntries(FACS.map(f=>[f.k,f])),FMAK=FACTION_VIEWS.makers;
+const VW={f:null,set:null,lanes:new Set()};
+const cardOf=f=>f.card==="UNEL"?UNEL:f.kind==="power"?POWERS.find(p=>p.b===f.card):SPACE.find(p=>p.n===f.card);
+const facName=f=>f.h?`${f.h} → ${f.n}`:f.n;
+// An entry's factions: its own fx list, else its maker's (a person's band counts too), else its family's most common set
+const TAGS={};
+Object.entries(DATA).forEach(([tk,t])=>{
+  const own=n=>{if(n.fx)return n.fx;
+    if(tk==="people")return [...new Set([...FACS.filter(f=>f.bands.includes(n.f)).map(f=>f.k),...(FACTION_VIEWS.own.includes(n.m)?FMAK[n.m]||[]:[])])];
+    return FMAK[n.m]||[]};
+  const fam={};
+  t.nodes.forEach(n=>{const g=own(n);if(g.length){const f=fam[n.f]=fam[n.f]||{},key=g.join(",");f[key]=(f[key]||0)+1}});
+  t.nodes.forEach(n=>{let g=own(n);
+    if(!g.length&&tk!=="conflicts"&&tk!=="mysteries"&&fam[n.f]){const best=Object.entries(fam[n.f]).sort((a,b)=>b[1]-a[1])[0];g=best[0].split(",")}
+    TAGS[n.id]=g});
+});
+MINOR.forEach(n=>TAGS[n.id]=n.fx||[]);
+const LANEI=Object.fromEntries(TIMELINE.map((l,i)=>[l.g,i]));
+// Everything a faction's view shows: tagged entries, its aces, its summary seeds and examples and its own Timeline lanes' entries
+function factionSet(k){
+  const f=FACX[k],s=new Set(Object.keys(TAGS).filter(id=>TAGS[id].includes(k)));
+  ACES.forEach(a=>{if(f.aces.includes(a.g))s.add(a.id)});
+  const c=cardOf(f);((c&&c.from)||[]).forEach(id=>s.add(id));
+  Object.values((c&&c.ex)||{}).forEach(id=>s.add(id));
+  TIMELINE.forEach(l=>{if(f.lanes.includes(l.g))l.ev.forEach(e=>{if(e[3])s.add(e[3])})});
+  CHRONO.forEach(b=>{if(b.id&&b.f.some(i=>f.lanes.includes(TIMELINE[i].g)))s.add(b.id)});
+  // A faction's people keep their family roots, whichever faction those ancestors served
+  if(DATA.people){const P=Object.fromEntries(DATA.people.nodes.map(n=>[n.id,n]));
+    const up=id=>(P[id].p||[]).forEach(([pid,t])=>{if(t!=="X"&&P[pid]&&!s.has(pid)){s.add(pid);up(pid)}});
+    DATA.people.nodes.filter(n=>s.has(n.id)).forEach(n=>up(n.id))}
+  return s;
+}
+const vis=id=>!VW.set||VW.set.has(id);
+function remember(k){try{history.replaceState(null,"","#"+k+(VW.f?"&view="+VW.f:""))}catch(e){}try{localStorage.setItem("atlas-tab",k)}catch(e){}}
 function goTo(id){const k=KEYOF[id];if(k!==current){build(k);remember(k)}select(id);requestAnimationFrame(()=>cards[id].scrollIntoView({block:"center",inline:"center",behavior:reduced?"auto":"smooth"}))}
 
 // tabs
 const tabs=document.getElementById("tabs");
-{const c=document.createElement("button");c.type="button";c.className="tab";c.role="tab";c.id="tab-chrono";c.dataset.k="chrono";
-  c.textContent="Timeline";c.addEventListener("click",()=>{build("chrono");remember("chrono")});tabs.append(c)}
-ORDER.forEach(k=>{
-  const v=DATA[k];
-  const b=document.createElement("button");b.type="button";b.className="tab";b.role="tab";b.id="tab-"+k;b.dataset.k=k;
-  b.innerHTML=`${v.label}<small>${v.nodes.length}</small>`;
-  b.addEventListener("click",()=>{build(k);remember(k)});
-  tabs.append(b);
-  if(k==="frames"){
-    const a=document.createElement("button");a.type="button";a.className="tab";a.role="tab";a.id="tab-aces";a.dataset.k="aces";
-    a.innerHTML=`Aces<small>${ACES.length}</small>`;
-    a.addEventListener("click",()=>{build("aces");remember("aces")});
-    tabs.append(a);
-  }
-  if(k==="conflicts"){
-    const m=document.createElement("button");m.type="button";m.className="tab";m.role="tab";m.id="tab-map";m.dataset.k="map";
-    m.textContent="Map";
-    m.addEventListener("click",()=>{build("map");remember("map")});
-    tabs.append(m);
-    const f=document.createElement("button");f.type="button";f.className="tab";f.role="tab";f.id="tab-timeline";f.dataset.k="timeline";
-    f.textContent="Factions";
-    f.addEventListener("click",()=>{build("timeline");remember("timeline")});
-    tabs.append(f);
-    const s=document.createElement("button");s.type="button";s.className="tab";s.role="tab";s.id="tab-successors";s.dataset.k="successors";
-    s.textContent="Successors";
-    s.addEventListener("click",()=>{build("successors");remember("successors")});
-    tabs.append(s);
-  }
-});
-const chView=document.getElementById("chView"),treeView=document.getElementById("treeView"),mapView=document.getElementById("mapView"),tlView=document.getElementById("tlView"),sucView=document.getElementById("sucView"),aceView=document.getElementById("aceView");
+// Every tab button, keyed by what it builds; then laid out in four labelled groups
+const TABB={};
+const mkTab=(k,label,count)=>{const b=document.createElement("button");b.type="button";b.className="tab";b.role="tab";b.id="tab-"+k;b.dataset.k=k;
+  b.innerHTML=count==null?label:`${label}<small>${count}</small>`;b.addEventListener("click",()=>{build(k);remember(k)});TABB[k]=b;return b};
+mkTab("chrono","Timeline");mkTab("map","Map");mkTab("timeline","Factions");mkTab("aces","Aces",ACES.length);
+ORDER.forEach(k=>mkTab(k,DATA[k].label,DATA[k].nodes.length));
+const TAB_GROUPS=[["Story",["chrono","conflicts","map","timeline"]],["People",["people","aces"]],
+  ["Machines",["frames","supers","vehicles","fleets","weapons","power"]],["World",["orgs","doctrine","mysteries"]]];
+{const placed=new Set(TAB_GROUPS.flatMap(g=>g[1])),rest=ORDER.filter(k=>!placed.has(k));
+  if(rest.length)TAB_GROUPS.push(["More",rest]);
+  TAB_GROUPS.forEach(([name,keys])=>{const ks=keys.filter(k=>TABB[k]);if(!ks.length)return;
+    const g=document.createElement("div");g.className="tg";g.setAttribute("role","presentation");g.dataset.g=name;
+    g.innerHTML=`<span class="tg-l" aria-hidden="true">${name}</span><div class="tg-t" role="presentation"></div>`;
+    ks.forEach(k=>g.lastChild.append(TABB[k]));tabs.append(g)})}
+// A group whose tabs are all hidden in a faction view hides its label too
+function syncTabGroups(){tabs.querySelectorAll(".tg").forEach(g=>{g.hidden=![...g.querySelectorAll(".tab")].some(b=>!b.hidden)})}
+const chView=document.getElementById("chView"),treeView=document.getElementById("treeView"),mapView=document.getElementById("mapView"),tlView=document.getElementById("tlView"),aceView=document.getElementById("aceView");
 // Views that aren't lineage trees, by tab key
-const VIEWS={chrono:chView,map:mapView,timeline:tlView,successors:sucView,aces:aceView};
+const VIEWS={chrono:chView,map:mapView,timeline:tlView,aces:aceView};
 
 function build(key){
   if(current===key)return;
@@ -549,7 +777,10 @@ function build(key){
   document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.k===key)));
   document.getElementById("intro").textContent=ds.intro;
   renderPlate(PLATES[key]);
-  document.getElementById("turns").innerHTML=ds.turns.map(([e,h,p])=>`<div class="turn"><span class="era">${e}</span><h3>${h}</h3><p>${p}</p></div>`).join("");
+  foldOpen(document.getElementById("turns-d"),false);
+  foldOpen(document.getElementById("key-d"),false);
+  document.getElementById("key-h").textContent=`${ds.groupLabel} and key`;
+  loadGens(key);loadFams(key);
   const R=ds.rel;
   document.getElementById("lines").innerHTML=`<span class="legend-label">Lines</span>
     <span class="lt"><svg width="38" height="10"><path d="M2 5H36" stroke="var(--line)" stroke-width="1.6"/></svg>${R.D}</span>
@@ -568,22 +799,16 @@ function build(key){
   // makers legend
   const mk=document.getElementById("makers");
   mk.innerHTML=`<span class="legend-label">${ds.groupLabel}</span>`;
-  const used=[...new Set(ds.nodes.map(n=>n.m))];
+  const used=[...new Set(ds.nodes.filter(n=>vis(n.id)).map(n=>n.m))];
   Object.keys(GROUPS).filter(c=>used.includes(c)).forEach(code=>{
     const [nm,sub]=GROUPS[code];
     const b=document.createElement("button");b.type="button";b.className="mk";b.dataset.m=code;b.setAttribute("aria-pressed","false");
-    b.innerHTML=`<span class="chip" style="--mc:${col(code)}">${chipText(code)}</span>${nm} <small>${sub}</small>`;
+    b.title=sub;b.innerHTML=`<span class="chip" style="--mc:${col(code)}">${chipText(code)}</span>${nm}`;
     b.addEventListener("click",()=>{state.maker=state.maker===code?null:code;state.sel=null;apply()});
     mk.append(b);
   });
 
   chart.innerHTML="";
-  const NC=(ds.cols||COLS).length;
-  chart.style.setProperty("--ncol",NC);
-  // Six columns still fit the page width with a tighter gap; seven need sideways scrolling
-  chart.style.setProperty("--gap",NC>5?"28px":"44px");
-  chart.style.setProperty("--minw",NC>5?`${NC*165+(NC-1)*28}px`:"1080px");
-  document.querySelector(".scroll-note").classList.toggle("wide",NC>6);
   svg=document.createElementNS(SVGNS,"svg");
   svg.innerHTML=`<defs>
 <marker id="ad" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L8 4L0 8z"/></marker>
@@ -591,8 +816,7 @@ function build(key){
   const g=document.createElementNS(SVGNS,"g");svg.append(g);chart.append(svg);
   EDGES.forEach(e=>{const p=document.createElementNS(SVGNS,"path");p.setAttribute("class",`edge ${e.t}${e.cross?" cross":""}`);p.setAttribute("marker-end",e.t==="X"?"url(#ax)":"url(#ad)");g.append(p);e.path=p});
 
-  const cols=document.createElement("div");cols.className="cols";
-  cols.innerHTML=(ds.cols||COLS).map(([k,y])=>`<div><b>${k}</b><span>${y}</span></div>`).join("");
+  const cols=document.createElement("div");cols.className="cols";cols.id="colhead";
   chart.append(cols);
 
   ds.fams.forEach(([fid,name,blurb])=>{
@@ -604,17 +828,44 @@ function build(key){
       b.type="button";b.className="card"+(n.m==="PRE"||(ds.preCol&&n.c===0)?" pre":"")+(n.z?" end":"")+(ds.projCol!=null&&n.c>=ds.projCol?" proj":"")+(n.rx?" rx":"");
       b.style.gridColumn=n.c+1;b.style.gridRow=n.r+1;
       b.style.setProperty("--mc",col(n.m));
-      const cross=n.p.filter(([pid])=>byId[pid].f!==n.f).map(([pid])=>short(byId[pid]));
+      const cross=n.p.filter(([pid])=>byId[pid].f!==n.f&&vis(pid)).map(([pid])=>short(byId[pid]));
       const kit=(lbl,ids)=>ids&&ids.length?`<span class="kit"><b>${lbl}</b> ${ids.map(ref).join(" · ")}</span>`:"";
       b.innerHTML=`${ART[n.id]?`<img class="thumb" src="thumb/${ART[n.id]}-scene.jpg" alt="" loading="lazy" decoding="async">`:""}<span class="top"><span class="chip">${chipText(n.m)}</span>${n.d?`<span class="desig">${n.d}</span>`:""}${n.s?`<span class="spec">${n.s}</span>`:""}</span>
-        <span class="name">${n.n}</span><span class="tag">${n.t}</span>${kit("BASE",n.fr)}${key==="frames"&&VERS[n.id]?`<span class="kit"><b>VERSIONS</b> ${VERS[n.id].map(v=>v.vn).join(" · ")}</span>`:""}${kit("MECHS",n.mx)}${kit("PWR",n.pw)}${kit("ARM",n.wp)}${cross.length?`<span class="xtag">${ds.xword} ${cross.join(", ")}</span>`:""}${n.z?`<span class="fate"><b>END</b> ${n.z}</span>`:""}`;
+        <span class="name">${n.n}</span><span class="tag">${n.t}</span>${kit("BASE",n.fr)}${key==="frames"&&VERS[n.id]?`<span class="kit"><b>+${VERS[n.id].length}</b> ${VERS[n.id].length===1?"version":"versions"}</span>`:""}${kit("MECHS",n.mx)}${cross.length?`<span class="xtag">${ds.xword} ${cross.join(", ")}</span>`:""}${n.z?`<span class="fate"><b>END</b> ${n.z}</span>`:""}`;
       b.addEventListener("click",()=>select(state.sel===n.id?null:n.id));
       cards[n.id]=b;grid.append(b);
     });
     sec.append(grid);chart.append(sec);bands[fid]=sec;
   });
-  draw();apply();
+  draw();apply();renderProfile();
 }
+// A tree's faction profile: one row per faction summarising what it runs, linked to the entries (filtered in a faction view)
+function renderProfile(){
+  const pd=document.getElementById("profile-d"),pf=document.getElementById("profile"),rows=(ds.profile||[]).filter(r=>FACX[r.k]&&(!VW.f||r.k===VW.f));
+  pd.hidden=!rows.length;syncFolds();if(!rows.length){pf.innerHTML="";return}
+  // In a faction view the panel is one row, so it opens unless the viewer has closed it on this tree
+  document.getElementById("profile-h").innerHTML=ds.profileH||"Who runs what";
+  document.getElementById("profile-n").textContent=`· ${rows.length} ${rows.length===1?"faction":"factions"}`;
+  foldOpen(pd,!!VW.f);
+  pf.innerHTML=`<div class="pf">${rows.map(r=>{const f=FACX[r.k];return `<div class="pf-r" style="--fc:var(${facColour(f)})"><b>${facName(f)}</b><p>${r.t}</p><span class="pf-l">${r.ids.filter(id=>byId[id]&&vis(id)).map(id=>`<button type="button" class="lk" data-sel="${id}"><span class="chip" style="--mc:${col(byId[id].m)}">${chipText(byId[id].m)}</span><span class="nm">${label(byId[id])}</span></button>`).join("")}</span></div>`}).join("")}</div>`;
+  pf.querySelectorAll("[data-sel]").forEach(b=>b.addEventListener("click",()=>{select(b.dataset.sel);cards[b.dataset.sel].scrollIntoView({block:"center",inline:"center",behavior:reduced?"auto":"smooth"})}));
+}
+// Collapsible panels above a tree: each viewer's open or closed choice is remembered per tree and per panel ("1" open, "0" closed)
+const foldKey=d=>`atlas-open-${current}-${d.dataset.sec}`;
+function foldOpen(d,dflt){
+  let v=null;try{v=localStorage.getItem(foldKey(d))}catch(e){}
+  const o=v==="1"?true:v==="0"?false:dflt;d._set=o;d.open=o;
+}
+// Only the viewer's own toggles are stored; opening or closing a panel from code sets _set first, so its toggle event is skipped
+document.querySelectorAll(".fold").forEach(d=>d.addEventListener("toggle",()=>{
+  if(d.open===d._set)return;d._set=d.open;
+  try{localStorage.setItem(foldKey(d),d.open?"1":"0")}catch(e){}
+}));
+// The panel group's rule lines go when neither panel has anything to show
+function syncFolds(){document.getElementById("folds").hidden=["turns-d","profile-d","key-d"].every(id=>document.getElementById(id).hidden)}
+// The key panel's summary counts the makers, and names the one the tree is filtered to while the panel is closed
+function keyCount(){const n=document.querySelectorAll("#makers .mk").length,m=state.maker&&GROUPS[state.maker];
+  document.getElementById("key-n").textContent=`· ${n}${m?` · showing ${m[0]} only`:""}`}
 
 function draw(){
   if(!svg)return;
@@ -631,9 +882,88 @@ function draw(){
 function walk(id,key,set){byId[id][key].forEach(([o])=>{if(!set.has(o)){set.add(o);walk(o,key,set)}})}
 function lineage(id){const s=new Set([id]);walk(id,"p",s);walk(id,"k",s);return s}
 
+// ---- Generation picker: wide trees let the reader choose which columns to show, remembered per tree ----
+const GSEL={};
+const gensOf=()=>(ds.cols||COLS);
+const genNum=lbl=>{const m=/^Gen (\d+)/.exec(lbl);return m?+m[1]:null};
+function loadGens(key){
+  if(key in GSEL)return;GSEL[key]=null;
+  try{const v=JSON.parse(localStorage.getItem("atlas-gens-"+key)||"null");if(Array.isArray(v)&&v.length&&v.every(c=>c>=0&&c<(DATA[key].cols||COLS).length))GSEL[key]=new Set(v)}catch(e){}
+}
+function setGens(cs){
+  const all=gensOf().length;GSEL[current]=cs&&cs.size&&cs.size<all?cs:null;
+  try{localStorage.setItem("atlas-gens-"+current,JSON.stringify(GSEL[current]?[...GSEL[current]]:null))}catch(e){}
+  if(state.sel&&!colShown(byId[state.sel].c))state.sel=null;
+  apply();
+}
+const colShown=c=>!GSEL[current]||GSEL[current].has(c);
+function renderGens(){
+  const el=document.getElementById("gens"),cl=gensOf();
+  el.hidden=cl.length<=6;if(el.hidden){el.innerHTML="";return}
+  const sel=GSEL[current],idx=cl.map((_,i)=>i);
+  const pick=f=>new Set(idx.filter(i=>{const g=genNum(cl[i][0]);return g!=null&&f(g)}));
+  const same=(a,b)=>!!a&&a.size===b.size&&[...b].every(i=>a.has(i));
+  const before=pick(g=>g<=5),after=pick(g=>g>=6);
+  const presets=[["All",null,!sel]];
+  if(before.size&&after.size)presets.push(["Before the war",before,same(sel,before)],["After the war",after,same(sel,after)]);
+  el.innerHTML=`<span class="legend-label">Generations</span>`+presets.map(([l,,on],i)=>`<button type="button" class="gn pre" data-p="${i}" aria-pressed="${on}">${l}</button>`).join("")+
+    `<span class="gn-sep" aria-hidden="true"></span>`+cl.map(([k,y],i)=>`<button type="button" class="gn" data-c="${i}" aria-pressed="${!!sel&&sel.has(i)}" title="${k} · ${y}">${k}</button>`).join("");
+  el.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>{const p=presets[+b.dataset.p][1];setGens(p&&new Set(p))}));
+  // With every generation shown, a chip shows that one alone; otherwise it adds or removes that generation
+  el.querySelectorAll("[data-c]").forEach(b=>b.addEventListener("click",()=>{const c=+b.dataset.c,cur=GSEL[current];
+    if(!cur)return setGens(new Set([c]));const s=new Set(cur);s.has(c)?s.delete(c):s.add(c);setGens(s.size?s:null)}));
+}
+// ---- Type picker: on trees whose bands are types rather than makers, choose which bands to show, remembered per tree ----
+const FAMROW={fleets:"Ship types",vehicles:"Types"},FSEL={};
+function loadFams(key){
+  if(key in FSEL)return;FSEL[key]=null;
+  try{const ids=new Set(DATA[key].fams.map(f=>f[0])),v=JSON.parse(localStorage.getItem("atlas-fams-"+key)||"null");if(Array.isArray(v)&&v.length&&v.every(f=>ids.has(f)))FSEL[key]=new Set(v)}catch(e){}
+}
+const famShown=f=>!FSEL[current]||FSEL[current].has(f);
+function saveFams(){try{localStorage.setItem("atlas-fams-"+current,JSON.stringify(FSEL[current]?[...FSEL[current]]:null))}catch(e){}}
+function setFams(fs){
+  FSEL[current]=fs&&fs.size&&fs.size<ds.fams.length?fs:null;saveFams();
+  if(state.sel&&!famShown(byId[state.sel].f))state.sel=null;
+  apply();
+}
+function renderFams(){
+  const el=document.getElementById("famsel"),lbl=FAMROW[current];
+  el.hidden=!lbl;if(!lbl){el.innerHTML="";return}
+  const sel=FSEL[current];
+  el.innerHTML=`<span class="legend-label">${lbl}</span><button type="button" class="gn pre" data-fa="" aria-pressed="${!sel}">All</button><span class="gn-sep" aria-hidden="true"></span>`+
+    ds.fams.map(([f,name])=>`<button type="button" class="gn" data-fa="${f}" aria-pressed="${!!sel&&sel.has(f)}">${name}</button>`).join("");
+  // As with generations: from All, a chip shows that type alone; after that it adds or removes it
+  el.querySelectorAll("[data-fa]").forEach(b=>b.addEventListener("click",()=>{const f=b.dataset.fa,cur=FSEL[current];
+    if(!f)return setFams(null);if(!cur)return setFams(new Set([f]));const s=new Set(cur);s.has(f)?s.delete(f):s.add(f);setFams(s.size?s:null)}));
+}
+// Lay the chart out over the shown columns only, and show only the turning points for those generations
+function layoutCols(){
+  const cl=gensOf(),vc=cl.map((_,i)=>i).filter(colShown),NC=vc.length;
+  chart.style.setProperty("--ncol",NC);
+  // Six columns still fit the page width with a tighter gap; seven need sideways scrolling
+  chart.style.setProperty("--gap",NC>5?"28px":"44px");
+  chart.style.setProperty("--minw",NC>5?`${NC*165+(NC-1)*28}px`:NC>2?"1080px":"0px");
+  document.querySelector(".scroll-note").classList.toggle("wide",NC>6);
+  document.getElementById("colhead").innerHTML=vc.map(i=>`<div><b>${cl[i][0]}</b><span>${cl[i][1]}</span></div>`).join("");
+  ds.nodes.forEach(n=>cards[n.id].style.gridColumn=Math.max(vc.indexOf(n.c),0)+1);
+  const labels=cl.map(c=>c[0]),shownL=new Set(vc.map(i=>labels[i]));
+  const turns=(ds.turns||[]).filter(([e])=>!labels.includes(e)||shownL.has(e));
+  document.getElementById("turns").innerHTML=turns.map(([e,h,p])=>`<div class="turn"><span class="era">${e}</span><h3>${h}</h3><p>${p}</p></div>`).join("");
+  document.getElementById("turns-n").textContent=`· ${turns.length}`;
+  document.getElementById("turns-d").hidden=!turns.length;syncFolds();
+  renderGens();
+}
+
 function apply(){
   // A selected maker filters the tree down to its own entries; a selected entry dims everything outside its lineage
-  const only=state.maker?new Set(ds.nodes.filter(n=>n.m===state.maker).map(n=>n.id)):null;
+  // A faction view hides everything outside it, and a maker filter narrows what is left
+  let only=VW.set?new Set(ds.nodes.filter(n=>VW.set.has(n.id)).map(n=>n.id)):null;
+  if(state.maker){const m=ds.nodes.filter(n=>n.m===state.maker&&(!only||only.has(n.id))).map(n=>n.id);only=new Set(m)}
+  // The generation picker narrows it to the chosen columns
+  if(GSEL[current])only=new Set(ds.nodes.filter(n=>colShown(n.c)&&(!only||only.has(n.id))).map(n=>n.id));
+  // and the type picker to the chosen bands
+  if(FSEL[current])only=new Set(ds.nodes.filter(n=>famShown(n.f)&&(!only||only.has(n.id))).map(n=>n.id));
+  layoutCols();renderFams();
   const lit=state.sel?lineage(state.sel):null;
   ds.nodes.forEach(n=>{const c=cards[n.id];c.hidden=!!only&&!only.has(n.id);c.classList.toggle("dim",!!lit&&!lit.has(n.id));c.classList.toggle("sel",state.sel===n.id);c.setAttribute("aria-pressed",String(state.sel===n.id))});
   // Hide empty families and close up the rows left by hidden entries
@@ -650,30 +980,33 @@ function apply(){
     e.path.classList.toggle("show",on);
   });
   document.querySelectorAll(".mk").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.m===state.maker)));
+  keyCount();
   draw();
   renderSheet();
 }
+// Sheets leave out any heading whose list came back empty ("Nothing yet.", "None.")
+const noEmpty=h=>h.replace(/<h4>[^<]*<\/h4>\s*<p class="none">[^<]*<\/p>/g,"");
 function relList(list){
+  list=list.filter(([o])=>vis(o));
   if(!list.length)return `<p class="none">Nothing yet.</p>`;
   return `<ul>${list.map(([o,t])=>{const n=byId[o];return `<li><button type="button" class="lk" data-id="${o}"><span class="chip" style="--mc:${col(n.m)}">${n.m==="PRE"?"PRE":n.m}</span><span class="nm">${label(n)}</span></button><span class="rt ${t}">${ds.rel[t].toLowerCase()}</span></li>`}).join("")}</ul>`;
 }
 function goList(ids){
-  if(!ids||!ids.length)return `<p class="none">None.</p>`;
+  ids=(ids||[]).filter(id=>vis(id));
+  if(!ids.length)return `<p class="none">None.</p>`;
   return `<ul>${ids.map(id=>{const a=ACEX[id];if(a)return `<li><button type="button" class="lk" data-ace="${id}"><span class="chip" style="--mc:var(--m-${ACEC[a.g]})">ACE</span><span class="nm">${a.n}${a.cs?` “${a.cs}”`:""}</span></button><span class="rt">aces →</span></li>`;const n=IDX[id];return `<li><button type="button" class="lk" data-go="${id}"><span class="chip" style="--mc:${col(n.m)}">${n.m==="PRE"?"PRE":n.m}</span><span class="nm">${label(n)}</span></button><span class="rt">${DATA[KEYOF[id]].label.toLowerCase()} tree →</span></li>`}).join("")}</ul>`;
 }
 // Concept art pair for one entry or named version: scene and technical drawing, each opening full size
 const artPair=(stem,lbl)=>`<div class="art">${[["scene","Scene"],["tech","Technical drawing"]].map(([k,l])=>`<button type="button" data-art="art/${stem}-${k}.jpg" data-cap="${lbl} · ${l}"><img src="art/${stem}-${k}.jpg" alt="${lbl}, ${l.toLowerCase()}" loading="lazy"><span>${l}</span></button>`).join("")}</div>`;
 // Key art: one standalone scene for an entry, ace, faction or the setting itself (SCENES), opening full size
-const scene=(id,name)=>{const s=SCENES[id];return s?`<figure class="scene"><button type="button" data-art="art/${s.f}.jpg" data-cap="${name} · ${s.h}"><img src="art/${s.f}.jpg" alt="${name}: ${s.h.toLowerCase()}" loading="lazy" decoding="async"></button><figcaption><span class="era">Key art</span><b>${s.h}</b><p>${s.c}</p></figcaption></figure>`:""};
+const scene=(id,name)=>{const s=SCENES[id];return s?`<figure class="scene"><button type="button" data-art="art/${s.f}.jpg" data-cap="${name} · ${s.h}"><img${s.t?' class="tall"':""} src="art/${s.f}.jpg" alt="${name}: ${s.h.toLowerCase()}" loading="lazy" decoding="async"></button><figcaption><span class="era">Key art</span><b>${s.h}</b><p>${s.c}</p></figcaption></figure>`:""};
 const bindArt=el=>el.querySelectorAll("[data-art]").forEach(b=>b.addEventListener("click",()=>openArt(b.dataset.art,b.dataset.cap)));
-if(SCENES.headline){const s=SCENES.headline,hero=document.getElementById("hero");hero.hidden=false;
-  hero.innerHTML=`<button type="button" data-art="art/${s.f}.jpg" data-cap="${s.h} · ${s.c}"><img src="art/${s.f}.jpg" alt="${s.c}" decoding="async"></button>`;bindArt(hero)}
 // A tree's scene plate sits below its intro; trees without one show the intro alone
 function renderPlate(p){
   const el=document.getElementById("plate");el.hidden=!p;if(!p){el.innerHTML="";return}
   const names=p.go.map(id=>label(IDX[id])).join(" · ");
-  el.innerHTML=`<button type="button" data-art="art/${p.f}.jpg" data-cap="${names} · ${p.h}"><img src="art/${p.f}.jpg" alt="${names}: ${p.h.toLowerCase()}" loading="lazy" decoding="async"></button>
-    <figcaption><span class="era">Scene · ${names}</span><h2>${p.h}</h2><p>${p.c}</p><div class="seeds">${goList(p.go)}</div></figcaption>`;
+  el.innerHTML=`<button type="button" data-art="art/${p.f}.jpg" data-cap="${names} · ${p.h} · ${p.c}"><img src="art/${p.f}.jpg" alt="${names}: ${p.h.toLowerCase()}" loading="lazy" decoding="async"></button>
+    <figcaption><span class="era">Scene</span><h2>${p.h}</h2><div class="seeds">${goList(p.go)}</div></figcaption>`;
   el.querySelector("[data-art]").addEventListener("click",e=>openArt(e.currentTarget.dataset.art,e.currentTarget.dataset.cap));
   el.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
 }
@@ -682,14 +1015,16 @@ function renderSheet(){
   if(!n){sheet.hidden=true;document.body.classList.remove("has-sheet");return}
   const [mn,sub]=GROUPS[n.m];
   let links="";
-  if(current==="conflicts")links=`<h4>Machines involved</h4>${goList(n.mx)}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`;
+  if(current==="conflicts")links=`${n.ln?`<h4>Roots in the atlas</h4>${goList(n.ln)}`:""}${n.mx||n.c<SYS0?`<h4>Machines involved</h4>${goList(n.mx)}`:""}${MAPV.some(([k])=>sitesOf(k,n.id))?`<button type="button" class="go" data-map="${n.id}">Show on the map →</button>`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`;
   else if(current==="frames"||(current==="supers"&&(n.fr||n.pw||n.wp)))links=`${n.fr?`<h4>Built on</h4>${goList(n.fr)}`:""}<h4>Power plant</h4>${goList(n.pw)}<h4>Armament</h4>${goList(n.wp)}<h4>Doctrine</h4>${goList(n.dc)}`;
-  else if(current==="vehicles"||current==="carriers"||current==="fleets")links=`${n.ln?`<h4>In the atlas</h4>${goList(n.ln)}`:""}${n.mx?`<h4>Mechs involved</h4>${goList(n.mx)}`:""}${n.pw?`<h4>Power plant</h4>${goList(n.pw)}`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine</h4>${goList(n.dc)}`:""}`;
+  else if(current==="vehicles"||current==="fleets")links=`${n.ln?`<h4>In the atlas</h4>${goList(n.ln)}`:""}${n.mx?`<h4>Mechs involved</h4>${goList(n.mx)}`:""}${n.pw?`<h4>Power plant</h4>${goList(n.pw)}`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine</h4>${goList(n.dc)}`:""}`;
   else if(current==="orgs")links=n.ln?`<h4>In the atlas</h4>${goList(n.ln)}`:"";
+  else if(current==="people")links=n.ln?`<h4>In their story</h4>${goList(n.ln)}`:"";
+  else if(current==="mysteries")links=n.ln?`<h4>Where it touches the atlas</h4>${goList(n.ln)}`:"";
   else links=`${n.pw?`<h4>Power plant</h4>${goList(n.pw)}`:""}${n.dc?`<h4>Doctrine</h4>${goList(n.dc)}`:""}`;
   if(USED[n.id])links+=Object.entries(USED[n.id]).map(([k,ids])=>`<h4>${SRC[k]}</h4>${goList(ids)}`).join("");
   if(current==="frames"&&(VERS[n.id]||ACED[n.id]))links=`${VERS[n.id]?`<h4>Other versions</h4><ul class="vers">${VERS[n.id].map(v=>`<li><span class="vn"><span class="bd ${v.b}">${BUILD[v.b].toUpperCase()}</span>${v.vn}</span>${VART[v.vn]?artPair(VART[v.vn],v.vn):""}<span class="fn">${v.note}</span><span class="who">Flown by ${pilots(v.who)}</span></li>`).join("")}</ul>`:""}${ACED[n.id]?`<h4>Aces who flew it as built</h4><p class="who">${pilots(ACED[n.id])}</p>`:""}`+links;
-  sheet.innerHTML=`<div class="sheet-h"><div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+  sheet.innerHTML=noEmpty(`<div class="sheet-h"><div style="display:flex;flex-direction:column;gap:6px;min-width:0">
       <span class="top"><span class="chip" style="--mc:${col(n.m)}">${chipText(n.m)}</span>${n.d?`<span class="desig">${n.d}</span>`:""}</span>
       <h3>${n.n}</h3><span class="meta">${mn} · ${sub} · ${(ds.cols||COLS)[n.c][0]} (${(ds.cols||COLS)[n.c][1]})${n.s&&n.s!=="varies"?` · ${n.s}`:""}</span></div>
       <button type="button" class="x" id="close">Close</button></div>
@@ -700,37 +1035,53 @@ function renderSheet(){
     ${n.z?`<p class="meta">Line ended ${n.z}</p>`:""}
     <h4>Came from</h4>${relList(n.p)}
     <h4>Led to</h4>${relList(n.k)}
-    ${links}`;
+    ${links}`);
   sheet.hidden=false;document.body.classList.add("has-sheet");
   sheet.querySelector("#close").addEventListener("click",()=>select(null));
   sheet.querySelectorAll("[data-art]").forEach(b=>b.addEventListener("click",()=>openArt(b.dataset.art,b.dataset.cap)));
   sheet.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>goTo(b.dataset.go)));
   sheet.querySelectorAll("[data-ace]").forEach(b=>b.addEventListener("click",()=>showAce(b.dataset.ace)));
+  sheet.querySelectorAll("[data-map]").forEach(b=>b.addEventListener("click",()=>showOnMap(b.dataset.map)));
   sheet.querySelectorAll(".lk[data-id]").forEach(b=>b.addEventListener("click",()=>{select(b.dataset.id);cards[b.dataset.id].scrollIntoView({block:"center",inline:"center",behavior:reduced?"auto":"smooth"})}));
 }
 // Selecting keeps a maker filter unless the entry lies outside it
-function select(id){state.sel=id;if(id&&state.maker&&byId[id].m!==state.maker)state.maker=null;apply()}
+function select(id){state.sel=id;if(id&&state.maker&&byId[id].m!==state.maker)state.maker=null;
+  // An entry opened from elsewhere in a hidden generation brings that generation back into view
+  if(id&&!colShown(byId[id].c)){GSEL[current].add(byId[id].c);try{localStorage.setItem("atlas-gens-"+current,JSON.stringify([...GSEL[current]]))}catch(e){}}
+  if(id&&!famShown(byId[id].f)){FSEL[current].add(byId[id].f);saveFams()}
+  apply()}
 const lb=document.getElementById("lb");
 function openArt(src,cap){document.getElementById("lb-img").src=src;document.getElementById("lb-img").alt=cap;document.getElementById("lb-cap").textContent=cap;
   if(lb.showModal)lb.showModal();else window.open(src,"_blank")}
 document.getElementById("lb-x").addEventListener("click",()=>lb.close());
 lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});
-document.addEventListener("keydown",e=>{if(lb.open)return;if(e.key!=="Escape")return;
+// The guide: how to use the atlas. It opens by itself once, the first time a visitor enters, and from the Guide button after that
+const guide=document.getElementById("guide");
+function openGuide(){if(guide.open)return;if(guide.showModal)guide.showModal();else guide.setAttribute("open","")}
+function maybeGuide(){let seen=false;try{seen=localStorage.getItem("atlas-guide-seen")==="1"}catch(e){}if(!seen)openGuide()}
+guide.addEventListener("close",()=>{try{localStorage.setItem("atlas-guide-seen","1")}catch(e){}});
+guide.addEventListener("click",e=>{if(e.target===guide)guide.close()});
+guide.querySelectorAll("[data-gclose]").forEach(b=>b.addEventListener("click",()=>guide.close()));
+guide.querySelector("[data-gtimeline]").addEventListener("click",()=>{guide.close();build("chrono");remember("chrono");scrollTo(0,0)});
+document.addEventListener("keydown",e=>{if(lb.open||guide.open)return;if(e.key!=="Escape")return;
+  if(!document.getElementById("landing").hidden){closeLanding();applyView(VW.f,true);return}
   if(current==="map"){if(M.sel)mapSelect(null);return}
   if(state.sel||state.maker){state.sel=null;state.maker=null;apply()}});
 
 // ---- World map ----
-function future(){
-  const s={};
+function future(post){
+  // The war map (Gen 5), or after the war (post) the same powers without the fighting
+  const s={},w=post?{p:1}:{w:1};
   Object.entries(FUTURE).forEach(([b,ns])=>ns.forEach(n=>s[n]={b,l:"m"}));
   Object.entries(FUTURE_SPHERE).forEach(([b,ns])=>ns.forEach(n=>s[n]={b,l:"s"}));
-  Object.entries(FUTURE_FRONT).forEach(([b,ns])=>ns.forEach(n=>s[n]=b?{b,l:"c",w:1}:{l:"c",w:1}));
-  FUTURE_FIGHTING.forEach(n=>s[n]={...s[n],w:1});
-  s.Canada={split:CANADA_SPLIT,w:1};
+  Object.entries(FUTURE_FRONT).forEach(([b,ns])=>ns.forEach(n=>s[n]=b?{b,l:"c",...w}:{l:"c",...w}));
+  if(!post)FUTURE_FIGHTING.forEach(n=>s[n]={...s[n],w:1});
+  s.Canada={split:CANADA_SPLIT,...(post?{}:{w:1})};
   return s;
 }
 function politics(e){
   if(e===5)return future();
+  if(e>5)return Object.assign(future(true),FUTURE_OVR[e-6]||{});
   const s={};
   Object.entries(MEMB).forEach(([b,ns])=>ns.forEach(n=>s[n]={b,l:"m"}));
   US_ALLIES.forEach(n=>s[n]={b:"ATL",l:"a"});
@@ -743,44 +1094,66 @@ function politics(e){
 }
 const MINORX=Object.fromEntries(MINOR.map(n=>[n.id,n]));
 const FIGHT=new Set(["WAR","CLH","PRX","IRR"]);
-// Non-government organisations alive in an era: from their own column to the war, or to the column in "to"
-const orgNodes=e=>DATA.orgs.nodes.filter(n=>ORGMAP[n.id]&&n.c<=e&&(ORGMAP[n.id].to==null||e<=ORGMAP[n.id].to));
-const orgPlace=id=>{const o=ORGMAP[id];return o.sky||o.at.map(a=>a[2]).join("; ")};
-const placeOf=id=>ORGMAP[id]?orgPlace(id):LOC[id]?LOC[id][2]:ORBIT[id]||MINORX[id].at[2];
 const pos=(v,[,l,r])=>v===0?"Neutral":`${Math.abs(v)===2?"Strongly":"Weakly"} ${v<0?l:r}`;
-const pcard=(p,colour,extra="")=>`<article class="pcard" style="--pc:var(${colour})"><h3>${p.n}</h3><span class="meta">${p.home} · Faith: ${p.faith}</span><p>${p.id}</p>
-    <ul class="axes">${AXES.map((a,i)=>{const v=p.ax[i];return `<li title="${a[1]} ↔ ${a[2]}"><span class="an">${a[0]}</span><span class="dots" aria-hidden="true">${[-2,-1,0,1,2].map(x=>`<i${x===v?' class="on"':""}></i>`).join("")}</span><span>${v==null?"TBD":pos(v,a)}</span></li>`}).join("")}</ul>
-    <p class="seed">${p.seed}</p>${extra}</article>`;
-function renderHeirs(){
-  document.getElementById("hmap").innerHTML=HEIRS.map(([from,to,note])=>`<li><span class="hb">${from}<i aria-label="becomes">→</i>${to.map(t=>BLOC[t]?BLOC[t][0]:t).join(" and ")}</span><span class="hn">${note}</span></li>`).join("");
-  const powers=document.getElementById("powers");
-  powers.innerHTML=POWERS.map(p=>pcard(p,BLOC[p.b][1],`${p.k?scene(p.k,p.n):""}<div class="seeds"><h4>Starts in this atlas</h4>${goList(p.from)}</div>`)).join("")+pcard(UNEL,"--m-ASC",`${scene("UNEL",UNEL.n)}<div class="seeds"><h4>Starts in this atlas</h4>${goList(UNEL.from)}</div>`);
-  powers.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
-  powers.querySelectorAll("[data-ace]").forEach(b=>b.addEventListener("click",()=>showAce(b.dataset.ace)));
-  bindArt(powers);
-  const space=document.getElementById("space");
-  space.innerHTML=SPACE.map(p=>pcard(p,`--m-${GROUPS[p.b][2]}`,`${p.k?scene(p.k,p.n):""}<div class="seeds"><h4>Starts in this atlas</h4>${goList(p.from)}</div>`)).join("");
-  space.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
-  space.querySelectorAll("[data-ace]").forEach(b=>b.addEventListener("click",()=>showAce(b.dataset.ace)));
-  bindArt(space);
-}
-renderHeirs();
-const M={orgs:true,era:4,past:true,sel:null,world:null,failed:false,num:{},zt:null,zoom:null,zsel:null};
-const yearOf=n=>n.d==="Now"?2186:(parseInt(n.d,10)||9999);
+// ---- The map: one generation at a time, Gen 0–9, seen four ways: Earth, the Moon, Mars and the inner system ----
+// Conflicts before Gen 6 belong to No Haven on Earth, from Gen 6 to No Peace Past Luna
+const SYS0=6;
+const M={orgs:true,e:4,view:null,sel:null,world:null,failed:false,num:{},zt:null,zoom:null,zsel:null,eraN:0};
+// The reader's chosen view; without one the map opens on Earth up to the war and on the inner system after it
+try{const v=localStorage.getItem("atlas-map-view");if(["earth","moon","mars","sys"].includes(v))M.view=v}catch(e){}
+const MAPV=[["earth","Earth"],["moon","Moon"],["mars","Mars"],["sys","Inner system"]];
+const WHERE={earth:"on Earth",moon:"on the Moon",mars:"on Mars or its moons",sys:"in the inner system"};
+const curView=()=>M.view||(M.e<SYS0?"earth":"sys");
+const yearOf=n=>n.d==="Now"?2186:(parseInt(String(n.d).replace(/^c\.\s*/,""),10)||9999);
+const byYear=(a,b)=>yearOf(a)-yearOf(b);
 const fillFor=s=>{if(!s||!s.b)return "var(--land)";const pct=s.l==="m"?60:s.l==="n"?30:s.l==="c"?20:26;return `color-mix(in srgb,var(${BLOC[s.b][1]}) ${pct}%,var(--card))`};
-const stateOf=st=>{if(!st)return "";if(!st.b)return st.l==="c"?" · Contested frontline":"";const [nm,,ar]=BLOC[st.b];
-  return " · "+(st.l==="m"?nm:st.l==="n"?"Non-aligned":st.l==="c"?`Contested frontline, mostly ${ar}${nm}'s influence`:st.l==="s"?`In the sphere of ${ar}${nm}`:`Partner of ${ar}${nm}`)};
-const eraNodes=e=>DATA.conflicts.nodes.filter(n=>n.c===e).sort((a,b)=>yearOf(a)-yearOf(b));
-const minorNodes=e=>MINOR.filter(n=>n.c===e).sort((a,b)=>yearOf(a)-yearOf(b));
+const stateOf=st=>{if(!st)return "";if(!st.b)return st.l==="c"?(st.p?" · No single power":" · Contested frontline"):"";const [nm,,ar]=BLOC[st.b];
+  return " · "+(st.l==="m"?nm:st.l==="n"?"Non-aligned":st.l==="c"?(st.p?`Under ${ar}${nm}'s influence`:`Contested frontline, mostly ${ar}${nm}'s influence`):st.l==="s"?`In the sphere of ${ar}${nm}`:`Partner of ${ar}${nm}`)};
+// Where an entry sits in a view: a list of sites, [lon, lat, place] or [body, place]
+const sitesOf=(v,id)=>v==="earth"?(LOC[id]?[LOC[id]]:null):v==="sys"?(SOLAR.at[id]?[SOLAR.at[id]]:null):((SITES[v]||{})[id]||null);
+const sitePlace=s=>typeof s[0]==="number"?s[2]:s[1];
+const viewNodes=(v,e)=>DATA.conflicts.nodes.filter(n=>n.c===e&&vis(n.id)&&sitesOf(v,n.id)).sort(byYear);
+const minorNodes=e=>MINOR.filter(n=>n.c===e&&vis(n.id)).sort(byYear);
+const viewCount=(v,e)=>viewNodes(v,e).length+(v==="earth"?minorNodes(e).length:0);
+// Non-government organisations: from their own column to "to", which defaults to Gen 9 for anything placed off Earth or founded after the war, else to the war
+const orgTo=(n,o)=>o.to!=null?o.to:(o.sys||o.moon||o.mars||n.c>=SYS0?9:5);
+const orgSites=(o,v,e)=>v==="earth"?o.at||[]:v==="sys"?(o.sys?[o.sys]:[]):(o[v]||[]).filter(s=>s[3]==null||e<=s[3]);
+const homeless=o=>!o.at&&!o.sys&&!o.moon&&!o.mars;
+const orgsIn=(v,e)=>DATA.orgs.nodes.filter(n=>{const o=ORGMAP[n.id];return o&&vis(n.id)&&n.c<=e&&e<=orgTo(n,o)&&(orgSites(o,v,e).length||(v==="earth"&&homeless(o)))});
+const orgPlace=(id,v=curView())=>{const o=ORGMAP[id],s=orgSites(o,v,M.e);return s.length?s.map(sitePlace).join("; "):o.sky||[...(o.at||[]),...(o.sys?[o.sys]:[])].map(sitePlace).join("; ")};
+const placeOf=(id,v=curView())=>{if(ORGMAP[id]&&KEYOF[id]==="orgs")return orgPlace(id,v);if(MINORX[id])return MINORX[id].at[2];
+  const s=sitesOf(v,id)||MAPV.map(([k])=>sitesOf(k,id)).find(x=>x);return s?s.map(sitePlace).join("; "):""};
 
-const erasEl=document.getElementById("eras");
-DATA.conflicts.cols.forEach(([k,y],i)=>{
-  const b=document.createElement("button");b.type="button";b.className="era-b";b.dataset.e=i;
-  b.innerHTML=`<b>${k}</b><span>${y}</span>`;
-  b.addEventListener("click",()=>{M.era=i;M.sel=null;mapSelect(null);renderMap()});
-  erasEl.append(b);
-});
-// Zoom buttons step the map in and out around its centre; Reset returns to the whole world
+const erasEl=document.getElementById("eras"),viewsEl=document.getElementById("map-views");
+// One generation row for the whole map
+function buildEras(){
+  if(M.eraN)return;M.eraN=1;erasEl.innerHTML="";
+  DATA.conflicts.cols.forEach(([k,y],i)=>{
+    const b=document.createElement("button");b.type="button";b.className="era-b";b.dataset.e=i;
+    b.innerHTML=`<b>${k}</b><span>${y}</span>`;
+    b.addEventListener("click",()=>{M.e=i;mapSelect(null);renderMap()});
+    erasEl.append(b);
+  });
+}
+// The view switch: each button counts that view's conflicts in this generation
+function renderViews(){
+  const e=M.e,v=curView();
+  viewsEl.innerHTML=MAPV.map(([k,n])=>{const c=viewCount(k,e);return `<button type="button" data-v="${k}" aria-pressed="${k===v}" aria-label="${n}, ${c} ${c===1?"conflict":"conflicts"}"${c?"":' class="none"'}>${n} · ${c}</button>`}).join("");
+  viewsEl.querySelectorAll("[data-v]").forEach(b=>b.addEventListener("click",()=>setView(b.dataset.v)));
+}
+function setView(v){
+  if(v===curView())return;
+  M.view=v;M.zt=null;try{localStorage.setItem("atlas-map-view",v)}catch(e){}
+  mapSelect(null);showMap();
+}
+// From a conflict's sheet: open the map at its generation, in a view that shows it, with the entry selected
+function showOnMap(id){
+  const n=IDX[id];M.e=n.c;
+  if(!sitesOf(curView(),id)){const v=MAPV.map(([k])=>k).find(k=>sitesOf(k,id));if(v){M.view=v;M.zt=null}}
+  if(current==="map")showMap();else{build("map");remember("map")}
+  mapSelect(id);
+}
+// Zoom buttons step the map in and out around its centre; Reset returns to the whole map
 const zoomBy=f=>{if(!M.zsel)return;(reduced?M.zsel:M.zsel.transition().duration(250)).call(M.zoom.scaleBy,f)};
 document.getElementById("org-on").addEventListener("change",e=>{M.orgs=e.target.checked;if(M.sel&&ORGMAP[M.sel]&&!M.orgs)mapSelect(null);drawMap()});
 document.getElementById("z-in").addEventListener("click",()=>zoomBy(1.6));
@@ -789,61 +1162,113 @@ document.getElementById("z-reset").addEventListener("click",()=>{if(M.zsel)(redu
 
 function showMap(){
   renderMap();
-  if(M.world||M.failed)return;
+  if(curView()!=="earth"||M.world||M.failed)return;
   if(!window.d3||!window.topojson){M.failed=true;drawMap();return}
   fetch("world-110m.json").then(r=>{if(!r.ok)throw 0;return r.json()}).then(t=>{
-    M.world=topojson.feature(t,t.objects.countries).features.filter(f=>!/Antarctic/.test(f.properties.name));drawMap();
-  }).catch(()=>{M.failed=true;drawMap()});
+    M.world=topojson.feature(t,t.objects.countries).features.filter(f=>!/Antarctic/.test(f.properties.name));if(curView()==="earth")drawMap();
+  }).catch(()=>{M.failed=true;if(curView()==="earth")drawMap()});
 }
 function renderMap(){
-  const e=M.era,[k,y]=DATA.conflicts.cols[e];
+  buildEras();
+  const e=M.e,v=curView(),[k,y]=DATA.conflicts.cols[e];
   erasEl.querySelectorAll(".era-b").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.e===e)));
+  renderViews();
   document.getElementById("era-k").textContent=`${k} · ${y}`;
-  document.getElementById("era-h").textContent=ERA_NOTE[e][0];
-  document.getElementById("era-p").textContent=ERA_NOTE[e][1];
-  const nodes=eraNodes(e),minor=minorNodes(e);
+  document.getElementById("era-h").textContent=(MAPNOTE[e]||[""])[0];
+  document.getElementById("era-p").textContent=(MAPNOTE[e]||["",""])[1];
+  const nodes=viewNodes(v,e),minor=v==="earth"?minorNodes(e):[],none=document.getElementById("map-none");
+  none.hidden=!!(nodes.length||minor.length);
+  none.textContent=`Nothing ${WHERE[v]} this generation. The numbers on the view buttons show where this generation's conflicts are.`;
   M.num={};[...nodes,...minor].forEach((n,i)=>M.num[n.id]=i+1);
-  document.getElementById("list-h").textContent=`Conflicts this era · ${nodes.length}`;
+  document.getElementById("list-h").textContent=`Conflicts ${WHERE[v]} this generation · ${nodes.length}`;
+  document.getElementById("mlist-box").hidden=v!=="earth";
   document.getElementById("mlist-h").textContent=`Smaller incidents · ${minor.length}`;
-  const row=(n,mark)=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}">${mark}<span><span class="cn">${n.n}</span><span class="cp">${placeOf(n.id)} · ${GROUPS[n.m][0]}</span></span><span class="cy">${n.d}</span></button></li>`;
+  const row=(n,mark)=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}">${mark}<span><span class="cn">${n.n}</span><span class="cp">${placeOf(n.id,v)} · ${GROUPS[n.m][0]}</span></span><span class="cy">${n.d}</span></button></li>`;
   document.getElementById("clist").innerHTML=nodes.map(n=>row(n,`<span class="num" style="--mc:${col(n.m)}">${M.num[n.id]}</span>`)).join("");
   document.getElementById("mlist").innerHTML=minor.map(n=>row(n,`<span class="num dia" style="--mc:${col(n.m)}"><i>${M.num[n.id]}</i></span>`)).join("");
-  const orgs=orgNodes(e);
-  document.getElementById("olist-h").textContent=`Organisations this era · ${orgs.length}`;
-  document.getElementById("olist").innerHTML=orgs.map(n=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}"><span class="num org" style="--mc:${col(n.m)}"></span><span><span class="cn">${n.n}</span><span class="cp">${orgPlace(n.id)} · ${GROUPS[n.m][1]}</span></span><span class="cy">${ORGMAP[n.id].sky?"Off the map":"Since "+DATA.orgs.cols[n.c][0]}</span></button></li>`).join("");
+  const orgs=orgsIn(v,e);
+  document.getElementById("olist-h").textContent=`Organisations ${WHERE[v]} this generation · ${orgs.length}`;
+  document.getElementById("olist").innerHTML=orgs.map(n=>`<li class="citem"><button type="button" data-cid="${n.id}" aria-pressed="${M.sel===n.id}"><span class="num org" style="--mc:${col(n.m)}"></span><span><span class="cn">${n.n}</span><span class="cp">${orgPlace(n.id,v)} · ${GROUPS[n.m][1]}</span></span><span class="cy">${homeless(ORGMAP[n.id])?"Off the map":"Since "+DATA.orgs.cols[n.c][0]}</span></button></li>`).join("");
   mapView.querySelectorAll("[data-cid]").forEach(b=>b.addEventListener("click",()=>mapSelect(M.sel===b.dataset.cid?null:b.dataset.cid)));
-  const types=[...new Set(DATA.conflicts.nodes.map(n=>n.m))];
   const sw=(st,l)=>`<span class="lg"><span class="sw" style="background:${st}"></span>${l}</span>`;
-  document.getElementById("map-legend").innerHTML=(e===5
+  const pins=`<span class="lg"><span class="num org" style="--mc:var(--ink-2);margin:0"></span>Organisation</span><span class="lg"><span class="num" style="--mc:var(--ink-2);width:14px;height:14px"></span>Conflict, numbered in order</span>`;
+  const types=`<span class="lg" style="color:var(--ink-2)">Pins by type:</span>`+[...new Set(nodes.map(n=>n.m))].map(c=>`<span class="lg"><span class="num" style="--mc:${col(c)};width:12px;height:12px"></span>${GROUPS[c][0]}</span>`).join("");
+  const town=`<span class="lg"><span class="sw-town"></span>Settlement</span>`,note=t=>`<span class="lg" style="color:var(--ink-2)">${t}</span>`;
+  let lg;
+  if(v==="earth")lg=(e>=5
     ?[...FUT].map(b=>sw(fillFor({b,l:"m"}),BLOC[b][0])).join("")+
       sw(`linear-gradient(90deg,${fillFor({b:"CHN",l:"s"})} 50%,${fillFor({b:"AFC",l:"s"})} 50%)`,"Sphere of influence")+
       sw(`linear-gradient(90deg,${fillFor({b:"USA",l:"c"})} 50%,${fillFor({b:"EAS",l:"c"})} 50%)`,"Influence, not control")+
-      `<span class="lg"><span class="sw war"></span>Front line</span>`
+      (e===5?`<span class="lg"><span class="sw war"></span>Front line</span>`:"")
     :Object.entries(BLOC).filter(([b])=>!FUT.has(b)&&(b!=="MER"||e>=2)&&(SPLIT.has(b)?e===4:!(e===4&&b==="EUR"))).map(([b,[nm]])=>sw(fillFor({b,l:"m"}),nm+(b==="MER"?" (from 2177)":""))).join("")+
       (e<2?sw(fillFor({b:"MER",l:"n"}),"Non-aligned states"):"")+
       sw(`linear-gradient(90deg,${fillFor({b:"CON",l:"a"})} 50%,${fillFor({b:"ATL",l:"a"})} 50%)`,"Ally, partner or associate")+
-      `<span class="lg"><span class="sw war"></span>Fighting this era</span>`)+sw("var(--land)","Other states")+
-    `<span class="lg"><span class="num org" style="--mc:var(--ink-2);margin:0"></span>Organisation</span><span class="lg"><span class="num" style="--mc:var(--ink-2);width:14px;height:14px"></span>Conflict</span><span class="lg"><span class="num dia" style="--mc:var(--ink-2);width:11px;height:11px"></span>Smaller incident</span>`+
-    `<span class="lg" style="color:var(--ink-2)">Pins by type:</span>`+types.map(c=>`<span class="lg"><span class="num" style="--mc:${col(c)};width:12px;height:12px"></span>${GROUPS[c][0]}</span>`).join("");
+      `<span class="lg"><span class="sw war"></span>Fighting this era</span>`)+sw("var(--land)","Other states")+pins+
+    `<span class="lg"><span class="num dia" style="--mc:var(--ink-2);width:11px;height:11px"></span>Smaller incident</span>`+types;
+  else if(v==="moon")lg=pins+town+note("The south pole is drawn again, enlarged, in the middle; the dashed curve on each side marks its edge.")+types;
+  else if(v==="mars")lg=pins+town+(e>=6&&e<=7?`<span class="lg"><span class="sw-line"></span>Line of Control</span>`:"")+(e>=7?`<span class="lg"><span class="sw-wall"></span>Red Wall</span>`:"")+note("Phobos and Deimos sit in the band above the map.")+types;
+  else lg=pins+note("Events on the surface of Earth are on the Earth view; Earth orbit and the lanes sit around Earth. Distances are not to scale.")+types;
+  document.getElementById("map-legend").innerHTML=lg;
+  mapView.setAttribute("aria-label",{earth:"World map",moon:"Map of the Moon",mars:"Map of Mars",sys:"Inner-system map"}[v]);
   drawMap();
 }
-// Split a label into at most two lines of `max` characters, shortening the second if it still overflows
-function wrap(t,max){
-  const out=[];t.split(" ").forEach(w=>{const l=out[out.length-1];if(l!=null&&(l+" "+w).length<=max)out[out.length-1]=l+" "+w;else out.push(w)});
-  if(out.length>2)out.splice(1,out.length,out.slice(1).join(" "));
-  return out.map(l=>l.length>max?l.slice(0,max-1)+"…":l);
+// ---- Pins, shared by every view ----
+// Pins that would overlap fan out on a ring round their sites, each with a leader line back to its own site; neighbouring groups merge only when they would cover each other
+function fan(list,k){
+  const cl=[];list.forEach(p=>{const c=cl.find(c=>Math.hypot(c.x-p.x,c.y-p.y)<1);if(c)c.m.push(p);else cl.push({x:p.x,y:p.y,m:[p]})});
+  const rad=c=>{const r=Math.max(...c.m.map(p=>p.r));return [r,c.m.length<2?0:Math.max(r*1.5,c.m.length*(2*r+4*k)/(2*Math.PI))]};
+  for(let again=true;again;){again=false;
+    for(let i=0;i<cl.length&&!again;i++)for(let j=i+1;j<cl.length&&!again;j++){const [ri,ai]=rad(cl[i]),[rj,aj]=rad(cl[j]);
+      if(Math.hypot(cl[i].x-cl[j].x,cl[i].y-cl[j].y)<ri+rj+(ai+aj)/2){const m=[...cl[i].m,...cl[j].m];
+        cl[i]={x:m.reduce((a,p)=>a+p.x,0)/m.length,y:m.reduce((a,p)=>a+p.y,0)/m.length,m};cl.splice(j,1);again=true}}}
+  cl.forEach(c=>{const [r,rr]=rad(c),n=c.m.length;
+    c.m.map(p=>[p,Math.atan2(p.y-c.y,p.x-c.x)]).sort((a,b)=>a[1]-b[1]).forEach(([p],i)=>{const a=-Math.PI/2+i*2*Math.PI/n;
+      p.dx=n<2?0:c.x-p.x+rr*Math.cos(a);p.dy=n<2?0:c.y-p.y+rr*Math.sin(a);p.cx=c.x;p.cy=c.y;p.ext=rr+r})});
+  return list;
 }
+// p: {n entry, x, y site, dx, dy fan offset, where, org, dia}; pins live in a fixed-size layer the zoom handler moves
+function pinSVG(p,k){
+  const {n,x,y,where}=p,dx=p.dx||0,dy=p.dy||0,sel=M.sel===n.id;
+  const lead=dx||dy?`<line class="ldr" x1="${(-dx).toFixed(1)}" y1="${(-dy).toFixed(1)}" x2="0" y2="0" style="stroke-width:${k}"/><circle class="sdot" cx="${(-dx).toFixed(1)}" cy="${(-dy).toFixed(1)}" r="${2*k}"/>`:"";
+  const g=`<g class="pin${p.org?" opin":""}${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${where}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" data-dx="${dx.toFixed(1)}" data-dy="${dy.toFixed(1)}" transform="translate(${(x+dx).toFixed(1)} ${(y+dy).toFixed(1)})">${lead}`;
+  if(p.org){const r=6*k;return g+`<rect class="om" x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" rx="${1.5*k}" style="stroke-width:${(sel?2.6:1.6)*k}"/><rect class="oi" x="${-r*.5}" y="${-r*.5}" width="${r}" height="${r}" fill="${col(n.m)}"/><title>${n.n} · ${where}</title></g>`}
+  const r=(p.dia?8.5:10)*k,sw=`stroke-width:${(sel?3:1.5)*k}`;
+  const shape=p.dia?`<rect class="pm" x="${-r*.78}" y="${-r*.78}" width="${r*1.56}" height="${r*1.56}" rx="${1.5*k}" transform="rotate(45)" fill="${col(n.m)}" style="${sw}"/>`:`<circle class="pm" r="${r}" fill="${col(n.m)}" style="${sw}"/>`;
+  return g+`${shape}<text style="font-size:${(p.dia?(M.num[n.id]>9?8:10):11)*k}px">${M.num[n.id]}</text><title>${n.n} · ${n.d} · ${where}</title></g>`;
+}
+// Pan and zoom the drawing layer; pins, labels and settlements are moved, never scaled
+function attachZoom(box,W,H){
+  box.querySelectorAll("[data-pin]").forEach(g=>{
+    g.addEventListener("click",()=>mapSelect(M.sel===g.dataset.pin?null:g.dataset.pin));
+    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();mapSelect(g.dataset.pin)}});
+  });
+  if(!window.d3){M.zsel=null;return}
+  const svgEl=box.querySelector("svg"),zs=d3.select(box).select(".zm"),zl=zs.select(".zl"),zp=zs.selectAll(".zp > g");
+  const place=t=>{zl.attr("transform",t);svgEl.classList.toggle("zin",t.k>=1.5);zp.attr("transform",function(){return `translate(${(t.applyX(+this.dataset.x)+(+this.dataset.dx||0)).toFixed(1)} ${(t.applyY(+this.dataset.y)+(+this.dataset.dy||0)).toFixed(1)})`})};
+  M.zoom=d3.zoom().scaleExtent([1,8]).extent([[0,0],[W,H]]).translateExtent([[0,0],[W,H]])
+    .filter(e=>e.type==="wheel"?(e.ctrlKey||e.metaKey):!e.button)
+    .on("zoom",e=>{M.zt=e.transform;place(e.transform)});
+  M.zsel=zs.call(M.zoom).on("dblclick.zoom",null);
+  if(M.zt)M.zsel.call(M.zoom.transform,M.zt);
+}
+// Pin scale: pins grow on narrow screens so they stay tappable
+const pinK=box=>{const px=Math.max(box.clientWidth,1)/1000;return Math.min(2.4,Math.max(1,.75/px))};
 function drawMap(){
+  const v=curView();
+  if(v==="sys")return drawSystem();
+  if(v==="moon"||v==="mars")return drawBody(v);
+  drawWorld();
+}
+function drawWorld(){
   const box=document.getElementById("map-box");
-  if(M.failed){box.innerHTML=`<p class="map-msg">The map couldn't load in this browser. The conflict lists below still work.</p>`;return}
-  if(!M.world)return;
+  if(M.failed){box.innerHTML=`<p class="map-msg">The map couldn't load in this browser. The conflict lists below still work.</p>`;M.zsel=null;return}
+  if(!M.world){box.innerHTML=`<p class="map-msg">Loading the map…</p>`;M.zsel=null;return}
   const W=1000,fc={type:"FeatureCollection",features:M.world};
   const proj=d3.geoEqualEarth();proj.fitWidth(W,fc);const H=Math.ceil(d3.geoPath(proj).bounds(fc)[1][1])+4;
-  const path=d3.geoPath(proj),pol=politics(M.era);
-  const px=Math.max(box.clientWidth,1)/W,k=Math.min(2.4,Math.max(1,.75/px)),B=Math.round(64*Math.min(k,1.6));
-  let s=`<svg viewBox="0 0 ${W} ${H+B}" role="img" aria-label="World map, ${DATA.conflicts.cols[M.era][0]}: bloc territories and conflict locations, with orbital events above">
+  const path=d3.geoPath(proj),pol=politics(M.e),k=pinK(box);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="World map, ${DATA.conflicts.cols[M.e][0]}: ${M.e>=SYS0?"the Earth powers after the war":"bloc territories"} and conflict locations">
 <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.6" height="6" fill="var(--ink)" opacity=".5"/></pattern>
-<clipPath id="mclip"><rect width="${W}" height="${H}"/></clipPath></defs><g class="zm" transform="translate(0 ${B})"><rect width="${W}" height="${H}" fill="transparent"/><g clip-path="url(#mclip)"><g class="zl">
+<clipPath id="mclip"><rect width="${W}" height="${H}"/></clipPath></defs><g class="zm"><rect width="${W}" height="${H}" fill="transparent"/><g clip-path="url(#mclip)"><g class="zl">
 <path class="grat" d="${path(d3.geoGraticule10())}"/>`;
   M.world.forEach(f=>{const st=pol[f.properties.name],d=path(f);if(!d)return;
     if(st&&st.split){const {at,west,east}=st.split,half=(id,b,w,e,side)=>`<clipPath id="${id}"><path d="${path(d3.geoGraticule().extent([[w,25],[e,88]]).outline())}"/></clipPath><path class="ctry" d="${d}" clip-path="url(#${id})" style="fill:${fillFor({b,l:"m"})}"><title>${f.properties.name} · ${side} to ${BLOC[b][2]}${BLOC[b][0]}</title></path>`;
@@ -851,41 +1276,123 @@ function drawMap(){
     else s+=`<path class="ctry" d="${d}" style="fill:${fillFor(st)}"><title>${f.properties.name}${stateOf(st)}</title></path>`;
     if(st&&st.w)s+=`<path d="${d}" fill="url(#hatch)" pointer-events="none"/>`;
   });
-  // Pins sit outside the zoomed layer so they keep their size; the zoom handler moves them
   s+=`</g><g class="zp">`;
-  const pin=(n,x,y,lbl,dia)=>{const r=(dia?8.5:10)*k,sel=M.sel===n.id,sw=`stroke-width:${(sel?3:1.5)*k}`;
-    const shape=dia?`<rect class="pm" x="${-r*.78}" y="${-r*.78}" width="${r*1.56}" height="${r*1.56}" rx="${1.5*k}" transform="rotate(45)" fill="${col(n.m)}" style="${sw}"/>`:`<circle class="pm" r="${r}" fill="${col(n.m)}" style="${sw}"/>`;
-    return `<g class="pin${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${n.d}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
-${shape}<text style="font-size:${(dia?(M.num[n.id]>9?8:10):11)*k}px">${M.num[n.id]}</text>${lbl?(()=>{const ls=wrap(n.n,lbl),lx=r+7*k;return `<text class="olbl" x="${lx}" style="font-size:${13*k}px">${ls.map((l,i)=>`<tspan x="${lx}" dy="${i?1.15:-0.575*(ls.length-1)}em">${l}</tspan>`).join("")}</text>`})():""}<title>${n.n} · ${n.d}</title></g>`};
-  const now=eraNodes(M.era),inView=(x,y)=>x>-20&&x<W+20&&y>-20&&y<H+20;
-  // Organisation pins: a hollow square in the maker's colour, one per site, unnumbered
-  const opin=(n,x,y,where)=>{const r=6*k,sel=M.sel===n.id;
-    return `<g class="pin opin${sel?" sel":""}" data-pin="${n.id}" tabindex="0" role="button" aria-label="${n.n}, ${where}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><rect class="om" x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" rx="${1.5*k}" style="stroke-width:${(sel?2.6:1.6)*k}"/><rect class="oi" x="${-r*.5}" y="${-r*.5}" width="${r}" height="${r}" fill="${col(n.m)}"/><title>${n.n} · ${where}</title></g>`};
-  if(M.orgs)orgNodes(M.era).forEach(n=>(ORGMAP[n.id].at||[]).forEach(([lon,lat,where])=>{const [x,y]=proj([lon,lat]);if(inView(x,y))s+=opin(n,x,y,where)}));
-  minorNodes(M.era).forEach(n=>{const [x,y]=proj(n.at);if(inView(x,y))s+=pin(n,x,y,false,true)});
-  now.filter(n=>LOC[n.id]).forEach(n=>{const [x,y]=proj(LOC[n.id]);if(inView(x,y))s+=pin(n,x,y)});
-  s+=`</g></g></g>`;
-  // Orbit band: events above the atmosphere, laid out left to right in year order
-  s+=`<rect width="${W}" height="${B}" fill="var(--band)"/><line x1="0" x2="${W}" y1="${B}" y2="${B}" stroke="var(--rule)" stroke-dasharray="4 4"/>
-<text class="oband" x="14" y="${16*Math.min(k,1.6)}" style="font-size:${10*Math.min(k,1.6)}px">ORBIT &amp; MARS</text>`;
-  // Each label gets its slot's width: long names wrap to two lines, and narrow screens show numbers only
-  const orb=now.filter(n=>ORBIT[n.id]),step=(W-40)/Math.max(orb.length,1),fit=Math.floor((step-33*k)/(7.3*k));
-  orb.forEach((n,i)=>s+=pin(n,40+14*k+i*step,B/2+8*Math.min(k,1.6),fit>=9?fit:0));
-  if(!orb.length)s+=`<text class="oband" x="${W/2}" y="${B/2+10}" text-anchor="middle" style="font-size:${11*Math.min(k,1.6)}px;letter-spacing:0;text-transform:none">Nothing in orbit this era</text>`;
-  s+=`</svg>`;
+  const inView=(x,y)=>x>-20&&x<W+20&&y>-20&&y<H+20,pins=[];
+  if(M.orgs)orgsIn("earth",M.e).forEach(n=>(ORGMAP[n.id].at||[]).forEach(([lon,lat,where])=>{const [x,y]=proj([lon,lat]);if(inView(x,y))pins.push({n,x,y,where,org:1,r:7*k})}));
+  minorNodes(M.e).forEach(n=>{const [x,y]=proj(n.at);if(inView(x,y))pins.push({n,x,y,where:n.at[2],dia:1,r:9*k})});
+  viewNodes("earth",M.e).forEach(n=>{const [x,y]=proj(LOC[n.id]);if(inView(x,y))pins.push({n,x,y,where:LOC[n.id][2],r:10*k})});
+  fan(pins,k);
+  s+=pins.map(p=>pinSVG(p,k)).join("")+`</g></g></g></svg>`;
   box.innerHTML=s;
-  // Pan and zoom the map layer; pins are repositioned rather than scaled
-  const zs=d3.select(box).select(".zm"),zl=zs.select(".zl"),zp=zs.selectAll(".zp .pin");
-  const place=t=>{zl.attr("transform",t);zp.attr("transform",function(){return `translate(${t.applyX(+this.dataset.x).toFixed(1)} ${t.applyY(+this.dataset.y).toFixed(1)})`})};
-  M.zoom=d3.zoom().scaleExtent([1,8]).extent([[0,0],[W,H]]).translateExtent([[0,0],[W,H]])
-    .filter(e=>e.type==="wheel"?(e.ctrlKey||e.metaKey):!e.button)
-    .on("zoom",e=>{M.zt=e.transform;place(e.transform)});
-  M.zsel=zs.call(M.zoom).on("dblclick.zoom",null);
-  if(M.zt)M.zsel.call(M.zoom.transform,M.zt);
-  box.querySelectorAll("[data-pin]").forEach(g=>{
-    g.addEventListener("click",()=>mapSelect(M.sel===g.dataset.pin?null:g.dataset.pin));
-    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();mapSelect(g.dataset.pin)}});
-  });
+  attachZoom(box,W,H);
+}
+// ---- Inner-system view ----
+// Several conflicts at one body sit on a ring around it; Earth's ring holds events in orbit and on the lanes
+function drawSystem(){
+  const box=document.getElementById("map-box");
+  const W=1000,H=620,sx=-30,sy=H/2,k=pinK(box),lk=Math.min(k,1.6),e=M.e;
+  const P={};
+  for(let pass=0;pass<2;pass++)Object.entries(SOLAR.bodies).forEach(([key,b])=>{
+    if(b.of){if(P[b.of])P[key]=[P[b.of][0]+b.dx,P[b.of][1]+b.dy]}
+    else if(b.x!=null)P[key]=[b.x,b.y];
+    else{const a=b.a*Math.PI/180;P[key]=[sx+b.r*Math.cos(a),sy+b.r*Math.sin(a)]}});
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Inner-system map, ${DATA.conflicts.cols[e][0]}: the planets and the Belt with conflict locations">
+<defs><clipPath id="sclip"><rect width="${W}" height="${H}"/></clipPath></defs><g class="zm"><rect width="${W}" height="${H}" fill="transparent"/><g clip-path="url(#sclip)"><g class="zl">
+<circle class="sys-sun" cx="${sx}" cy="${sy}" r="70" opacity=".16"/><circle class="sys-sun" cx="${sx}" cy="${sy}" r="42"/>
+<circle class="sys-belt" cx="${sx}" cy="${sy}" r="598" stroke-width="118"/>`;
+  ["mercury","venus","earth","eros","mars","jupiter"].forEach(key=>{const b=SOLAR.bodies[key];if(b)s+=`<circle class="sys-orbit" cx="${sx}" cy="${sy}" r="${b.r}"${key==="eros"?' stroke-dasharray="3 5"':""}/>`});
+  Object.entries(SOLAR.bodies).forEach(([key,b])=>{if(!b.s||!P[key])return;s+=`<circle class="${b.s>15?"sys-giant":"sys-body"}" cx="${P[key][0].toFixed(1)}" cy="${P[key][1].toFixed(1)}" r="${b.s}"><title>${b.n}</title></circle>`});
+  s+=`</g><g class="zp">`;
+  const now=viewNodes("sys",e),by={},ring={};
+  now.forEach(n=>{const at=SOLAR.at[n.id];if(P[at[0]])(by[at[0]]=by[at[0]]||[]).push(n)});
+  Object.entries(by).forEach(([key,list])=>ring[key]=Math.max((SOLAR.bodies[key].s+14)*k,list.length*23*k/(2*Math.PI)));
+  // Body names sit centred below the body, clear of its ring of pins
+  Object.entries(SOLAR.bodies).forEach(([key,b])=>{if(!P[key])return;const [x,y]=P[key],cnt=(by[key]||[]).length;
+    const dy=cnt>1?ring[key]+10*k+11*lk:b.s+12*lk;
+    s+=`<g class="blab" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><text class="sys-lbl" y="${dy.toFixed(1)}" text-anchor="middle" style="font-size:${10.5*lk}px">${b.n}</text></g>`});
+  const pins=[];
+  Object.entries(by).forEach(([key,list])=>{const [bx,by0]=P[key],cnt=list.length,rr=ring[key];
+    list.forEach((n,i)=>{const a=(cnt===1?-50:-90+i*360/cnt)*Math.PI/180;pins.push({n,x:bx+rr*Math.cos(a),y:by0+rr*Math.sin(a),where:SOLAR.at[n.id][1]})})});
+  // Organisation pins: hollow squares on an arc above their body (its name sits below), outside any ring of conflicts
+  if(M.orgs){const ob={};orgsIn("sys",e).forEach(n=>{const b=ORGMAP[n.id].sys[0];if(P[b])(ob[b]=ob[b]||[]).push(n)});
+    Object.entries(ob).forEach(([key,list])=>{const [bx,by0]=P[key],rr=(ring[key]||(SOLAR.bodies[key].s+8)*k)+18*k;
+      const da=Math.max(26*Math.PI/180,16*k/rr);list.forEach((n,i)=>{const a=-150*Math.PI/180+i*da;pins.push({n,x:bx+rr*Math.cos(a),y:by0+rr*Math.sin(a),where:ORGMAP[n.id].sys[1],org:1})})})}
+  s+=pins.map(p=>pinSVG(p,k)).join("")+`</g></g></g></svg>`;
+  box.innerHTML=s;
+  attachZoom(box,W,H);
+}
+// ---- Moon and Mars views: hand-drawn from MOON and MARS, with SITES for the pins ----
+const RAD=Math.PI/180;
+// A small circle of angular radius r degrees around [lon, lat], as a [lon, lat] ring
+function circle([lo,la,r],n=28){const out=[],p1=la*RAD,l1=lo*RAD,d=r*RAD;for(let i=0;i<n;i++){const b=i/n*2*Math.PI,p2=Math.asin(Math.sin(p1)*Math.cos(d)+Math.cos(p1)*Math.sin(d)*Math.cos(b));
+  out.push([(l1+Math.atan2(Math.sin(b)*Math.sin(d)*Math.cos(p1),Math.cos(d)-Math.sin(p1)*Math.sin(p2)))/RAD,p2/RAD])}return out}
+const ringOf=s=>Array.isArray(s)?s:circle(s.c);
+// A Moon panel's projection: orthographic hemisphere, or azimuthal equidistant round the south pole. Returns [x, y, on this panel]
+function panelProj(P){
+  if(P.pole!=null)return ([lo,la])=>{const rho=(90+la)/P.span,c=Math.min(rho,1)*P.r;return [P.x+c*Math.sin(lo*RAD),P.y-c*Math.cos(lo*RAD),rho<=1]};
+  const l0=P.c[0];return ([lo,la])=>{const dl=(lo-l0)*RAD,x=Math.cos(la*RAD)*Math.sin(dl),y=-Math.sin(la*RAD),cz=Math.cos(la*RAD)*Math.cos(dl);
+    if(cz>=0)return [P.x+P.r*x,P.y+P.r*y,true];const h=Math.hypot(x,y)||1;return [P.x+P.r*x/h,P.y+P.r*y/h,false]};
+}
+const pathOf=(pts,f,close=true)=>pts.map((p,i)=>{const [x,y]=f(p);return (i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)}).join("")+(close?"Z":"");
+function drawBody(v){
+  const box=document.getElementById("map-box"),D=v==="moon"?MOON:MARS;
+  if(!D){box.innerHTML=`<p class="map-msg">This map isn't in the atlas data yet.</p>`;M.zsel=null;return}
+  const k=pinK(box),lk=k,e=M.e,W=D.W,H=D.H,pins=[];
+  viewNodes(v,e).forEach(n=>SITES[v][n.id].forEach(st=>pins.push({n,st,where:sitePlace(st),r:10*k})));
+  if(M.orgs)orgsIn(v,e).forEach(n=>orgSites(ORGMAP[n.id],v,e).forEach(st=>pins.push({n,st,where:st[2],r:7*k,org:1})));
+  const lbl=(x,y,t,cls,size,prio,dy=0,anchor="middle")=>`<g class="lab${prio>1?" lp2":""}${cls==="ptitle"||cls==="lname"?" lt":""}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><text class="bl ${cls}" text-anchor="${anchor}" y="${dy}" style="font-size:${size}px">${t}</text></g>`;
+  let s="",L="",B=0,band="";
+  const busy=(x,y)=>pins.find(p=>!p.band&&Math.hypot(p.x-x,p.y-y)<4);
+  // A settlement: a ring and its name, moved clear of any pins on it
+  const town=(x,y,t,reg)=>{if(reg==="region")return lbl(x,y,t,"area",10*lk,1);const b=busy(x,y),left=reg==="left";
+    const tx=b?(b.cx-x+(left?-1:1)*(b.ext+4*k)):(left?-5:5)*k,ty=b?(b.cy-y+4*k):-5*k;
+    return `<g class="town${b?"":" tl"}" data-x="${x.toFixed(1)}" data-y="${y.toFixed(1)}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><circle r="${3*k}" style="stroke-width:${1.3*k}"/><text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}"${left?' text-anchor="end"':""} style="font-size:${11*lk}px;stroke-width:${3*k}px">${t}</text></g>`};
+  if(v==="moon"){
+    const pole=D.panels.find(P=>P.pole!=null),edge=-90+pole.span;
+    const panelOf=([lo,la])=>la<=edge?pole:D.panels.find(P=>P.c&&Math.cos((lo-P.c[0])*RAD)>=0)||D.panels[0];
+    s=`<defs>${D.panels.map(P=>`<clipPath id="mc-${P.k}"><circle cx="${P.x}" cy="${P.y}" r="${P.r}"/></clipPath>`).join("")}</defs>`;
+    D.panels.forEach(P=>{const f=panelProj(P),seen=pts=>pts.some(p=>f(p)[2]);
+      s+=`<circle class="bd-disc" cx="${P.x}" cy="${P.y}" r="${P.r}"/><g clip-path="url(#mc-${P.k})">`;
+      if(P.pole!=null){[84,78].forEach(la=>s+=`<circle class="bd-grat" cx="${P.x}" cy="${P.y}" r="${((90-la)/P.span*P.r).toFixed(1)}"/>`);
+        for(let lo=0;lo<180;lo+=30){const [a,b]=[f([lo,edge]),f([lo+180,edge])];s+=`<line class="bd-grat" x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"/>`}}
+      else{for(let la=-60;la<=60;la+=30){const pts=[];for(let lo=P.c[0]-90;lo<=P.c[0]+90;lo+=10)pts.push([lo,la]);s+=`<path class="bd-grat" d="${pathOf(pts,f,false)}"/>`}
+        for(let lo=P.c[0]-60;lo<=P.c[0]+60;lo+=30){const pts=[];for(let la=-90;la<=90;la+=10)pts.push([lo,la]);s+=`<path class="bd-grat" d="${pathOf(pts,f,false)}"/>`}}
+      D.maria.forEach(m=>{const pts=ringOf(m);if(seen(pts))s+=`<path class="bd-mare" d="${pathOf(pts,f)}"/>`});
+      D.rings.forEach(m=>{const pts=ringOf(m);if(seen(pts))s+=`<path class="bd-ring${m.dash?" dash":""}" d="${pathOf(pts,f)}"/>`});
+      if(P.pole==null){const pts=[];for(let lo=P.c[0]-90;lo<=P.c[0]+90;lo+=6)pts.push([lo,edge]);s+=`<path class="bd-cut" d="${pathOf(pts,f,false)}"/>`}
+      s+=`</g>`});
+    pins.forEach(p=>{[p.x,p.y]=panelProj(panelOf(p.st))(p.st)});fan(pins,k);
+    D.panels.forEach(P=>L+=lbl(P.x,24,P.n,"ptitle",10*Math.min(k,1.6),1));
+    D.labels.forEach(([lo,la,t,c,pr])=>{const [x,y,ok]=panelProj(panelOf([lo,la]))([lo,la]);if(ok)L+=lbl(x,y,t,c,(c==="sea"?10.5:9)*lk,pr,c==="crater"?-6*lk:0)});
+    D.towns.filter(t=>e>=t[3]&&e<=t[4]).forEach(([lo,la,t,,,reg])=>{const [x,y]=panelProj(panelOf([lo,la]))([lo,la]);L+=town(x,y,t,reg)});
+  }else{
+    B=Math.round(56*Math.min(k,1.6));const f=([lo,la])=>[(lo+180)/360*W,(90-la)/180*H];
+    s=`<rect class="bd-up" width="${W}" height="${H}"/>`;
+    D.lowlands.forEach(m=>s+=`<path class="bd-low" d="${pathOf(ringOf(m),f)}"/>`);
+    D.uplands.forEach(m=>s+=`<path class="bd-up" d="${pathOf(ringOf(m),f)}"/>`);
+    for(let lo=-150;lo<180;lo+=30)s+=`<line class="bd-grat" x1="${f([lo,0])[0]}" x2="${f([lo,0])[0]}" y1="0" y2="${H}"/>`;
+    for(let la=-60;la<=60;la+=30)s+=`<line class="bd-grat" x1="0" x2="${W}" y1="${f([0,la])[1]}" y2="${f([0,la])[1]}"${la?"":' style="stroke-dasharray:2 3"'}/>`;
+    D.rise.forEach(m=>s+=`<path class="bd-rise" d="${pathOf(ringOf(m),f)}"/>`);
+    D.caps.forEach(m=>s+=`<path class="bd-cap" d="${pathOf(m,f)}"/>`);
+    D.canyons.forEach((m,i)=>s+=`<path class="bd-canyon" style="stroke-width:${i?1.6:4.2}" d="${pathOf(m,f,false)}"/>`);
+    D.volcanoes.forEach(([lo,la,r])=>s+=`<path class="bd-volc" d="${pathOf(circle([lo,la,r]),f)}"/><path class="bd-volc" d="${pathOf(circle([lo,la,r*.3]),f)}"/>`);
+    D.craters.forEach(c=>s+=`<path class="bd-ring" d="${pathOf(circle(c),f)}"/>`);
+    const lines=D.lines.filter(l=>e>=l.from&&e<=l.to);
+    lines.forEach(l=>s+=`<path class="bd-${l.k}" d="${pathOf(l.pts,f,false)}"><title>${l.n}</title></path>`);
+    // Phobos and Deimos in the band above the map, their pins in a row to the right of each
+    const mx={},cnt={};D.moons.forEach((m,i)=>{mx[m.k]=W*(.08+i*.46);cnt[m.k]=0});
+    pins.forEach(p=>{if(typeof p.st[0]==="number")[p.x,p.y]=f(p.st);else{p.band=1;p.x=mx[p.st[0]]+(24+cnt[p.st[0]]++*24)*k;p.y=B/2}});
+    fan(pins.filter(p=>!p.band),k);
+    band=`<rect width="${W}" height="${B}" fill="var(--band)"/><line x1="0" x2="${W}" y1="${B}" y2="${B}" stroke="var(--rule)" stroke-dasharray="4 4"/>`+
+      D.moons.map(m=>`<ellipse class="bd-moon" cx="${mx[m.k]}" cy="${B/2}" rx="${(m.k==="phobos"?7:5)*Math.min(k,1.6)}" ry="${(m.k==="phobos"?5.5:4)*Math.min(k,1.6)}"><title>${m.n}</title></ellipse><text class="oband" x="${mx[m.k]}" y="${B/2+17*Math.min(k,1.6)}" text-anchor="middle" style="font-size:${9.5*Math.min(k,1.6)}px">${m.n.toUpperCase()}</text>`).join("");
+    D.labels.forEach(([lo,la,t,c,pr])=>{const [x,y]=f([lo,la]);L+=lbl(x,y,t,c,9.5*lk,pr)});
+    lines.forEach(l=>{const [x,y]=f(l.k==="loc"?[-150,-6]:[-150,9]);L+=lbl(x,y,l.n,"lname",9.5*lk,1,l.k==="loc"?13*lk:-6*lk)});
+    D.towns.filter(t=>e>=t[3]&&e<=t[4]).forEach(([lo,la,t,,,reg])=>{const [x,y]=f([lo,la]);L+=town(x,y,t,reg)});
+  }
+  const mapPins=pins.filter(p=>!p.band),bandPins=pins.filter(p=>p.band);
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H+B}" class="${k<1.3?"wide":""}" role="img" aria-label="${v==="moon"?"Map of the Moon, near side, south pole and far side":"Map of Mars"}, ${DATA.conflicts.cols[e][0]}: conflict and settlement locations">
+<defs><clipPath id="bclip"><rect width="${W}" height="${H}"/></clipPath></defs><g class="zm"${B?` transform="translate(0 ${B})"`:""}><rect width="${W}" height="${H}" fill="transparent"/><g clip-path="url(#bclip)"><g class="zl">${s}</g><g class="zp">${L}${mapPins.map(p=>pinSVG(p,k)).join("")}</g></g></g>${band}${bandPins.map(p=>pinSVG(p,k)).join("")}</svg>`;
+  attachZoom(box,W,H);
 }
 function mapSelect(id){
   M.sel=id;
@@ -893,7 +1400,7 @@ function mapSelect(id){
   document.querySelectorAll("#map-box [data-pin]").forEach(g=>g.classList.toggle("sel",g.dataset.pin===id));
   if(!id){sheet.hidden=true;document.body.classList.remove("has-sheet");return}
   const n=IDX[id]||MINORX[id],[mn,sub]=GROUPS[n.m],minor=!IDX[id],tree=minor?"conflicts":KEYOF[id],c=DATA[tree].cols[n.c];
-  sheet.innerHTML=`<div class="sheet-h"><div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+  sheet.innerHTML=noEmpty(`<div class="sheet-h"><div style="display:flex;flex-direction:column;gap:6px;min-width:0">
       <span class="top"><span class="chip" style="--mc:${col(n.m)}">${n.m}</span>${n.d?`<span class="desig">${n.d}</span>`:""}</span>
       <h3>${n.n}</h3><span class="meta">${mn} · ${placeOf(id)} · ${c[0]}</span></div>
       <button type="button" class="x" id="close">Close</button></div>
@@ -901,7 +1408,7 @@ function mapSelect(id){
     ${scene(id,n.n)}
     <p><b>${n.t}.</b> ${n.x}</p>
     ${minor?`<span class="meta">Smaller incident · map only</span>`:`<button type="button" class="go" data-go="${id}">Open in the ${DATA[tree].label} tree →</button>`}${n.ln?`<h4>In the atlas</h4>${goList(n.ln)}`:""}
-    ${n.mx?`<h4>Machines involved</h4>${goList(n.mx)}`:""}${n.pw?`<h4>Power</h4>${goList(n.pw)}`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`;
+    ${n.mx?`<h4>Machines involved</h4>${goList(n.mx)}`:""}${n.pw?`<h4>Power</h4>${goList(n.pw)}`:""}${n.wp?`<h4>Weapons</h4>${goList(n.wp)}`:""}${n.dc?`<h4>Doctrine it shaped</h4>${goList(n.dc)}`:""}`);
   sheet.hidden=false;document.body.classList.add("has-sheet");
   sheet.querySelector("#close").addEventListener("click",()=>mapSelect(null));
   bindArt(sheet);
@@ -912,17 +1419,19 @@ addEventListener("resize",()=>{if(current!=="map")return;cancelAnimationFrame(ma
 
 // ---- Factions timeline ----
 // Lanes follow each faction through the map's eras to its 2327 successor. Events: [era column, year label, text, entry id to open (optional)].
-const TL_COLS=[...DATA.conflicts.cols,["2327","No Peace Past Luna"]];
+// The shared Gen 0–9 scale; the last column holds each lane's 2327 end
+const TL_COLS=GENS.length?GENS:[...DATA.conflicts.cols,["Gen 9","2327"]];
 function renderTimeline(){
-  const el=document.getElementById("tl"),last=TL_COLS.length-1;
+  const el=document.getElementById("tl"),last=TL_COLS.length-1;el.style.setProperty("--tlc",TL_COLS.length);
   const ev=([,y,t,id])=>id?`<button type="button" class="tl-ev" data-go="${id}"><span>${y}</span>${t}</button>`:`<div class="tl-ev"><span>${y}</span>${t}</div>`;
+  const f=VW.f&&FACX[VW.f],lanes=TIMELINE.filter(l=>!f||f.lanes.includes(l.g)||(f.tl||[]).includes(l.g));
   el.innerHTML=`<div class="tl-cols">${TL_COLS.map(([k,y])=>`<div><b>${k}</b><span>${y}</span></div>`).join("")}</div>`+
-    TIMELINE.map(l=>`<section class="tl-lane" style="--mc:var(--m-${GROUPS[l.g][2]})"><div class="tl-h">${SCENES[l.g]?`<button type="button" class="tl-art" data-art="art/${SCENES[l.g].f}.jpg" data-cap="${l.n} · ${SCENES[l.g].h} · ${SCENES[l.g].c}" title="Key art: ${SCENES[l.g].h}"><img src="art/${SCENES[l.g].f}.jpg" alt="${l.n}: ${SCENES[l.g].h.toLowerCase()}" loading="lazy" decoding="async"></button>`:""}<h2>${l.n}</h2><p>${l.arc}</p></div>
+    lanes.map(l=>`<section class="tl-lane" style="--mc:var(--m-${GROUPS[l.g][2]})"><div class="tl-h">${SCENES[l.g]?`<button type="button" class="tl-art" data-art="art/${SCENES[l.g].f}.jpg" data-cap="${l.n} · ${SCENES[l.g].h} · ${SCENES[l.g].c}" title="Key art: ${SCENES[l.g].h}"><img src="art/${SCENES[l.g].f}.jpg" alt="${l.n}: ${SCENES[l.g].h.toLowerCase()}" loading="lazy" decoding="async"></button>`:""}<h2>${l.n}</h2><p>${l.arc}</p></div>
     <div class="tl-row">${TL_COLS.map((_,c)=>{
       if(c===last)return `<div class="tl-cell tl-end"><b>${l.end[0]}</b><p>${l.end[1]}</p></div>`;
       const yr=y=>/^Before/.test(y)?0:y==="War"?9999:parseInt(y,10)||0;
       const es=l.ev.filter(e=>e[0]===c).sort((a,b)=>yr(a[1])-yr(b[1]));
-      return `<div class="tl-cell${c===last-1?" tl-proj":""}">${es.length?es.map(ev).join(""):`<p class="tl-none">—</p>`}</div>`;
+      return `<div class="tl-cell">${es.length?es.map(ev).join(""):`<p class="tl-none">—</p>`}</div>`;
     }).join("")}</div></section>`).join("");
   el.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
   bindArt(el);
@@ -935,23 +1444,26 @@ const KIND={W:"War",T:"Machines",P:"Politics",O:"Off-world",S:"Secrets"};
 const CH={fac:null};try{const v=localStorage.getItem("atlas-chrono-fac");CH.fac=v===null||v===""?null:+v}catch(e){}
 function renderChrono(){
   const fac=document.getElementById("chr-fac");
-  if(CH.fac!=null&&!TIMELINE[CH.fac])CH.fac=null;
-  fac.innerHTML=`<span class="legend-label">Follow</span><button type="button" class="af" data-l="" aria-pressed="${CH.fac==null}" style="--mc:var(--ink)"><i></i>Everyone<small>${CHRONO.length}</small></button>`+
-    TIMELINE.map((l,i)=>`<button type="button" class="af" data-l="${i}" aria-pressed="${CH.fac===i}" style="--mc:var(--m-${GROUPS[l.g][2]})"><i></i>${l.n} → ${l.end[0]}<small>${CHRONO.filter(b=>b.f.includes(i)).length}</small></button>`).join("");
+  // A faction view keeps beats from its own lanes and beats about entries in its view
+  const inView=b=>!VW.set||b.f.some(i=>VW.lanes.has(i))||(b.id&&VW.set.has(b.id));
+  const pool=CHRONO.filter(inView),cnt=i=>pool.filter(b=>b.f.includes(i)).length;
+  if(CH.fac!=null&&(!TIMELINE[CH.fac]||!cnt(CH.fac)))CH.fac=null;
+  fac.innerHTML=`<span class="legend-label">Follow</span><button type="button" class="af" data-l="" aria-pressed="${CH.fac==null}" style="--mc:var(--ink)"><i></i>Everyone<small>${pool.length}</small></button>`+
+    TIMELINE.map((l,i)=>cnt(i)?`<button type="button" class="af" data-l="${i}" aria-pressed="${CH.fac===i}" style="--mc:var(--m-${GROUPS[l.g][2]})"><i></i>${l.n} → ${l.end[0]}<small>${cnt(i)}</small></button>`:"").join("");
   const lane=CH.fac==null?null:TIMELINE[CH.fac];
   document.getElementById("chr-arc").textContent=lane?`${lane.n}: ${lane.arc}`:"";
-  const shown=CHRONO.filter(b=>CH.fac==null||b.f.includes(CH.fac));
-  const cols=[...DATA.conflicts.cols,["2327","No Peace Past Luna"]];
+  const shown=CHRONO.filter(b=>inView(b)&&(CH.fac==null||b.f.includes(CH.fac)));
+  // Eras 0–5 are No Haven on Earth's; 6 onward are the NPPL generations, ending in 2327
+  const cols=DATA.conflicts.cols;
   const dots=b=>`<span class="bdots" aria-hidden="true">${b.f.length===TIMELINE.length?"":b.f.map(i=>`<i style="--dc:var(--m-${GROUPS[TIMELINE[i].g][2]})" title="${TIMELINE[i].n}"></i>`).join("")}</span>`;
   const beat=b=>{const lead=CH.fac!=null?CH.fac:b.f[0],bc=b.f.length===TIMELINE.length?"var(--ink)":`var(--m-${GROUPS[TIMELINE[lead].g][2]})`;
     const inner=`<span class="by">${b.y}</span><span><span class="bt">${b.t}</span><span class="bx">${b.x}</span>${dots(b)}</span><span class="bk ${b.k}">${KIND[b.k]}</span>`;
-    const cls=`beat${b.e===5?" proj":""}`;
+    const cls=`beat${b.e===9?" proj":""}`;
     return `<li>${b.id&&(IDX[b.id]||ACEX[b.id])?`<button type="button" class="${cls}" style="--bc:${bc}" ${IDX[b.id]?`data-go="${b.id}"`:`data-ace="${b.id}"`}>${inner}</button>`:`<div class="${cls}" style="--bc:${bc}">${inner}</div>`}</li>`};
   document.getElementById("chr-list").innerHTML=cols.map(([k,y],e)=>{
     const list=shown.filter(b=>b.e===e);if(!list.length)return "";
-    const note=e===5?"The Third World War":e<6?ERA_NOTE[e][0]:"Where the stories end";
-    if(e===5)y="Dates ambiguous";
-    return `<section class="chr-era"><div class="chr-era-h"><h2>${k}</h2><span>${y} · ${list.length} ${list.length===1?"entry":"entries"}</span><p>${note}</p></div>${e===5?`<p class="chr-now">c. 2187 · Likely start of the Third World War. All dates are ambiguous.</p>`:""}<ol class="chr-list">${list.map(beat).join("")}</ol></section>`;
+    const note=e===5?"The Third World War":MAPNOTE[e]?MAPNOTE[e][0]:"Where the stories end";
+    return `<section class="chr-era"><div class="chr-era-h"><h2>${k}</h2><span>${y} · ${list.length} ${list.length===1?"entry":"entries"}</span><p>${note}</p></div><ol class="chr-list">${list.map(beat).join("")}</ol></section>`;
   }).join("");
   fac.querySelectorAll("[data-l]").forEach(b=>b.addEventListener("click",()=>{CH.fac=b.dataset.l===""?null:+b.dataset.l;try{localStorage.setItem("atlas-chrono-fac",CH.fac==null?"":String(CH.fac))}catch(e){}renderChrono()}));
   const L=document.getElementById("chr-list");
@@ -964,7 +1476,7 @@ renderChrono();
 // Grouped by the era each pilot made their name in (the conflicts tree's columns); filters apply to faction and signature-frame build
 const FAC=Object.fromEntries(ACE_FACTIONS.map(([k,n,c])=>[k,{n,c:`var(--m-${c})`}]));
 const BUILD={S:"Standard",V:"Variant",C:"Custom"};
-const A={fac:null,bld:null};
+const A={fac:null,bld:null,open:new Set()};
 // Per frame: aces who flew it as built (ACED), and the named versions aces flew (VERS), shown on the Frames tree
 const isOwn=(id,vn)=>!vn||vn===label(IDX[id]);
 const VERS={},ACED={};
@@ -975,10 +1487,13 @@ ACES.forEach(a=>a.fr.forEach(([id,b,vn,note])=>{
 const pilots=list=>list.map(a=>`<button type="button" class="pl" data-ace="${a.id}">${a.n}</button>`).join(", ");
 function renderAces(){
   const fac=document.getElementById("ace-fac");
-  fac.innerHTML=`<span class="legend-label">Faction</span>`+ACE_FACTIONS.map(([k,n])=>`<button type="button" class="af" data-f="${k}" aria-pressed="${A.fac===k}" style="--mc:${FAC[k].c}"><i></i>${n}<small>${ACES.filter(a=>a.g===k).length}</small></button>`).join("");
+  const pool=ACES.filter(a=>vis(a.id));
+  if(A.fac&&!pool.some(a=>a.g===A.fac))A.fac=null;
+  document.getElementById("ace-fac-n").textContent=`· ${new Set(pool.map(a=>a.g)).size}${A.fac?` · showing ${FAC[A.fac].n} only`:""}`;
+  fac.innerHTML=ACE_FACTIONS.filter(([k])=>pool.some(a=>a.g===k)).map(([k,n])=>`<button type="button" class="af" data-f="${k}" aria-pressed="${A.fac===k}" style="--mc:${FAC[k].c}"><i></i>${n}<small>${pool.filter(a=>a.g===k).length}</small></button>`).join("");
   document.getElementById("ace-bld").innerHTML=[[null,"All"],...Object.entries(BUILD)].map(([k,l])=>`<button type="button" data-b="${k||""}" aria-pressed="${A.bld===k}">${l}</button>`).join("");
-  const shown=ACES.filter(a=>(!A.fac||a.g===A.fac)&&(!A.bld||a.fr[0][1]===A.bld));
-  document.getElementById("ace-count").textContent=`Showing ${shown.length} of ${ACES.length} aces`;
+  const shown=pool.filter(a=>(!A.fac||a.g===A.fac)&&(!A.bld||a.fr[0][1]===A.bld));
+  document.getElementById("ace-count").textContent=`Showing ${shown.length} of ${pool.length} aces`;
   // A frame flown as built links straight to its tree entry with a short note; a named version links to its base frame, whose card says what changed
   const frame=([id,b,vn,note])=>`<li>${isOwn(id,vn)
     ?`<button type="button" class="lk" data-go="${id}"><span class="bd ${b}">${BUILD[b].toUpperCase()}</span><span class="nm">${label(IDX[id])}</span></button><span class="fn">${note}</span>`
@@ -991,36 +1506,156 @@ function renderAces(){
     <h3>${a.n}${a.cs?` <i>“${a.cs}”</i>`:""}</h3><span class="sv">${a.sv}</span>
     <ul class="afr">${frame(a.fr[0])}</ul>
     <p class="rec"><b>RECORD</b>${a.k}</p>
+    <details class="ace-more" data-id="${a.id}"${A.open.has(a.id)?" open":""}><summary>Story and links</summary><div>
     <p>${a.x}</p>
     ${scene(a.id,a.n)}
     ${a.fr.length>1?`<div class="seeds"><h4>Also flew</h4><ul class="afr also">${a.fr.slice(1).map(frame).join("")}</ul></div>`:""}
     ${a.cf.length?`<div class="seeds"><h4>Fought in</h4>${goList(a.cf)}</div>`:""}
     ${a.ln&&a.ln.length?`<div class="seeds"><h4>See also</h4>${goList(a.ln)}</div>`:""}
-    <p class="seed now"><b>NOW</b>${a.z}</p></article>`;
+    ${USED[a.id]&&USED[a.id].people?`<div class="seeds"><h4>Family and successors</h4>${goList(USED[a.id].people)}</div>`:""}
+    <p class="seed now"><b>NOW</b>${a.z}</p></div></details></article>`;
   document.getElementById("ace-list").innerHTML=ACE_ERAS.map(([e,blurb])=>{
     const list=shown.filter(a=>a.c===e);if(!list.length)return "";
-    const [k,y]=DATA.conflicts.cols[e];
+    const [k,y]=(GENS.length?GENS:DATA.conflicts.cols)[e];
     return `<section class="ace-era"><div class="ace-era-h"><h2>${k}</h2><span>${y} · ${list.length} ${list.length===1?"ace":"aces"}</span><p>${blurb}</p></div><div class="powers">${list.map(card).join("")}</div></section>`;
   }).join("")||`<p class="none">No aces match these filters.</p>`;
   fac.querySelectorAll("[data-f]").forEach(b=>b.addEventListener("click",()=>{A.fac=A.fac===b.dataset.f?null:b.dataset.f;renderAces()}));
   document.querySelectorAll("#ace-bld [data-b]").forEach(b=>b.addEventListener("click",()=>{A.bld=b.dataset.b||null;renderAces()}));
+  document.getElementById("ace-list").querySelectorAll(".ace-more").forEach(d=>d.addEventListener("toggle",()=>{d.open?A.open.add(d.dataset.id):A.open.delete(d.dataset.id)}));
   document.getElementById("ace-list").querySelectorAll("[data-art]").forEach(b=>b.addEventListener("click",()=>openArt(b.dataset.art,b.dataset.cap)));
   document.getElementById("ace-list").querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{remember(KEYOF[b.dataset.go]);goTo(b.dataset.go)}));
 }
 // Opens the Aces tab on one pilot's card, clearing filters that would hide it
 function showAce(id){
+  if(!vis(id))return;
   build("aces");remember("aces");
   if(!document.getElementById("ace-"+id)){A.fac=null;A.bld=null;renderAces()}
   const c=document.getElementById("ace-"+id);
+  const d=c.querySelector(".ace-more");if(d)d.open=true;
   requestAnimationFrame(()=>c.scrollIntoView({block:"center",behavior:reduced?"auto":"smooth"}));
   c.classList.add("hit");setTimeout(()=>c.classList.remove("hit"),1600);
 }
 renderAces();
 
-let start=(location.hash||"").slice(1);
+// ---- Faction views: switching, the bar under the title, and the landing screen ----
+const facColour=f=>f.card==="UNEL"?"--m-UNO":f.kind==="power"?BLOC[f.card][1]:`--m-${GROUPS[cardOf(f).b][2]}`;
+function applyView(k,store){
+  VW.f=k&&FACX[k]?k:null;VW.set=VW.f?factionSet(VW.f):null;
+  VW.lanes=new Set(VW.f?FACX[VW.f].lanes.map(g=>LANEI[g]).filter(i=>i!=null):[]);
+  if(store)try{sessionStorage.setItem("atlas-view",VW.f||"")}catch(e){}
+  // Tabs show how much of each tree is in view, and a tree with nothing in view is hidden
+  ORDER.forEach(t=>{const b=document.getElementById("tab-"+t),n=DATA[t].nodes.filter(x=>vis(x.id)).length;b.hidden=!n;b.querySelector("small").textContent=n});
+  const at=document.getElementById("tab-aces");if(at){const n=ACES.filter(a=>vis(a.id)).length;at.hidden=!n;at.querySelector("small").textContent=n}
+  syncTabGroups();
+  renderBar();renderTimeline();renderChrono();renderAces();
+  if(current==="map"){mapSelect(null);renderMap()}
+  else if(current&&DATA[current]){const k0=current;current=null;build(DATA[k0].nodes.some(n=>vis(n.id))?k0:"chrono")}
+  else if(current==="aces"&&!ACES.some(a=>vis(a.id))){current=null;build("chrono")}
+  if(current)remember(current);
+}
+function renderBar(){
+  const el=document.getElementById("viewbar"),f=VW.f&&FACX[VW.f];
+  const guideB=`<button type="button" class="vb-x" data-guide>Guide</button>`;
+  if(!f){el.style.removeProperty("--fc");el.innerHTML=`<span><span class="vb-k">Viewing</span><b>The whole atlas</b></span><span class="vb-acts">${guideB}<button type="button" class="vb-x" data-sum="">Summary</button><button type="button" class="vb-x" data-land>Choose a faction view</button></span>`}
+  else{const c=cardOf(f);el.style.setProperty("--fc",`var(${facColour(f)})`);
+    el.innerHTML=`<span><span class="vb-k">Viewing as</span><b>${facName(f)}</b></span><span class="vb-acts">${guideB}<button type="button" class="vb-x" data-sum="${f.k}">Summary</button><button type="button" class="vb-x" data-land>Change view</button></span>`}
+  el.querySelectorAll("[data-guide]").forEach(b=>b.addEventListener("click",()=>openGuide()));
+  el.querySelectorAll("[data-land]").forEach(b=>b.addEventListener("click",()=>openLanding()));
+  el.querySelectorAll("[data-sum]").forEach(b=>b.addEventListener("click",()=>openSummary(b.dataset.sum)));
+}
+function closeLanding(){document.getElementById("landing").hidden=true;document.body.classList.remove("landing-open");maybeGuide()}
+// Landing screen: the whole atlas or one of the thirteen factions of 2327. Each card opens a summary; its Enter button goes straight in
+function openLanding(){
+  const el=document.getElementById("landing"),s=SCENES.headline;
+  const card=f=>`<div class="lcw"><button type="button" class="lc" data-sum="${f.k}" aria-pressed="${VW.f===f.k}" style="--fc:var(${facColour(f)})"><span class="lc-k">${f.kind==="power"?"Earth power":"Space faction"}</span>${f.h?`<span class="lc-h">${f.h}</span><span class="lc-n"><i>→</i> ${f.n}</span>`:`<span class="lc-n">${f.n}</span>`}<span class="lc-t">${cardOf(f).id}</span></button><button type="button" class="lc-go" data-v="${f.k}" aria-label="Enter the atlas as ${f.n}">Enter →</button></div>`;
+  el.innerHTML=`<div class="land-in">${s?`<img class="land-art" src="art/${s.f}.jpg" alt="${s.c}">`:""}
+    <span class="eyebrow">No Haven on Earth · No Peace Past Luna</span><h1>No Haven on Earth Atlas</h1>
+    <p>The late 22nd century is running on empty. Two hundred years of warming have drowned the coasts and thinned the harvests, and three great blocs divide what is left: the United States, Europe's Continental Union, and the Eurasian Pact of China and Russia. In 2162 a new weapon changed how they fight: the <b>frame</b>, a piloted, walking armoured war machine around eighteen metres tall, part tank and part aircraft. A handful of one-off giants twice that size, the <b>supers</b>, followed. Alongside the machines runs the setting's oldest argument, over <b>enhancement</b>: how far a government may alter its soldiers' bodies and minds with gene treatments, implants and grafts, and what becomes of the people it changes.</p>
+    <p>This atlas is a catalogue of the people, events and machines of two eras.</p>
+    <p><b>No Haven on Earth</b> runs to the end of the Third World War. Frames rule the battlefield, and the blocs fight each other by proxy in other people's countries, from the Afghan border to the Sahara, while each builds giants and warships it hopes never to use. Those proxy wars drag everyone into the hell of the Third World War (c. 2187–2190), fought on every continent and, for the first time, in orbit, until it turns atomic.</p>
+    <p><b>No Peace Past Luna</b> covers the century after it. The war ends when the engineers who build warships on the Moon hand their fleets to the United Nations and force a peace. Under the new United Nations of Earth and Luna, nothing lifted by a reactor may fly over Earth, reactors are banned from its battlefields, and Earth itself stays at peace. Past the Moon, the rules stop. Over the long century that follows, peace on Earth pushes humanity's greed out to Mars, the asteroid belt and the moons of Jupiter, and new powers grow up there largely unwatched. It is the least explored age in the atlas, with many of its stories still untold. Then the colonies turn on their sponsors and battleships clash again: first in the Martian crisis of 2312, and fifteen years later in the Greater Solar Crisis of 2327.</p>
+    <p>Open the whole atlas, or pick one of the thirteen factions of 2327 to read its summary and then follow only its story: its machines, wars, people and secrets, from its roots before the war to the Greater Solar Crisis. Earth powers are shown by both their names, before the war and after it, and you can change your choice at any time from the bar under the title.</p>
+    <div class="lcw"><button type="button" class="lc whole" data-sum="">The whole atlas<span class="lc-t">The setting, the ten generations, and every faction and tree unfiltered.</span></button><button type="button" class="lc-go" data-v="" aria-label="Enter the whole atlas">Enter →</button></div>
+    <h2>Earth powers</h2><p>None of the old blocs comes through the war intact. The United States absorbs its neighbours, Europe's union is torn apart and rebuilt, the Eurasian Pact splits into China and a joint Russian and Indian state, and Africa's non-aligned League becomes a Commonwealth. These are the five Earth powers that come out of the war, plus the institution that ended it. Each card gives the name it had before the war and the one it has by 2327.</p>
+    <div class="lgrid">${FACS.filter(f=>f.kind==="power").map(card).join("")}</div>
+    <h2>Space factions</h2><p>Seven factions grow up off Earth in the century after the war: three on Mars (a crushed rebel colony, the American state built to replace it, and a scientific state), a merchant power in the asteroid belt, two societies of altered people on the moons of Jupiter, and a religious civilisation in the far outer dark. Most of them began as an argument about enhancement, over what an Earth power did to its pilots and soldiers and what someone else decided to do instead, and each kept its sponsor's argument while changing what it means. The colour along the top of a card shows the Earth power it descends from; grey means none.</p>
+    <div class="lgrid">${FACS.filter(f=>f.kind==="space").map(card).join("")}</div></div>`;
+  showLanding(el);
+  el.querySelectorAll("[data-sum]").forEach(b=>b.addEventListener("click",()=>openSummary(b.dataset.sum)));
+  (el.querySelector(`[data-sum="${VW.f||""}"]`)||el.querySelector("[data-sum]")).focus({preventScroll:true});
+}
+function showLanding(el){
+  el.hidden=false;document.body.classList.add("landing-open");el.scrollTop=0;
+  el.querySelectorAll("[data-v]").forEach(b=>b.addEventListener("click",()=>{closeLanding();applyView(b.dataset.v||null,true);scrollTo(0,0)}));
+  el.querySelectorAll("[data-back]").forEach(b=>b.addEventListener("click",openLanding));
+  bindArt(el);
+}
+// One example tile on a faction summary: a frame, a ship, or a key person (an ace or a person of interest)
+function exTile(kind,id){
+  const a=ACEX[id],n=IDX[id];if(!a&&!n)return "";
+  const tabName=k=>{const t=document.getElementById("tab-"+k);return t?t.firstChild.textContent:"the atlas"};
+  let img="",name,sub,body;
+  if(a){const [fid,,vn]=a.fr[0],stem=isOwn(fid,vn)?ART[fid]:VART[vn],sig=isOwn(fid,vn)?label(IDX[fid]):vn;
+    // The ace's own key art wins over their signature frame's
+    if(SCENES[id])img=`<img src="art/${SCENES[id].f}.jpg" alt="${a.n}" loading="lazy" decoding="async">`;
+    else if(stem)img=`<img src="thumb/${stem}-scene.jpg" alt="${sig}" loading="lazy" decoding="async">`;
+    name=`${a.n}${a.cs?` <i>“${a.cs}”</i>`:""}`;sub=`${a.r?a.r+" · ":""}${a.y} · ${sig}`;
+    body=`<p class="rec"><b>RECORD</b>${a.k}</p><p class="sum-x">${a.x}</p>`;
+    return `<article class="sum-t">${img}<span class="lc-k">${kind}</span><b class="sum-tn">${name}</b><span class="meta">${sub}</span>${body}<button type="button" class="go" data-tace="${id}">Open ace card →</button></article>`}
+  const k=KEYOF[id],col=(DATA[k].cols[n.c]||[])[0];
+  if(ART[id])img=`<img src="thumb/${ART[id]}-scene.jpg" alt="${n.n}" loading="lazy" decoding="async">`;
+  else if(SCENES[id])img=`<img src="art/${SCENES[id].f}.jpg" alt="${n.n}" loading="lazy" decoding="async">`;
+  sub=[col,n.s].filter(Boolean).join(" · ");
+  return `<article class="sum-t">${img}<span class="lc-k">${kind}</span><b class="sum-tn">${label(n)}</b><span class="meta">${sub}</span><p>${n.t}</p><p class="sum-x">${n.x}</p><button type="button" class="go" data-tgo="${id}">Open in ${tabName(k)} →</button></article>`;
+}
+// A faction's summary (k), or the whole atlas's (k empty): key art, overview, and a way in
+function openSummary(k){
+  const el=document.getElementById("landing"),f=k&&FACX[k];
+  const acts=(go,label)=>`<div class="sum-act"><button type="button" class="sum-go" data-v="${go}">${label}</button><button type="button" class="x" data-back>Back to all factions</button></div>`;
+  const art=(s,name)=>s?`<figure class="sum-art"><button type="button" data-art="art/${s.f}.jpg" data-cap="${name} · ${s.h}"><img class="land-art" src="art/${s.f}.jpg" alt="${name}: ${s.h.toLowerCase()}"></button><figcaption><span class="era">Key art</span> ${s.h}</figcaption></figure>`:"";
+  if(!f){
+    const s=SCENES.headline,G=GENS.length?GENS:DATA.conflicts.cols;
+    el.innerHTML=`<div class="land-in sum"><button type="button" class="x sum-back" data-back>← All factions</button>${art(s,"No Haven on Earth")}
+      <span class="lc-k">The whole atlas</span><h1>No Haven on Earth Atlas</h1>
+      <p>The 22nd century is running on empty. Two hundred years of warming have drowned the coasts and thinned the harvests, and what's left is being fought over by three great power blocs: the United States, the Continental Union and the Eurasian Pact. For years they only stared each other down. Then, in 2162, four Garrisons came down a ravine at Iron Gate and destroyed a tank column in eleven minutes. The frame had fired the first shot, and the silence was over.</p>
+      <p>This atlas follows everything that came after: the frames and the arms race behind them, the wars they fought, the pilots who made them famous, the road to the Third World War, and the century after it, out through the First Martian Crisis of 2312 to the Greater Solar Crisis of 2327.</p>
+      <h2>The generations</h2>
+      <p>Every tree in the atlas is laid out by generation. Gens 0 to 5 are the world of No Haven on Earth, up to the end of the Third World War; Gens 6 to 9 run through the century after it to No Peace Past Luna.</p>
+      <ol class="sum-gens">${G.map(([g,y],i)=>`<li${i===6?' class="nppl"':""}><span class="sum-g"><b>${g}</b><span>${y}</span></span><span><b class="sum-gt">${(MAPNOTE[i]||[])[0]||""}</b><span class="sum-gp">${GEN_NOTES[i]||""}</span></span></li>`).join("")}</ol>
+      ${acts("","Enter the whole atlas")}</div>`;
+  }else{
+    const c=cardOf(f),colour=facColour(f);
+    const s=SCENES[c===UNEL?"UNEL":c.k];
+    const heirs=f.kind==="power"?HEIRS.filter(([,to])=>to.includes(f.card)||(c===UNEL&&to.includes(UNEL.n))):[];
+    el.innerHTML=`<div class="land-in sum" style="--fc:var(${colour});--pc:var(${colour})"><button type="button" class="x sum-back" data-back>← All factions</button>${art(s,f.n)}
+      <span class="lc-k">${f.kind==="power"?"Earth power":"Space faction"}</span><h1>${f.h?`${f.h} <i>→</i> `:""}${f.n}</h1>
+      <span class="meta">${c.home} · Faith: ${c.faith}</span>
+      <p>${c.id}</p><p class="seed">${c.seed}</p>
+      ${heirs.length?`<div class="sum-heirs"><h2>Grows from</h2><ul>${heirs.map(([from,,note])=>`<li><b>${from}</b><span>${note}</span></li>`).join("")}</ul></div>`:""}
+      <details class="fold sum-ax"><summary><h2>Where it stands</h2><span class="fold-n">· ${AXES.length} scales</span></summary><ul class="axes">${AXES.map((x,i)=>{const v=c.ax[i];return `<li title="${x[1]} ↔ ${x[2]}"><span class="an">${x[0]}</span><span class="dots" aria-hidden="true">${[-2,-1,0,1,2].map(d=>`<i${d===v?' class="on"':""}></i>`).join("")}</span><span>${v==null?"TBD":pos(v,x)}</span></li>`}).join("")}</ul><p class="hint">Each scale runs from the first pole on the left to the second on the right.</p></details>
+      <div class="sum-ex">${exTile("Frame",(c.ex||{}).frame)}${exTile("Ship",(c.ex||{}).ship)}${exTile("Key person",(c.ex||{}).person)}</div>
+      ${acts(f.k,`Enter the atlas as ${f.n}`)}</div>`;
+    const go=fn=>{closeLanding();applyView(f.k,true);fn()};
+    el.querySelectorAll("[data-tgo]").forEach(b=>b.addEventListener("click",()=>go(()=>{remember(KEYOF[b.dataset.tgo]);goTo(b.dataset.tgo)})));
+    el.querySelectorAll("[data-tace]").forEach(b=>b.addEventListener("click",()=>go(()=>showAce(b.dataset.tace))));
+  }
+  showLanding(el);
+  el.querySelector(".sum-back").focus({preventScroll:true});
+}
+// The link's tab and view win; otherwise the last tab, this session's view, and the landing screen on a new visit
+const [hTab,...hRest]=(location.hash||"").slice(1).split("&"),hView=new URLSearchParams(hRest.join("&")).get("view");
+// Carriers was folded into Fleets & Carriers and NPPL Conflicts into Conflicts (2026-11-10); old links and remembered tabs land there
+const MOVED={carriers:"fleets",nppl:"conflicts",successors:"chrono"};
+let start=MOVED[hTab]||hTab;
 const known=k=>!!DATA[k]||!!VIEWS[k];
-if(!known(start)){try{start=localStorage.getItem("atlas-tab")||""}catch(e){start=""}}
+if(!known(start)){try{start=localStorage.getItem("atlas-tab")||""}catch(e){start=""}start=MOVED[start]||start}
+let sView=null;try{sView=sessionStorage.getItem("atlas-view")}catch(e){}
+const pickView=hView!=null?hView:sView;
 build(known(start)?start:"chrono");
+applyView(pickView,hView!=null);
+if(hTab==="successors"){remember("chrono");openLanding()}
+else if(hView==null&&sView==null)openLanding();
+else maybeGuide();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
 if("ResizeObserver" in window)new ResizeObserver(draw).observe(chart);
 addEventListener("resize",draw);
