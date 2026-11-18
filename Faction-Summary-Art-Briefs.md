@@ -1,8 +1,16 @@
 # Faction Summary Art Briefs
 
+**Published, 18 November 2026 (atlas version 146):** All 37 selected images are live. The seven frames are in `ART` (fd2, fp1, fe2, fs2, fu2, fj1, fw2) and the 23 scenes are in `SCENES` under the atlas entries listed below, with captions.
+
+**QA corrections completed, 18 November 2026:** All 37 illustrations are saved locally and all eight QA findings have been addressed. The [action report](docs/faction-summary-art-qa-actions-2026-11-18.md) records the selected revisions, tile checks and exact exports. Originals, prompts and failed attempts remain available; hosted publication has not been performed.
+
 Art briefs for the example tiles on the atlas's faction summaries (the Frame, Ship and Key person shown when a faction card is opened on the landing screen). There are 39 tiles, three for each of the thirteen factions. Nine already have art the page uses, and these briefs cover the other **30**: 7 frames (a scene and a turnaround each) and 23 key-art scenes (11 ships and 12 people).
 
 Written 11 November 2026 for Codex to generate. The picks follow the user's rule: Earth powers draw on Gens 1 to 5 and space factions on Gen 6 onwards, and the key person can be an ace or a person of interest.
+
+**Production pass, 14 November 2026:** All 37 illustrations have been attempted by two Codex agents using built-in image generation. The [local review gallery](output/imagegen/faction-summaries/index.html), [manifest](output/imagegen/faction-summaries/manifest.json) and [review notes](output/imagegen/faction-summaries/README.md) record selected versions, corrections and service-blocked turnarounds. These records distinguish generated art from unresolved items; atlas placement and hosted publication have not been performed.
+
+**QA pass, 14 November 2026:** [Independent review](docs/faction-summary-art-qa-2026-11-14.md) records five available images needing correction, four requiring further review, and the two missing turnarounds. The gallery flags the affected selections.
 
 ## How to use this file (instructions for Codex)
 
@@ -59,6 +67,8 @@ Each frame needs a scene and a turnaround sheet, like every other frame in the a
 **What it must say:** Colony One's first frame of its own, built for a war against the MRD and then carried into the partisan war: armoured, cold-rated and repairable in a tunnel.
 
 **Reference:** 04-m9-teamster-scene.png (family resemblance through the Teamster-S and Dust Teamster).
+
+**Hammer correction, 14 November 2026:** The right-forearm breaching hammer is a compact short-stroke hydraulic ram on a bolted outboard forearm mount, with a protected piston and small rectangular striking head. It leaves the normal wrist and hand free to grip the rifle. The head, mount, scale and anatomical side must agree in every view and detail inset; no hanging block or replacement hand. Selected technical sheet v3 establishes this correction.
 
 **Scene prompt**
 
@@ -179,6 +189,8 @@ Avoid: no red cross, red crescent or red crystal emblems, red plus signs or clos
 **What it must say:** Garuda Works begins by rebuilding the Nashik pilots' paired frames at Europa, with actuators from the Mitsurugi exiles and ice-water fuel cells. The pairs who ride them are sworn to the Oath, just as the first Ashvins were.
 
 **Reference:** g3-11-nk-x-ashvin-scene-v2.png (design reference for the paired Ashvin; this is the same pair rebuilt for vacuum and ice).
+
+**Cockpit correction, 14 November 2026:** The boarding hatch and compact cockpit belong in the upper chest, below the sensor head and above the waist joint. No cockpit in the pelvis, groin or thigh. The access ladder must reach the chest hatch. The selected scene v3 applies the user's correction to the original marked composition.
 
 **Scene prompt**
 
@@ -541,6 +553,8 @@ Avoid: no red cross, red crescent or red crystal emblems, red plus signs or clos
 **What it must say:** The rider who led her akhara into an Ascendancy settlement's cells on Europa to free three strays, and a year later rode out alone to bring one of them in after he killed a family on Io. The akharas still argue about it.
 
 **Reference:** g3-11-nk-x-ashvin-scene-v2.png (Ashvin family design reference only).
+
+**Approved correction, 14 November 2026:** Darya wears a fully sealed helmet with a transparent visor on Io's surface. Her hand is empty. This supersedes the helmet-in-hand wording in the original prompt below, retained as the first-pass generation record.
 
 **Prompt**
 
